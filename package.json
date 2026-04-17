@@ -1,0 +1,45 @@
+{
+  "name": "cfx-sync-mcp",
+  "version": "0.1.0",
+  "description": "Open-source MCP server that syncs Cfx.re Portal granted assets into a local FiveM/RedM server. Read-only toward the portal; never transfers, gifts, or modifies grants.",
+  "type": "module",
+  "bin": {
+    "cfx-sync-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
+    "grep-guard": "tsx scripts/grep-guard.ts",
+    "refresh-fixtures": "tsx scripts/refresh-fixtures.ts",
+    "ci": "npm run typecheck && npm run lint && npm run grep-guard && npm test"
+  },
+  "config": {
+    "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.17.0",
+    "playwright": "1.47.0",
+    "undici": "6.19.8",
+    "yauzl-promise": "4.0.0",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.0",
+    "@typescript-eslint/eslint-plugin": "7.18.0",
+    "@typescript-eslint/parser": "7.18.0",
+    "eslint": "8.57.0",
+    "tsx": "4.16.0",
+    "typescript": "5.5.4",
+    "vitest": "2.0.5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "license": "MIT"
+}

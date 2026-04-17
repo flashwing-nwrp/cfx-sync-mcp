@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.cookies.json
+state/
+cache/
+staging/
+coverage/
+*.log
+.DS_Store
