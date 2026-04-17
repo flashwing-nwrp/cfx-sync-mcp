@@ -7,7 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const FORBIDDEN_PATTERNS = [
-  /\bmethod\s*:\s*['"](?:POST|PUT|PATCH|DELETE)['"]/i,
+  /\bmethod\s*:\s*['"`](?:POST|PUT|PATCH|DELETE)['"`]/i,
   /\.(?:post|put|patch|delete)\s*\(/i,
 ];
 
