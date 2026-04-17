@@ -54,4 +54,27 @@ describe("loadConfig", () => {
       expect(fs.existsSync(d)).toBe(true);
     }
   });
+
+  it("rejects non-integer CFX_BACKUP_RETAIN", () => {
+    process.env.CFX_SERVER_RESOURCES = tmp;
+    process.env.CFX_BACKUP_RETAIN = "abc";
+    expect(() => loadConfig()).toThrow(ConfigError);
+  });
+
+  it("rejects negative integer env var", () => {
+    process.env.CFX_SERVER_RESOURCES = tmp;
+    process.env.CFX_RATE_LIMIT_TTL_MS = "-100";
+    expect(() => loadConfig()).toThrow(ConfigError);
+  });
+
+  it("rejects invalid CFX_API_BASE URL", () => {
+    process.env.CFX_SERVER_RESOURCES = tmp;
+    process.env.CFX_API_BASE = "not-a-url";
+    expect(() => loadConfig()).toThrow(ConfigError);
+  });
+
+  it("rejects empty CFX_SERVER_RESOURCES (set but empty string)", () => {
+    process.env.CFX_SERVER_RESOURCES = "";
+    expect(() => loadConfig()).toThrow(ConfigError);
+  });
 });

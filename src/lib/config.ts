@@ -6,6 +6,8 @@ import { ConfigError } from "./errors.js";
 const AuthMode = z.enum(["playwright", "file"]);
 export type AuthMode = z.infer<typeof AuthMode>;
 
+const ApiBase = z.string().url();
+
 export interface Config {
   apiBase: string;
   authMode: AuthMode;
@@ -22,12 +24,14 @@ export interface Config {
 
 function req(name: string): string {
   const v = process.env[name];
-  if (!v) throw new ConfigError(`Missing required env var ${name}`);
+  if (v === undefined) throw new ConfigError(`Missing required env var ${name}`);
+  if (v === "") throw new ConfigError(`Required env var ${name} is set but empty`);
   return v;
 }
 
 function opt(name: string, dflt: string): string {
-  return process.env[name] || dflt;
+  const v = process.env[name];
+  return v === undefined ? dflt : v;
 }
 
 function int(name: string, dflt: number): number {
@@ -53,8 +57,14 @@ export function loadConfig(): Config {
     );
   }
 
+  const apiBaseRaw = opt("CFX_API_BASE", "https://portal-api.cfx.re");
+  const apiBaseParsed = ApiBase.safeParse(apiBaseRaw);
+  if (!apiBaseParsed.success) {
+    throw new ConfigError(`CFX_API_BASE must be a valid URL, got "${apiBaseRaw}"`);
+  }
+
   const cfg: Config = {
-    apiBase: opt("CFX_API_BASE", "https://portal-api.cfx.re"),
+    apiBase: apiBaseParsed.data,
     authMode: authModeParsed.data,
     cookieFile: resolve(opt("CFX_COOKIE_FILE", "./.cookies.json")),
     serverResources: resolve(req("CFX_SERVER_RESOURCES")),
