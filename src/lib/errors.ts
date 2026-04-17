@@ -6,7 +6,8 @@ export type CfxErrorCode =
   | "TARGET_PARENT_MISSING" | "DISK_SPACE_LOW" | "STALL_TIMEOUT"
   | "UNKNOWN_LAYOUT" | "PLAYWRIGHT_NOT_INSTALLED"
   | "PORTAL_DISABLED"
-  | "NETWORK" | "IO" | "LOCK_HELD" | "RATE_LIMITED" | "CONFIG";
+  | "NETWORK" | "IO" | "LOCK_HELD" | "RATE_LIMITED" | "CONFIG"
+  | "FORBIDDEN" | "PORTAL_RATE_LIMIT";
 
 export interface CfxErrorEnvelope {
   success: false;
@@ -157,6 +158,27 @@ export class RateLimitedError extends CfxError {
       `Last poll was ${Math.round(ageMs / 1000)}s ago; cache is still fresh.`,
       "Pass `force: true` to override the 1h soft cache.",
       true
+    );
+  }
+}
+export class ForbiddenError extends CfxError {
+  constructor(url: string) {
+    super(
+      "FORBIDDEN",
+      `Portal returned 403 for ${url} — grant or resource forbidden.`,
+      "Grant may have been revoked; check the portal UI. Don't retry."
+    );
+  }
+}
+export class PortalRateLimitError extends CfxError {
+  constructor(retryAfterSec: number | null) {
+    super(
+      "PORTAL_RATE_LIMIT",
+      retryAfterSec !== null
+        ? `Portal rate-limited this request; retry-after ${retryAfterSec}s.`
+        : `Portal rate-limited this request; retry later.`,
+      "Wait before retrying. Use `force: true` judiciously to avoid repeat limits.",
+      true  // retryable
     );
   }
 }

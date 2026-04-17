@@ -6,7 +6,9 @@ import {
   AuthExpiredError,
   InvalidTargetError,
   ForbiddenEndpointError,
+  ForbiddenError,
   NetworkError,
+  PortalRateLimitError,
 } from "../errors.js";
 
 const ALLOWED_HOSTS = new Set(["portal.cfx.re", "portal-api.cfx.re"]);
@@ -66,6 +68,16 @@ export class PortalApiClient {
 
     const status = res.statusCode;
     if (status === 401) throw new AuthExpiredError();
+    if (status === 403) throw new ForbiddenError(url.toString());
+    if (status === 429) {
+      const retryAfterHeader = res.headers["retry-after"];
+      const retryAfterSec = typeof retryAfterHeader === "string"
+        ? (Number.isFinite(parseInt(retryAfterHeader, 10)) ? parseInt(retryAfterHeader, 10) : null)
+        : null;
+      // Drain body before throwing (keep-alive)
+      await res.body.text();
+      throw new PortalRateLimitError(retryAfterSec);
+    }
 
     // Drain body even on errors so keep-alive works.
     const text = await res.body.text();
@@ -93,6 +105,7 @@ export class PortalApiClient {
     let page = 1;
     let pageCount = 1;
     let itemCount = 0;
+    const MAX_PAGES = 100; // defensive cap — operator grant counts are O(dozens)
 
     while (page <= pageCount) {
       const url = new URL("/v1/me/asset-grants", this.apiBase);
@@ -107,6 +120,11 @@ export class PortalApiClient {
       pageCount = parsed.page_count;
       itemCount = parsed.item_count;
       page++;
+      if (page > MAX_PAGES) {
+        throw new NetworkError(
+          `Pagination runaway: exceeded ${MAX_PAGES} pages. Portal response may be malformed.`
+        );
+      }
     }
     return { grants: allGrants, page: 1, page_count: pageCount, item_count: itemCount };
   }

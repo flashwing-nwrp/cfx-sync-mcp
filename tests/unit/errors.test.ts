@@ -20,6 +20,8 @@ import {
   IoError,
   LockHeldError,
   RateLimitedError,
+  ForbiddenError,
+  PortalRateLimitError,
   ConfigError,
 } from "../../src/lib/errors.js";
 
@@ -45,14 +47,14 @@ describe("CfxError base class", () => {
   });
 });
 
-describe("All 20 error classes exist and have unique codes", () => {
+describe("All 22 error classes exist and have unique codes", () => {
   const classes = [
     AuthExpiredError, AuthMissingError, InvalidTargetError, ForbiddenEndpointError,
     MappingUnapprovedError, NotFoundError, AmbiguousSlugError, ValidationFailedError,
     MultiPackUnsupportedError, TargetParentMissingError, DiskSpaceLowError,
     StallTimeoutError, UnknownLayoutError, PlaywrightNotInstalledError,
     PortalDisabledError, NetworkError, IoError, LockHeldError, RateLimitedError,
-    ConfigError,
+    ForbiddenError, PortalRateLimitError, ConfigError,
   ];
   it("all instantiate without args (except dynamic-message ones)", () => {
     const codes = new Set<string>();
