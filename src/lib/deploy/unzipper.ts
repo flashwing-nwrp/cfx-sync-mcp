@@ -14,7 +14,11 @@ export interface UnzipResult {
 //   - Absolute paths are refused
 //   - If the zip wraps everything in a single top-level dir, contents are
 //     flattened (hoisted one level) so the staging root holds fxmanifest.lua directly.
-export async function unzipToStaging(zipFile: string, stagingRoot: string): Promise<UnzipResult> {
+export async function unzipToStaging(
+  zipFile: string,
+  stagingRoot: string,
+  preferredSubdir?: string
+): Promise<UnzipResult> {
   await fsP.mkdir(stagingRoot, { recursive: true });
   const stagingBase = path.join(stagingRoot, `extract-${Date.now()}-${process.pid}`);
   await fsP.mkdir(stagingBase);
@@ -77,23 +81,39 @@ export async function unzipToStaging(zipFile: string, stagingRoot: string): Prom
 
     if (!hadFiles) throw new ValidationFailedError("Zip had no files");
 
-    // Determine root — flatten single-top-dir wrapper
+    // Determine root — flatten single-top-dir wrapper, or pick preferred subdir
+    // when the pack ships multiple top-level variants (e.g. "Foo/" + "Foo_experimental/").
     let root = stagingBase;
     const topLevelEntries = await fsP.readdir(stagingBase);
-    if (
-      topLevelEntries.length === 1 &&
-      (await fsP.stat(path.join(stagingBase, topLevelEntries[0]!))).isDirectory()
-    ) {
-      const only = path.join(stagingBase, topLevelEntries[0]!);
+    const topDirs: string[] = [];
+    for (const name of topLevelEntries) {
+      if ((await fsP.stat(path.join(stagingBase, name))).isDirectory()) topDirs.push(name);
+    }
+
+    if (topDirs.length === 1) {
+      const only = path.join(stagingBase, topDirs[0]!);
       if (fs.existsSync(path.join(only, "fxmanifest.lua"))) {
         root = only;
+      }
+    } else if (topDirs.length > 1 && preferredSubdir) {
+      // Case-insensitive match against mapping target's basename.
+      const matched = topDirs.find((d) => d.toLowerCase() === preferredSubdir.toLowerCase());
+      if (matched) {
+        const candidate = path.join(stagingBase, matched);
+        if (fs.existsSync(path.join(candidate, "fxmanifest.lua"))) {
+          root = candidate;
+        }
       }
     }
 
     // Validate fxmanifest.lua presence at root
     if (!fs.existsSync(path.join(root, "fxmanifest.lua"))) {
+      const hint =
+        topDirs.length > 1
+          ? ` Multi-root pack (${topDirs.join(", ")}); preferredSubdir='${preferredSubdir ?? "<none>"}'`
+          : "";
       throw new ValidationFailedError(
-        `No fxmanifest.lua at root or inside single-top-dir wrapper`
+        `No fxmanifest.lua at root or inside single-top-dir wrapper.${hint}`
       );
     }
     return { root };

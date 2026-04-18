@@ -7,6 +7,7 @@ import { StateLock } from "../../lib/state/lock.js";
 import { unzipToStaging } from "../../lib/deploy/unzipper.js";
 import { deploy } from "../../lib/deploy/deployer.js";
 import { MappingUnapprovedError, NotFoundError } from "../../lib/errors.js";
+import path from "node:path";
 
 export async function cfx_deploy_asset(
   input: z.infer<typeof DeployAssetInput>
@@ -28,7 +29,11 @@ export async function cfx_deploy_asset(
     if (!stateEntry) throw new NotFoundError(`No cached pack for grantId ${input.grantId}. Run cfx_download_asset first.`);
 
     const dryRun = input.dryRun ?? !stateEntry.deployedAt;
-    const unzip = await unzipToStaging(stateEntry.cachedZipPath, cfg.stagingDir);
+    const unzip = await unzipToStaging(
+      stateEntry.cachedZipPath,
+      cfg.stagingDir,
+      path.basename(entry.target)
+    );
 
     const result = await deploy({
       stagingRoot: unzip.root,
