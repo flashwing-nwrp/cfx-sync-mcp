@@ -2,9 +2,10 @@ node_modules/
 dist/
 .env
 .cookies.json
-state/
-cache/
-staging/
+# Runtime data dirs — root-only so they don't shadow src/lib/state/ etc.
+/state/
+/cache/
+/staging/
 coverage/
 *.log
 .DS_Store
