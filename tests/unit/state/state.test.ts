@@ -70,4 +70,27 @@ describe("State", () => {
     expect(existsSync(tmp)).toBe(false);
     expect(existsSync(path.join(dir, "state.json"))).toBe(true);
   });
+
+  it("throws on malformed JSON (surfaces path in message)", async () => {
+    const file = path.join(dir, "state.json");
+    writeFileSync(file, "{not valid json");
+    const s = new State(dir);
+    await expect(s.load()).rejects.toThrow();
+  });
+
+  it("throws on unknown version with file path in message", async () => {
+    const file = path.join(dir, "state.json");
+    writeFileSync(file, JSON.stringify({ version: 99, assets: {} }));
+    const s = new State(dir);
+    await expect(s.load()).rejects.toThrow(/Unknown state\.json version: 99.*state\.json/);
+  });
+
+  it("cleans up orphaned .tmp file on load", async () => {
+    const file = path.join(dir, "state.json");
+    writeFileSync(file, JSON.stringify({ version: 2, rateLimit: {}, assets: {} }));
+    writeFileSync(file + ".tmp", "stale orphan from prior crash");
+    const s = new State(dir);
+    await s.load();
+    expect(existsSync(file + ".tmp")).toBe(false);
+  });
 });

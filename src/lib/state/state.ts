@@ -60,11 +60,13 @@ export class State {
       const parsed: unknown = JSON.parse(raw);
       if (isV2(parsed)) this.data = parsed;
       else if (isV1(parsed)) this.data = migrateV1ToV2(parsed);
-      else throw new Error(`Unknown state.json version: ${(parsed as Record<string, unknown>)["version"]}`);
+      else throw new Error(`Unknown state.json version: ${(parsed as Record<string, unknown>)?.["version"]} (file: ${this.file})`);
     } catch (e) {
-      const err = e as NodeJS.ErrnoException;
-      if (err.code !== "ENOENT") throw e;
+      if ((e as NodeJS.ErrnoException)?.code === "ENOENT") return;
+      throw e;
     }
+    // Belt-and-suspenders: clean up any orphaned .tmp from a prior crashed save.
+    await fs.unlink(this.file + ".tmp").catch(() => { /* ignore */ });
   }
 
   async save(): Promise<void> {
