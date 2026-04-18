@@ -125,6 +125,80 @@ export class DownloadClient {
     };
   }
 
+  // Fetch from a presigned CDN URL (not portal). Cookies are NOT attached —
+  // presigned URLs carry their own signature in the query string. Accepts any
+  // HTTPS URL (including S3 / scw). Redirects up to MAX_HOPS are still followed
+  // with the same no-cookies rule, since each hop is on the CDN side.
+  async streamPresignedDownload(url: URL): Promise<DownloadStream> {
+    if (url.protocol !== "https:") {
+      throw new InvalidTargetError(
+        `Presigned download URL must be https; got ${url.protocol}`
+      );
+    }
+
+    const MAX_HOPS = 3;
+    let currentUrl = url;
+    let res: Dispatcher.ResponseData | null = null;
+
+    for (let hop = 0; hop < MAX_HOPS; hop++) {
+      // Strictly no cookies on presigned downloads.
+      const headers: Record<string, string> = {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+        "Accept": "application/octet-stream, application/zip, */*",
+      };
+
+      try {
+        res = await undiciRequest(currentUrl, {
+          method: "GET",
+          headers,
+          maxRedirections: 0,
+          headersTimeout: 30_000,
+          bodyTimeout: 0,
+        });
+      } catch (e) {
+        throw new NetworkError(
+          `Presigned download failed at hop ${hop} (${currentUrl.hostname}): ${
+            e instanceof Error ? e.message : String(e)
+          }`
+        );
+      }
+
+      if (res.statusCode < 300 || res.statusCode >= 400) break;
+
+      await res.body.text();
+      const location = res.headers["location"];
+      if (typeof location !== "string") {
+        throw new NetworkError(
+          `Presigned redirect at hop ${hop} had no Location header`
+        );
+      }
+      currentUrl = new URL(location, currentUrl);
+      if (currentUrl.protocol !== "https:") {
+        throw new InvalidTargetError(
+          `Presigned redirect target must be https; got ${currentUrl.protocol}`
+        );
+      }
+    }
+
+    if (!res) throw new NetworkError("No response after presigned redirect chain");
+    if (res.statusCode >= 300 && res.statusCode < 400) {
+      throw new NetworkError(
+        `Presigned redirect chain exceeded ${MAX_HOPS} hops`
+      );
+    }
+
+    const contentLength =
+      typeof res.headers["content-length"] === "string"
+        ? parseInt(res.headers["content-length"] as string, 10)
+        : null;
+    return {
+      statusCode: res.statusCode,
+      contentLength: Number.isFinite(contentLength as number) ? (contentLength as number) : null,
+      body: res.body as unknown as Readable,
+    };
+  }
+
   // Stream-to-disk helper with stall detection used by downloader.ts
   async streamToFile(
     stream: DownloadStream,

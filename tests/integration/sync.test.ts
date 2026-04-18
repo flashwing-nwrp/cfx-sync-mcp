@@ -67,8 +67,17 @@ describe("integration: full sync pipeline", () => {
       .file("qs-inventory/fxmanifest.lua", "name 'qs-inventory'")
       .file("qs-inventory/server.lua", "print('qs-inventory')")
       .generateAsync({ type: "nodebuffer" });
+    // Cfx's 2-hop download: portal returns JSON {success,url}; CDN serves bytes.
     pool
       .intercept({ path: "/v1/asset-grants/1/versions/9001/packs/700/download", method: "GET" })
+      .reply(
+        200,
+        { success: true, url: "https://cdn-test.cfx.re/pack/9001-700.zip?sig=stub" },
+        { headers: { "content-type": "application/json" } }
+      );
+    const cdnPool = mock.get("https://cdn-test.cfx.re");
+    cdnPool
+      .intercept({ path: "/pack/9001-700.zip?sig=stub", method: "GET" })
       .reply(200, zip, { headers: { "content-type": "application/zip" } });
   });
 

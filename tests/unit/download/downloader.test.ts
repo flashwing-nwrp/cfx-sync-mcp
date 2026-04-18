@@ -18,7 +18,7 @@ describe("downloadPack", () => {
       cookieJar: new CookieJar(),
     });
     // Stub streamDownload directly
-    (client as any).streamDownload = async () => ({
+    (client as any).streamPresignedDownload = async () => ({
       statusCode: 200,
       contentLength: 5,
       body: Readable.from(Buffer.from("hello")),
@@ -27,7 +27,7 @@ describe("downloadPack", () => {
     const destination = path.join(dir, "1-1.zip");
     const out = await downloadPack({
       client,
-      url: new URL("https://portal-api.cfx.re/v1/asset-grants/1/versions/1/packs/1/download"),
+      url: new URL("https://content-scw.cfx.re/assets/x/y?sig=stub"),
       cacheFile: destination,
     });
     expect(out.sha256).toBe("2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824");
@@ -40,7 +40,7 @@ describe("downloadPack", () => {
       apiBase: "https://portal-api.cfx.re",
       cookieJar: new CookieJar(),
     });
-    (client as any).streamDownload = async () => ({
+    (client as any).streamPresignedDownload = async () => ({
       statusCode: 200,
       contentLength: null,
       body: new Readable({ read() { this.destroy(new Error("simulated stall")); } }),
@@ -50,7 +50,7 @@ describe("downloadPack", () => {
     await expect(
       downloadPack({
         client,
-        url: new URL("https://portal-api.cfx.re/v1/asset-grants/1/versions/1/packs/1/download"),
+        url: new URL("https://content-scw.cfx.re/assets/x/y?sig=stub"),
         cacheFile: destination,
       })
     ).rejects.toThrow();

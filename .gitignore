@@ -2,6 +2,7 @@ node_modules/
 dist/
 .env
 .cookies.json
+.cookies*
 # Runtime data dirs — root-only so they don't shadow src/lib/state/ etc.
 /state/
 /cache/

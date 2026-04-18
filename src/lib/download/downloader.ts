@@ -22,7 +22,7 @@ export async function downloadPack(opts: DownloadPackOpts): Promise<DownloadResu
   const hash = crypto.createHash("sha256");
   let bytes = 0;
 
-  const stream = await client.streamDownload(url);
+  const stream = await client.streamPresignedDownload(url);
   if (stream.statusCode < 200 || stream.statusCode >= 300) {
     throw new NetworkError(`Download returned status ${stream.statusCode}`);
   }

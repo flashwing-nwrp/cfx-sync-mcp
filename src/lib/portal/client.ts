@@ -1,5 +1,5 @@
 import { GetOnlyClient } from "./getOnlyClient.js";
-import { MeSchema, GrantsResponseSchema } from "./schemas.js";
+import { MeSchema, GrantsResponseSchema, DownloadUrlResponseSchema } from "./schemas.js";
 import type { Me, GrantsResponse } from "./types.js";
 import { CookieJar } from "../auth/cookieJar.js";
 import {
@@ -127,6 +127,26 @@ export class PortalApiClient {
       }
     }
     return { grants: allGrants, page: 1, page_count: pageCount, item_count: itemCount };
+  }
+
+  // Cfx wraps pack downloads in a JSON envelope: portal-api returns
+  // `{success, url}` where `url` is a short-lived presigned CDN URL. Caller
+  // then fetches that URL directly (via DownloadClient.streamPresignedDownload).
+  async getDownloadUrl(
+    grantId: number,
+    versionId: number,
+    packId: number
+  ): Promise<string> {
+    const url = new URL(
+      `/v1/asset-grants/${grantId}/versions/${versionId}/packs/${packId}/download`,
+      this.apiBase
+    );
+    const { body } = await this.request(url);
+    const parsed = DownloadUrlResponseSchema.parse(body);
+    if (!parsed.success) {
+      throw new NetworkError(`Portal /download returned success=false for pack ${packId}`);
+    }
+    return parsed.url;
   }
 }
 

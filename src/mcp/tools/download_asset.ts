@@ -61,12 +61,15 @@ export async function cfx_download_asset(
     // Disk preflight — assume 100MB default upper bound unless we know better
     await checkDiskSpace(cfg.cacheDir, 100 * 1024 * 1024);
 
+    // Cfx uses a 2-hop flow: portal-api returns {success, url} JSON, then
+    // the caller fetches the presigned CDN URL for the actual pack bytes.
+    const presignedUrl = await portal.getDownloadUrl(grant.grant_id, version.id, pack.id);
     const downloadClient = new DownloadClient({ apiBase: cfg.apiBase, cookieJar: jar });
-    const url = new URL(
-      `/v1/asset-grants/${grant.grant_id}/versions/${version.id}/packs/${pack.id}/download`,
-      cfg.apiBase
-    );
-    const out = await downloadPack({ client: downloadClient, url, cacheFile: file });
+    const out = await downloadPack({
+      client: downloadClient,
+      url: new URL(presignedUrl),
+      cacheFile: file,
+    });
 
     // CRITICAL (plan-audit B1): persist the download into state so cfx_deploy_asset
     // can find it. Without this upsert, deploy throws NOT_FOUND even after a

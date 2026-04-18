@@ -41,3 +41,10 @@ export const GrantsResponseSchema = z
     item_count: z.number(),
   })
   .transform(({ grant_transfers: _stripped, ...rest }) => rest);
+
+// Portal `/download` endpoint returns JSON wrapping a presigned S3 URL;
+// the client does a second GET against that URL for the actual pack bytes.
+export const DownloadUrlResponseSchema = z.object({
+  success: z.boolean(),
+  url: z.string().url(),
+});
