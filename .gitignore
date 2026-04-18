@@ -6,6 +6,7 @@ dist/
 /state/
 /cache/
 /staging/
+/.playwright-profile/
 coverage/
 *.log
 .DS_Store

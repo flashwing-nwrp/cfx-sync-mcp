@@ -18,6 +18,7 @@ export async function cfx_login(
       jar,
       apiBase: cfg.apiBase,
       timeoutMs: (input.timeoutMinutes ?? 5) * 60_000,
+      profileDir: cfg.playwrightProfileDir,
     });
     return {
       username: r.username,

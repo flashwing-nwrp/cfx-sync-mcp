@@ -1,7 +1,9 @@
 import fs from "node:fs/promises";
+import fsSync from "node:fs";
+import path from "node:path";
 import { CookieJar } from "./cookieJar.js";
 import { applySecurePerms } from "./fileAuth.js";
-import { PlaywrightNotInstalledError, IoError, NetworkError } from "../errors.js";
+import { PlaywrightNotInstalledError, NetworkError } from "../errors.js";
 import { createLogger } from "../logger.js";
 
 const log = createLogger();
@@ -11,6 +13,10 @@ export interface PlaywrightLoginOpts {
   jar: CookieJar;
   apiBase: string;
   timeoutMs?: number;
+  // Dedicated Chromium profile dir, isolated from user's real Chrome (D12) but
+  // persistent between logins so Cfx doesn't re-trigger email device-verification
+  // on every login. Absence of this arg falls back to a non-persistent context.
+  profileDir?: string;
 }
 
 export interface PlaywrightLoginResult {
@@ -36,11 +42,24 @@ export async function playwrightLogin(opts: PlaywrightLoginOpts): Promise<Playwr
   const { chromium } = await import("playwright");
   const timeoutMs = opts.timeoutMs ?? 5 * 60_000;
 
-  // Non-persistent context — fresh profile, no leak of real Chrome cookies.
-  const browser = await chromium.launch({ headless: false });
+  // D12 (clarified): context is isolated from the user's real Chrome profile.
+  // When profileDir is supplied, we persist THIS dedicated profile between
+  // logins so Cfx's device-verification prompt fires once (first login) rather
+  // than every time. The profile still contains NO data from user's real
+  // Chrome — just this tool's session cookies.
+  const useProfile = typeof opts.profileDir === "string" && opts.profileDir.length > 0;
+  if (useProfile) {
+    // Ensure profile dir exists with 0o700 perms so only the owner can read it.
+    fsSync.mkdirSync(opts.profileDir!, { recursive: true, mode: 0o700 });
+  }
+
+  const context = useProfile
+    ? await chromium.launchPersistentContext(opts.profileDir!, { headless: false })
+    : await (await chromium.launch({ headless: false })).newContext();
+
   try {
-    const context = await browser.newContext();
-    const page = await context.newPage();
+    // Persistent contexts pre-create an about:blank page; reuse it.
+    const page = context.pages()[0] ?? await context.newPage();
     await page.goto("https://portal.cfx.re/login", { waitUntil: "domcontentloaded" });
 
     const deadline = Date.now() + timeoutMs;
@@ -57,7 +76,12 @@ export async function playwrightLogin(opts: PlaywrightLoginOpts): Promise<Playwr
           }
         }
       } catch { /* not yet logged in; keep polling */ }
-      await page.waitForTimeout(2000);
+      try {
+        await page.waitForTimeout(2000);
+      } catch {
+        // Page/context may have been closed manually by operator.
+        break;
+      }
     }
     if (!username) throw new NetworkError(`Timed out waiting for login after ${timeoutMs}ms`);
 
@@ -75,6 +99,19 @@ export async function playwrightLogin(opts: PlaywrightLoginOpts): Promise<Playwr
       expiresAtHint: opts.jar.longestExpiry(),
     };
   } finally {
-    await browser.close();
+    // In persistent-context mode we only have a context (no separate browser
+    // handle). Closing the context closes its underlying browser.
+    await context.close();
+    // Fence: dedicated profile stays on disk between runs by design.
+    // Use `cfx_logout` to clear it (see below).
+    // Avoid path traversal: we only wipe cookies from the jar here, not the profile.
+    void path; // keep import hot for future use
   }
+}
+
+// Helper for cfx_logout to wipe the Playwright profile along with the cookie file.
+export async function wipePlaywrightProfile(profileDir: string): Promise<void> {
+  try {
+    await fs.rm(profileDir, { recursive: true, force: true });
+  } catch { /* ignore */ }
 }

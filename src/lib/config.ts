@@ -12,6 +12,7 @@ export interface Config {
   apiBase: string;
   authMode: AuthMode;
   cookieFile: string;
+  playwrightProfileDir: string;
   serverResources: string;
   stateDir: string;
   cacheDir: string;
@@ -67,6 +68,7 @@ export function loadConfig(): Config {
     apiBase: apiBaseParsed.data,
     authMode: authModeParsed.data,
     cookieFile: resolve(opt("CFX_COOKIE_FILE", "./.cookies.json")),
+    playwrightProfileDir: resolve(opt("CFX_PLAYWRIGHT_PROFILE_DIR", "./.playwright-profile")),
     serverResources: resolve(req("CFX_SERVER_RESOURCES")),
     stateDir: resolve(opt("CFX_STATE_DIR", "./state")),
     cacheDir: resolve(opt("CFX_CACHE_DIR", "./cache")),
