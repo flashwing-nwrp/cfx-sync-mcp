@@ -36,4 +36,18 @@ describe("RateLimitGate", () => {
     const r = gate.evaluate({ callerId: "local", lastPolledAt: old, force: false });
     expect(r.decision).toBe("FRESH");
   });
+
+  it("returns STALE for malformed lastPolledAt (fail closed)", () => {
+    const gate = new RateLimitGate({ ttlMs: 3_600_000, clock });
+    const r = gate.evaluate({ callerId: "local", lastPolledAt: "not-a-date", force: false });
+    expect(r.decision).toBe("STALE");
+    expect(r.ageMs).toBe(null);
+  });
+
+  it("returns STALE for future lastPolledAt (clock skew)", () => {
+    const gate = new RateLimitGate({ ttlMs: 3_600_000, clock });
+    const future = new Date(nowMs + 60_000).toISOString();
+    const r = gate.evaluate({ callerId: "local", lastPolledAt: future, force: false });
+    expect(r.decision).toBe("STALE");
+  });
 });
