@@ -50,6 +50,11 @@ export class Mapping {
     return this.data?.entries[String(grantId)]?.disabled === true;
   }
 
+  /**
+   * Replaces ALL entries wholesale. Prior `disabled` flags are lost — callers
+   * are responsible for merging operator edits against a re-discovered proposal.
+   * The standard flow is: discover → operator reviews+edits JSON → approve.
+   */
   approveFromProposed(entries: Record<string, MappingEntry>): void {
     this.data = {
       version: 1,

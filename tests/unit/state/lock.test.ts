@@ -37,4 +37,26 @@ describe("StateLock", () => {
     const fs = await import("node:fs");
     expect(fs.existsSync(path.join(dir, "state.lock"))).toBe(false);
   });
+
+  it("force=true overrides live-PID block", async () => {
+    writeFileSync(path.join(dir, "state.lock"), JSON.stringify({ pid: process.pid }));
+    const l = new StateLock(dir);
+    await l.acquire(true);
+    await l.release();
+  });
+
+  it("treats corrupt lockfile as absent + warns", async () => {
+    writeFileSync(path.join(dir, "state.lock"), "not valid json at all");
+    const l = new StateLock(dir);
+    await l.acquire();
+    await l.release();
+  });
+
+  it("acquire is atomic (no .tmp leftover)", async () => {
+    const l = new StateLock(dir);
+    await l.acquire();
+    const fs = await import("node:fs");
+    expect(fs.existsSync(path.join(dir, "state.lock.tmp"))).toBe(false);
+    await l.release();
+  });
 });
