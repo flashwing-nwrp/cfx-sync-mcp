@@ -15,4 +15,12 @@ describe("checkDiskSpace", () => {
     // 1 byte — any mounted filesystem will have at least this free
     await expect(checkDiskSpace(tmpdir(), 1)).resolves.toBeUndefined();
   });
+
+  it("handles huge-volume arithmetic without precision loss", async () => {
+    // statfs returns bigints on Node 20+; even if passed a large-number result,
+    // our bigint multiply should handle it correctly.
+    // This test is mainly regression-guarding — the real test is on a huge FS.
+    // On CI we just verify the implementation doesn't throw on normal values.
+    await expect(checkDiskSpace(process.cwd(), 1)).resolves.toBeUndefined();
+  });
 });

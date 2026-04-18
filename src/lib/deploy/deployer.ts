@@ -1,5 +1,4 @@
 import fs from "node:fs/promises";
-import fsSync from "node:fs";
 import path from "node:path";
 import { TargetParentMissingError, IoError, ValidationFailedError } from "../errors.js";
 
@@ -41,6 +40,11 @@ async function copyRecursive(src: string, dst: string): Promise<void> {
   for (const e of entries) {
     const s = path.join(src, e.name);
     const d = path.join(dst, e.name);
+    if (e.isSymbolicLink()) {
+      // Defensive: staging should never contain symlinks (unzipper refuses them).
+      // Encountering one here means something upstream is broken.
+      throw new IoError(`Unexpected symlink in staging: ${s}`);
+    }
     if (e.isDirectory()) await copyRecursive(s, d);
     else if (e.isFile()) await fs.copyFile(s, d);
   }
@@ -59,7 +63,7 @@ async function pruneBackups(slugDir: string, retain: number): Promise<void> {
 export async function deploy(opts: DeployOpts): Promise<DeployResult> {
   const { stagingRoot, targetPath, backupDir, slug, dryRun, backupRetain } = opts;
 
-  if (!fsSync.existsSync(path.join(stagingRoot, "fxmanifest.lua"))) {
+  if (!(await pathExists(path.join(stagingRoot, "fxmanifest.lua")))) {
     throw new ValidationFailedError(`Staging has no fxmanifest.lua at root: ${stagingRoot}`);
   }
 
