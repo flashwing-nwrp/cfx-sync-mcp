@@ -84,4 +84,22 @@ describe("fileAuth", () => {
       expect.anything()
     );
   });
+
+  it("throws IoError on malformed JSON", async () => {
+    writeFileSync(file, "{not valid");
+    const jar = new CookieJar();
+    await expect(loadCookiesFromFile(file, jar)).rejects.toBeInstanceOf(IoError);
+  });
+
+  it("throws IoError on unexpected JSON shape (not array, not {cookies:[]})", async () => {
+    writeFileSync(file, JSON.stringify({ foo: "bar" }));
+    const jar = new CookieJar();
+    await expect(loadCookiesFromFile(file, jar)).rejects.toBeInstanceOf(IoError);
+  });
+
+  it("throws IoError on cookie entry missing required fields", async () => {
+    writeFileSync(file, JSON.stringify([{ name: "session" }])); // missing value + domain
+    const jar = new CookieJar();
+    await expect(loadCookiesFromFile(file, jar)).rejects.toBeInstanceOf(IoError);
+  });
 });

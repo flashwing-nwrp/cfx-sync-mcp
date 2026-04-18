@@ -28,6 +28,15 @@ export async function loadCookiesFromFile(
   } else {
     throw new IoError(`Cookie file has unexpected shape (expected array or { cookies: [...] })`);
   }
+  // Validate each entry has the minimum required fields. Without this,
+  // a corrupt cookie file would silently populate the jar with garbage
+  // and `headerFor` could throw at request time with a confusing error.
+  for (let i = 0; i < cookies.length; i++) {
+    const c = cookies[i] as unknown as Record<string, unknown>;
+    if (!c || typeof c.name !== "string" || typeof c.value !== "string" || typeof c.domain !== "string") {
+      throw new IoError(`Cookie file entry at index ${i} is missing required fields (name, value, domain)`);
+    }
+  }
   jar.replaceAll(cookies);
 }
 
