@@ -56,62 +56,61 @@ export class DownloadClient {
     url: URL,
     rangeStart?: number
   ): Promise<DownloadStream> {
-    // Chain MUST originate on portal-api.cfx.re.
     if (!PORTAL_HOSTS.has(url.hostname)) {
       throw new InvalidTargetError(
         `Download chain must originate on portal-api.cfx.re; got ${url.hostname}`
       );
     }
 
-    const headers = this.buildFollowHeaders(url);
-    if (rangeStart != null && rangeStart > 0) {
-      headers["Range"] = `bytes=${rangeStart}-`;
-    }
+    const MAX_HOPS = 3;
+    let currentUrl = url;
+    let res: Dispatcher.ResponseData | null = null;
 
-    let res: Dispatcher.ResponseData;
-    try {
-      res = await undiciRequest(url, {
-        method: "GET",
-        headers,
-        // Follow portal-api -> CDN redirects automatically, but we rely on
-        // undici's redirect handling to respect host changes. For the
-        // strip-on-redirect invariant we re-issue the request manually on
-        // 3xx to our own boundary logic.
-        maxRedirections: 0,
-        headersTimeout: 30_000,
-        bodyTimeout: 0, // no hard body timeout for large files
-      });
-    } catch (e) {
-      throw new NetworkError(
-        `Download request failed: ${e instanceof Error ? e.message : String(e)}`
-      );
-    }
-
-    // Handle 3xx manually so we can re-build headers (strip cookies off-cfx)
-    if (res.statusCode >= 300 && res.statusCode < 400) {
-      const location = res.headers["location"];
-      if (typeof location !== "string") {
-        throw new NetworkError(`Redirect response had no Location header`);
-      }
-      const nextUrl = new URL(location, url);
-      // One additional hop (follow to CDN). Limit chain depth.
-      const hopHeaders = this.buildFollowHeaders(nextUrl);
+    for (let hop = 0; hop < MAX_HOPS; hop++) {
+      const headers = this.buildFollowHeaders(currentUrl);
       if (rangeStart != null && rangeStart > 0) {
-        hopHeaders["Range"] = `bytes=${rangeStart}-`;
+        headers["Range"] = `bytes=${rangeStart}-`;
       }
+
       try {
-        res = await undiciRequest(nextUrl, {
+        res = await undiciRequest(currentUrl, {
           method: "GET",
-          headers: hopHeaders,
-          maxRedirections: 2, // cap further hops inside CDN
+          headers,
+          maxRedirections: 0,   // NEVER auto-follow — Cookie could leak
           headersTimeout: 30_000,
           bodyTimeout: 0,
         });
       } catch (e) {
         throw new NetworkError(
-          `Download redirect failed: ${e instanceof Error ? e.message : String(e)}`
+          `Download request failed at hop ${hop} (${currentUrl.hostname}): ${
+            e instanceof Error ? e.message : String(e)
+          }`
         );
       }
+
+      // Not a redirect — we're done
+      if (res.statusCode < 300 || res.statusCode >= 400) break;
+
+      // Redirect: drain body, read Location, prepare next hop
+      await res.body.text();
+      const location = res.headers["location"];
+      if (typeof location !== "string") {
+        throw new NetworkError(
+          `Redirect at hop ${hop} (${currentUrl.hostname}) had no Location header`
+        );
+      }
+      currentUrl = new URL(location, currentUrl);
+    }
+
+    if (!res) {
+      throw new NetworkError("No response after redirect chain");
+    }
+
+    // If we exhausted MAX_HOPS and still got a 3xx, reject
+    if (res.statusCode >= 300 && res.statusCode < 400) {
+      throw new NetworkError(
+        `Redirect chain exceeded ${MAX_HOPS} hops; refusing to follow further`
+      );
     }
 
     const contentLength =

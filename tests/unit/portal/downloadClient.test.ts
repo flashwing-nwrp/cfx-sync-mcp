@@ -70,4 +70,93 @@ describe("DownloadClient", () => {
     ) as Record<string, string>;
     expect(follow.Cookie).toMatch(/session=SECRET/);
   });
+
+  it("cookie stripped on hop TO non-cfx.re host (portal-api → CDN)", async () => {
+    const pool = mock.get(PORTAL);
+    pool
+      .intercept({
+        path: "/v1/asset-grants/1/versions/2/packs/3/download",
+        method: "GET",
+      })
+      .reply(302, "", {
+        headers: { location: "https://cdn.example.com/signed?sig=abc" },
+      });
+
+    const cdnPool = mock.get("https://cdn.example.com");
+    // Assert that the incoming Cookie header is NOT set (strict equality)
+    cdnPool
+      .intercept({
+        path: /\/signed/,
+        method: "GET",
+        headers: (h: any) => !("cookie" in h) || !String(h.cookie).includes("SECRET"),
+      })
+      .reply(200, "zipdata");
+
+    const res = await mkClient().streamDownload(
+      new URL(`${PORTAL}/v1/asset-grants/1/versions/2/packs/3/download`)
+    );
+    expect(res.statusCode).toBe(200);
+  });
+
+  it("cookie preserved on hop TO another cfx.re subdomain (portal-api → files.cfx.re)", async () => {
+    const pool = mock.get(PORTAL);
+    pool
+      .intercept({
+        path: "/v1/asset-grants/1/versions/2/packs/3/download",
+        method: "GET",
+      })
+      .reply(302, "", {
+        headers: { location: "https://files.cfx.re/real-download" },
+      });
+
+    const filesPool = mock.get("https://files.cfx.re");
+    filesPool
+      .intercept({
+        path: "/real-download",
+        method: "GET",
+        headers: (h: any) => String(h.cookie || "").includes("SECRET"),
+      })
+      .reply(200, "zipdata");
+
+    const res = await mkClient().streamDownload(
+      new URL(`${PORTAL}/v1/asset-grants/1/versions/2/packs/3/download`)
+    );
+    expect(res.statusCode).toBe(200);
+  });
+
+  it("2-hop chain where second hop crosses to CDN strips cookie on hop 2", async () => {
+    const pool = mock.get(PORTAL);
+    pool
+      .intercept({
+        path: "/v1/asset-grants/1/versions/2/packs/3/download",
+        method: "GET",
+      })
+      .reply(302, "", {
+        headers: { location: "https://files.cfx.re/step1" },
+      });
+
+    const filesPool = mock.get("https://files.cfx.re");
+    filesPool
+      .intercept({
+        path: "/step1",
+        method: "GET",
+        headers: (h: any) => String(h.cookie || "").includes("SECRET"),
+      })
+      .reply(302, "", { headers: { location: "https://cdn.example.com/signed" } });
+
+    const cdnPool = mock.get("https://cdn.example.com");
+    cdnPool
+      .intercept({
+        path: "/signed",
+        method: "GET",
+        // Crucial: Cookie must NOT be present on this hop
+        headers: (h: any) => !("cookie" in h) || !String(h.cookie).includes("SECRET"),
+      })
+      .reply(200, "zipdata");
+
+    const res = await mkClient().streamDownload(
+      new URL(`${PORTAL}/v1/asset-grants/1/versions/2/packs/3/download`)
+    );
+    expect(res.statusCode).toBe(200);
+  });
 });
