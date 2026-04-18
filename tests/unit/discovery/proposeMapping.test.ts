@@ -14,7 +14,7 @@ describe("proposeMapping", () => {
     expect(out.entries).toEqual({});
     expect(out.newInstalls).toEqual([]);
     expect(out.orphaned).toEqual([]);
-    expect(out.caveats).toContain("Grants pre-dating the 2025-10-15 portal migration");
+    expect(out.caveats.some((c) => c.includes("2025-10-15 portal migration"))).toBe(true);
   });
 
   it("populates entries for matched grants", () => {

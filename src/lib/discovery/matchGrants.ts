@@ -1,6 +1,11 @@
 import type { Grant } from "../portal/types.js";
 import type { ResourceMeta } from "./scanResources.js";
 
+const STOPWORDS = new Set([
+  "system", "manager", "script", "core", "pro", "v2", "v3",
+  "mod", "addon", "plus", "lite", "free", "premium",
+]);
+
 export interface MatchedGrant {
   grantId: number;
   matchedPath: string;
@@ -58,10 +63,16 @@ export function matchGrants(grants: Grant[], resources: ResourceMeta[]): MatchGr
   const newInstalls: number[] = [];
   const consumedPaths = new Set<string>();
 
-  for (const g of grants) {
+  // Deterministic output: process grants in ascending grant_id order
+  const sortedGrants = [...grants].sort((a, b) => a.grant_id - b.grant_id);
+
+  for (const g of sortedGrants) {
     const cands: Array<{ path: string; tier: 1 | 2 | 3 | 4; conf: number }> = [];
 
     for (const r of resources) {
+      // Skip if already consumed by a higher-priority (earlier) grant
+      if (consumedPaths.has(r.path)) continue;
+
       // Tier 1: exact folder name
       if (r.folderName === g.asset.name) {
         cands.push({ path: r.path, tier: 1, conf: 1.0 });
@@ -77,17 +88,25 @@ export function matchGrants(grants: Grant[], resources: ResourceMeta[]): MatchGr
         cands.push({ path: r.path, tier: 2, conf: 1.0 });
         continue;
       }
-      // Tier 3: author + name token overlap
+      // Tier 3: author + name token overlap. Require overlap ≥ 2 distinct
+      // meaningful tokens OR overlap ≥ 1 token where that token is length ≥ 4
+      // (filters out `qs`, `cd`, `flrp` namespace prefixes).
       if (r.author && g.asset.author) {
         const aAuthor = normalize(g.asset.author);
         const bAuthor = normalize(r.author);
         const authorHit = aAuthor === bAuthor || aAuthor.includes(bAuthor) || bAuthor.includes(aAuthor);
         if (authorHit) {
-          const overlap = [...tokens(g.asset.name)].filter((t) => tokens(r.folderName).has(t)).length;
-          if (overlap >= 1) cands.push({ path: r.path, tier: 3, conf: 0.85 });
+          const grantTokens = tokens(g.asset.name);
+          const folderTokens = tokens(r.folderName);
+          const shared = [...grantTokens].filter((t) => folderTokens.has(t));
+          const meaningfulOverlap = shared.filter((t) => t.length >= 4).length;
+          const totalOverlap = shared.length;
+          if (totalOverlap >= 2 || meaningfulOverlap >= 1) {
+            cands.push({ path: r.path, tier: 3, conf: 0.85 });
+          }
         }
       }
-      // Tier 4: Levenshtein ≥ 0.8 OR token-subset (folder tokens ⊆ grant tokens)
+      // Tier 4a: Levenshtein ≥ 0.8
       const simFolder = similarity(slugGrant, normalize(r.folderName));
       const simManifest = r.fxmanifestName
         ? similarity(slugGrant, normalize(r.fxmanifestName))
@@ -96,17 +115,22 @@ export function matchGrants(grants: Grant[], resources: ResourceMeta[]): MatchGr
       if (sim >= 0.8) {
         cands.push({ path: r.path, tier: 4, conf: sim });
       } else {
-        // Token-subset fallback: all folder-name tokens appear in grant name tokens
-        const folderToks = tokens(r.folderName);
-        const grantToks = tokens(g.asset.name);
-        if (folderToks.size >= 2 && [...folderToks].every((t) => grantToks.has(t))) {
-          const conf = folderToks.size / (grantToks.size || 1);
-          cands.push({ path: r.path, tier: 4, conf });
+        // Tier 4b: folder-token subset of grant-tokens (excluding stopwords).
+        // Catches "Renewed Banking System" vs "Renewed-Banking" type cases.
+        // Cap confidence at 0.7 — this tier is structurally fuzzier.
+        const grantTokens = [...tokens(g.asset.name)].filter((t) => !STOPWORDS.has(t));
+        const folderTokens = [...tokens(r.folderName)].filter((t) => !STOPWORDS.has(t));
+        if (folderTokens.length >= 2 && grantTokens.length >= folderTokens.length) {
+          const isSubset = folderTokens.every((t) => grantTokens.includes(t));
+          if (isSubset) {
+            cands.push({ path: r.path, tier: 4, conf: 0.7 });
+          }
         }
       }
     }
 
-    cands.sort((a, b) => a.tier - b.tier || b.conf - a.conf);
+    // Stable sort: tier asc, conf desc, path asc (tiebreak)
+    cands.sort((a, b) => a.tier - b.tier || b.conf - a.conf || a.path.localeCompare(b.path));
     const best = cands[0];
     if (!best) { newInstalls.push(g.grant_id); continue; }
 

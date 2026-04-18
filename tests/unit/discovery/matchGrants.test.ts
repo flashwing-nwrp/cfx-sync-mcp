@@ -63,4 +63,37 @@ describe("matchGrants", () => {
     const result = matchGrants([], [mkRes("flrp_custom", "flrp_custom", "Flashwing", false)]);
     expect(result.orphaned).toEqual([]);
   });
+
+  it("Tier 3 does NOT match on single short namespace token (qs, cd, flrp)", () => {
+    const g = [mkGrant(10, "QS Housing", "Quasar")];
+    const r = [mkRes("qs_other_resource", "qs_other_resource", "Quasar")];  // shares only "qs"
+    const result = matchGrants(g, r);
+    // qs is length 2, not meaningful — should not match tier 3 solely on "qs"
+    // Still might match tier 4 via Levenshtein, but NOT tier 3
+    const match = result.matches[0];
+    if (match) {
+      expect(match.matchTier).not.toBe(3);
+    }
+  });
+
+  it("Tier 4 token-subset does NOT match on stopword-only overlap", () => {
+    const g = [mkGrant(11, "Banking System")];
+    const r = [mkRes("housing_system", "housing_system", "whoever")];
+    const result = matchGrants(g, r);
+    // Only shared token is "system" — a stopword. Should not match.
+    expect(result.matches.length).toBe(0);
+    expect(result.newInstalls).toEqual([11]);
+  });
+
+  it("first grant wins in path contention", () => {
+    const g = [
+      mkGrant(1, "qs-inventory"),  // will match tier 1
+      mkGrant(2, "qs-inventory"),  // duplicate name — would also match, but first wins
+    ];
+    const r = [mkRes("qs-inventory", "QS Inventory", "Quasar")];
+    const result = matchGrants(g, r);
+    expect(result.matches.length).toBe(1);
+    expect(result.matches[0]!.grantId).toBe(1);
+    expect(result.newInstalls).toEqual([2]);
+  });
 });

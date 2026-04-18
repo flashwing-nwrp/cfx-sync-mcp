@@ -37,10 +37,7 @@ export function proposeMapping(match: MatchGrantsResult, grants: Grant[]): Propo
     newInstalls: match.newInstalls,
     orphaned: match.orphaned,
     caveats: [
-      // NOTE: the first entry is intentionally terse — tests match on this exact prefix string.
-      // The follow-up sentence provides actionable guidance for human operators.
-      "Grants pre-dating the 2025-10-15 portal migration",
-      "may not be visible via this API — check the portal UI for any assets not listed here.",
+      "Grants pre-dating the 2025-10-15 portal migration may not be visible via this API. Check the portal UI for any assets not listed here.",
     ],
   };
 }
