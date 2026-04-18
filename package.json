@@ -28,9 +28,11 @@
   },
   "devDependencies": {
     "@types/node": "20.14.0",
+    "@types/yauzl-promise": "4.0.1",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
     "eslint": "8.57.0",
+    "jszip": "3.10.1",
     "tsx": "4.16.0",
     "typescript": "5.5.4",
     "vitest": "3.2.4"
