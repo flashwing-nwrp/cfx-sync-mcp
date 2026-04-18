@@ -68,4 +68,31 @@ describe("unzipToStaging", () => {
       unzipToStaging(cache, path.join(tmp, "staging"))
     ).rejects.toBeInstanceOf(ValidationFailedError);
   });
+
+  it("cleans up staging dir when extraction fails mid-loop (zip-slip after valid entries)", async () => {
+    const buf = await buildZip({
+      "fxmanifest.lua": "name 'foo'",
+      "client.lua": "x",
+      "../../escape.lua": "bad",
+    });
+    writeFileSync(cache, buf);
+    const stagingRoot = path.join(tmp, "staging");
+    await expect(unzipToStaging(cache, stagingRoot)).rejects.toThrow();
+    // Staging root should be empty — extract-* dir from the partial run was cleaned up
+    const { readdirSync, existsSync } = await import("node:fs");
+    const entries = existsSync(stagingRoot) ? readdirSync(stagingRoot) : [];
+    expect(entries).toEqual([]);
+  });
+
+  it("cleans up staging when zip has top-dir without fxmanifest.lua", async () => {
+    const buf = await buildZip({
+      "wrapper/notmanifest.lua": "no",
+    });
+    writeFileSync(cache, buf);
+    const stagingRoot = path.join(tmp, "staging");
+    await expect(unzipToStaging(cache, stagingRoot)).rejects.toThrow();
+    const { readdirSync, existsSync } = await import("node:fs");
+    const entries = existsSync(stagingRoot) ? readdirSync(stagingRoot) : [];
+    expect(entries).toEqual([]);
+  });
 });
