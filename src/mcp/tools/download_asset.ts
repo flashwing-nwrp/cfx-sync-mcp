@@ -88,6 +88,11 @@ export async function cfx_download_asset(
       deployedPath: prior?.deployedPath ?? "",
       deployedAt: prior?.deployedAt ?? "",
       backups: prior?.backups ?? [],
+      // v3: pristine baseline fields — preserve from prior if present; download
+      // alone doesn't establish a baseline (that happens on first deploy).
+      pristineVersionId: prior?.pristineVersionId ?? null,
+      pristineCapturedAt: prior?.pristineCapturedAt ?? null,
+      pristineHashes: prior?.pristineHashes ?? null,
     });
     await state.save();
 
