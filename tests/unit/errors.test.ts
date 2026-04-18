@@ -23,6 +23,12 @@ import {
   ForbiddenError,
   PortalRateLimitError,
   ConfigError,
+  StateSchemaTooNewError,
+  CaseCollisionDetectedError,
+  EncryptedTamperDetectedError,
+  PristineCorruptedError,
+  ConflictsUnresolvedError,
+  DeployInterruptedError,
 } from "../../src/lib/errors.js";
 
 describe("CfxError base class", () => {
@@ -47,7 +53,7 @@ describe("CfxError base class", () => {
   });
 });
 
-describe("All 22 error classes exist and have unique codes", () => {
+describe("All 28 error classes exist and have unique codes", () => {
   const classes = [
     AuthExpiredError, AuthMissingError, InvalidTargetError, ForbiddenEndpointError,
     MappingUnapprovedError, NotFoundError, AmbiguousSlugError, ValidationFailedError,
@@ -55,6 +61,8 @@ describe("All 22 error classes exist and have unique codes", () => {
     StallTimeoutError, UnknownLayoutError, PlaywrightNotInstalledError,
     PortalDisabledError, NetworkError, IoError, LockHeldError, RateLimitedError,
     ForbiddenError, PortalRateLimitError, ConfigError,
+    StateSchemaTooNewError, CaseCollisionDetectedError, EncryptedTamperDetectedError,
+    PristineCorruptedError, ConflictsUnresolvedError, DeployInterruptedError,
   ];
   it("all instantiate without args (except dynamic-message ones)", () => {
     const codes = new Set<string>();

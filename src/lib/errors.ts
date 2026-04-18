@@ -7,7 +7,10 @@ export type CfxErrorCode =
   | "UNKNOWN_LAYOUT" | "PLAYWRIGHT_NOT_INSTALLED"
   | "PORTAL_DISABLED"
   | "NETWORK" | "IO" | "LOCK_HELD" | "RATE_LIMITED" | "CONFIG"
-  | "FORBIDDEN" | "PORTAL_RATE_LIMIT";
+  | "FORBIDDEN" | "PORTAL_RATE_LIMIT"
+  | "STATE_SCHEMA_TOO_NEW" | "CASE_COLLISION_DETECTED"
+  | "ENCRYPTED_TAMPER_DETECTED" | "PRISTINE_CORRUPTED"
+  | "CONFLICTS_UNRESOLVED" | "DEPLOY_INTERRUPTED";
 
 export interface CfxErrorEnvelope {
   success: false;
@@ -184,4 +187,91 @@ export class PortalRateLimitError extends CfxError {
 }
 export class ConfigError extends CfxError {
   constructor(message: string) { super("CONFIG", message, "Fix .env or env vars."); }
+}
+
+// --- Phase 1.5 (preservation) errors ---------------------------------------
+
+export class StateSchemaTooNewError extends CfxError {
+  readonly onDiskVersion: number;
+  readonly codeVersion: number;
+  readonly requiredBinary: string;
+  constructor(onDiskVersion: number, codeVersion: number, requiredBinary: string) {
+    super(
+      "STATE_SCHEMA_TOO_NEW",
+      `State schema on disk is version ${onDiskVersion}, but this binary only understands up to version ${codeVersion}. Requires ${requiredBinary}.`,
+      `Upgrade the binary to at least ${requiredBinary} (schema version ${onDiskVersion}) before continuing.`
+    );
+    this.onDiskVersion = onDiskVersion;
+    this.codeVersion = codeVersion;
+    this.requiredBinary = requiredBinary;
+  }
+}
+
+export class CaseCollisionDetectedError extends CfxError {
+  readonly pathA: string;
+  readonly pathB: string;
+  constructor(pathA: string, pathB: string = "") {
+    super(
+      "CASE_COLLISION_DETECTED",
+      `Case-insensitive collision between "${pathA}" and "${pathB}" — both map to the same deploy target on Windows/macOS.`,
+      "Rename one locally to resolve; deploy is case-safe only with distinct lowercase paths."
+    );
+    this.pathA = pathA;
+    this.pathB = pathB;
+  }
+}
+
+export class EncryptedTamperDetectedError extends CfxError {
+  readonly path: string;
+  constructor(path: string) {
+    super(
+      "ENCRYPTED_TAMPER_DETECTED",
+      `Encrypted file has been modified since last deploy: ${path}`,
+      "Run cfx_reset_pristine <grantId> to re-baseline, or cfx_rollback to restore from backup."
+    );
+    this.path = path;
+  }
+}
+
+export class PristineCorruptedError extends CfxError {
+  readonly grantId: number | string;
+  readonly reason: string;
+  constructor(grantId: number | string, reason: string = "pristine dir missing or hashes don't match state.json") {
+    super(
+      "PRISTINE_CORRUPTED",
+      `Pristine baseline for grant ${grantId} is corrupted: ${reason}`,
+      `Run cfx_reset_pristine ${grantId}; next deploy will treat as first-deploy.`
+    );
+    this.grantId = grantId;
+    this.reason = reason;
+  }
+}
+
+export class ConflictsUnresolvedError extends CfxError {
+  readonly paths: string[];
+  constructor(paths: string[] | string = []) {
+    const list = Array.isArray(paths) ? paths : [paths];
+    super(
+      "CONFLICTS_UNRESOLVED",
+      list.length > 0
+        ? `Deploy plan has ${list.length} unresolved conflict(s): ${list.join(", ")}`
+        : `Deploy plan has unresolved conflicts.`,
+      "Pass conflictResolutions {path: resolution} to deploy — one entry per conflicting path (resolution = 'keep-local' | 'take-upstream' | 'merge')."
+    );
+    this.paths = list;
+  }
+}
+
+export class DeployInterruptedError extends CfxError {
+  readonly stagingPath: string;
+  readonly backupPath: string;
+  constructor(stagingPath: string, backupPath: string = "") {
+    super(
+      "DEPLOY_INTERRUPTED",
+      `Deploy was interrupted mid-swap; partial state detected (staging=${stagingPath}, backup=${backupPath}).`,
+      `Inspect ${stagingPath} and ${backupPath}; resume manually or run cfx_rollback.`
+    );
+    this.stagingPath = stagingPath;
+    this.backupPath = backupPath;
+  }
 }
