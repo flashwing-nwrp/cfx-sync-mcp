@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { TOOLS, toolNames } from "../../../src/mcp/tools/index.js";
+import { dispatch } from "../../../src/mcp/dispatch.js";
 
 describe("MCP tool registry", () => {
   it("exports exactly 13 tools", () => {
@@ -28,6 +29,14 @@ describe("MCP tool registry", () => {
     for (const t of TOOLS) {
       expect(t.inputSchema).toBeDefined();
       expect(t.outputSchema).toBeDefined();
+    }
+  });
+
+  it("dispatch handler exists for every registered tool", async () => {
+    for (const name of toolNames()) {
+      await expect(dispatch(name, {})).rejects.not.toThrow(
+        new Error(`Unknown tool "${name}"`)
+      );
     }
   });
 });
