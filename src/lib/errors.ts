@@ -10,7 +10,8 @@ export type CfxErrorCode =
   | "FORBIDDEN" | "PORTAL_RATE_LIMIT"
   | "STATE_SCHEMA_TOO_NEW" | "CASE_COLLISION_DETECTED"
   | "ENCRYPTED_TAMPER_DETECTED" | "PRISTINE_CORRUPTED"
-  | "CONFLICTS_UNRESOLVED" | "DEPLOY_INTERRUPTED";
+  | "CONFLICTS_UNRESOLVED" | "DEPLOY_INTERRUPTED"
+  | "PATH_TOO_LONG";
 
 export interface CfxErrorEnvelope {
   success: false;
@@ -273,5 +274,27 @@ export class DeployInterruptedError extends CfxError {
     );
     this.stagingPath = stagingPath;
     this.backupPath = backupPath;
+  }
+}
+
+/**
+ * Windows MAX_PATH preflight guard. Raised by deploy_asset BEFORE any
+ * filesystem mutation when a pack entry's eventual deploy path would exceed
+ * the platform's maximum path length (260 chars on Windows without the
+ * long-path-aware manifest / registry opt-in). Never raised on non-Windows.
+ */
+export class PathTooLongError extends CfxError {
+  readonly path: string;
+  readonly length: number;
+  readonly limit: number;
+  constructor(pathStr: string, length: number, limit: number) {
+    super(
+      "PATH_TOO_LONG",
+      `Path exceeds maximum length (${length} > ${limit}): ${pathStr}. On Windows, enable long-path support OR move CFX_STATE_DIR to a shorter root.`,
+      "Enable Windows long-path support (LongPathsEnabled registry key + app manifest) OR set CFX_STATE_DIR / CFX_SERVER_RESOURCES to a shorter root."
+    );
+    this.path = pathStr;
+    this.length = length;
+    this.limit = limit;
   }
 }

@@ -42,7 +42,7 @@ import * as JSZipModule from "jszip";
 import { cfx_deploy_asset } from "../../src/mcp/tools/deploy_asset.js";
 import type { AssetState } from "../../src/lib/state/state.js";
 import type { MappingFile, MappingEntry } from "../../src/lib/state/mapping.js";
-import { LockHeldError } from "../../src/lib/errors.js";
+import { LockHeldError, PathTooLongError } from "../../src/lib/errors.js";
 import { StateLock } from "../../src/lib/state/lock.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -483,14 +483,14 @@ describe("integration: Task 18 — failure-recovery scenarios", () => {
   // `<stateDir>/pristine/<grantId>/<pack-rel-path>` — for a deeply nested
   // pack this can blow past MAX_PATH without long-path awareness.
   //
-  // Acceptance: either deploy succeeds (longPathAware manifest / enabled) OR
-  // deploy throws a typed PATH_TOO_LONG error BEFORE any writes. It must
-  // never leave partial garbage.
+  // Acceptance (tightened post-gap-#3): deploy throws a typed PathTooLongError
+  // BEFORE any filesystem mutation of the live target. No partial writes.
+  // A raw ENAMETOOLONG/EIO is a regression (gap re-opened).
   //
   // Windows-only; skip on Linux/macOS where longpaths are trivial.
   // -------------------------------------------------------------------------
   describe.skipIf(process.platform !== "win32")("Scenario 3: Windows path length", () => {
-    it("deploy into long state path either succeeds (longPathAware) or throws fast without writes", async () => {
+    it("deploy throws typed PathTooLongError and writes nothing to the live target", async () => {
       // Build a long-prefixed fixture by nesting mkdtemp underneath a chain
       // of 40-char dirs. Total prefix ~260 chars, so any pack with a
       // 6-deep internal path trivially exceeds MAX_PATH.
@@ -532,34 +532,30 @@ describe("integration: Task 18 — failure-recovery scenarios", () => {
       writeMapping(longF.stateDir, { [String(grantId)]: makeEntry(longF.target) });
       writeState(longF.stateDir, [makeAssetState(grantId, zipPath, longF.target)]);
 
-      let threw = false;
+      let caught: unknown = null;
       try {
         await cfx_deploy_asset({ grantId, dryRun: false });
       } catch (err) {
-        threw = true;
-        // If it threw, the error must be a typed CfxError — not a raw ENAMETOOLONG.
-        // Production code currently has no PATH_TOO_LONG error code, so any
-        // throw here is probably a raw fs error. We accept either: success
-        // (longpath-aware) or typed error. A raw ENAMETOOLONG is a gap — see
-        // report.
-        const msg = (err as Error).message;
-        // Document-only: assert the error surfaced SOMETHING recognizable.
-        expect(msg.length).toBeGreaterThan(0);
+        caught = err;
       }
 
-      if (!threw) {
-        // Succeeded → live is populated.
-        expect(existsSync(path.join(longF.target, "fxmanifest.lua"))).toBe(true);
-      } else {
-        // Failed → live must not exist OR must be in a consistent pre-deploy
-        // state. This is the "no partial garbage" guarantee.
-        // We seeded no live, so target should either be absent or empty.
-        if (existsSync(longF.target)) {
-          const entries = readdirSync(longF.target);
-          // Acceptable only if nothing was written.
-          expect(entries).toEqual([]);
-        }
-      }
+      // Must throw the typed preflight error — never a raw ENAMETOOLONG/EIO.
+      expect(caught).toBeInstanceOf(PathTooLongError);
+      const pathErr = caught as PathTooLongError;
+      expect(pathErr.code).toBe("PATH_TOO_LONG");
+      expect(pathErr.length).toBeGreaterThan(260);
+      expect(pathErr.limit).toBe(260);
+      // `path` field matches the length field reported by the error — projected
+      // live path, not the pack-relative one.
+      expect(pathErr.path.length).toBe(pathErr.length);
+      expect(pathErr.hint ?? "").toMatch(/long-path|CFX_STATE_DIR/i);
+
+      // No files written to the live target. Preflight fires AFTER unzip but
+      // BEFORE applyPlan/deploy, so live must be absent (we never seeded it).
+      expect(existsSync(longF.target)).toBe(false);
+      // State was not mutated — deployedAt remains "".
+      const stateAfter = readState(longF.stateDir).assets[String(grantId)]!;
+      expect(stateAfter.deployedAt).toBe("");
 
       rmSync(root, { recursive: true, force: true });
     });

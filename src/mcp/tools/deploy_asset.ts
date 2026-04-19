@@ -41,6 +41,7 @@ import { Mapping, type MappingEntry } from "../../lib/state/mapping.js";
 import { StateLock } from "../../lib/state/lock.js";
 import { unzipToStaging } from "../../lib/deploy/unzipper.js";
 import { deploy } from "../../lib/deploy/deployer.js";
+import { checkPathLengths } from "../../lib/deploy/preflight.js";
 import { hashTree } from "../../lib/preservation/hashTree.js";
 import { findRenames } from "../../lib/preservation/renameDetection.js";
 import { detectCaseCollisions } from "../../lib/preservation/caseDetection.js";
@@ -93,6 +94,17 @@ export async function cfx_deploy_asset(input: Input): Promise<Output> {
       cfg.stagingDir,
       path.basename(entry.target)
     );
+
+    try {
+      // -- Step 2.5: path-length preflight (Windows only, no-op elsewhere) -
+      // Fail fast with PathTooLongError BEFORE any filesystem mutation so the
+      // operator sees a typed hint instead of a torn deploy with raw ENAMETOOLONG
+      // or EIO from a half-completed fs.rename / fs.writeFile.
+      await checkPathLengths(unzip.root, entry.target);
+    } catch (err) {
+      await fsP.rm(unzip.root, { recursive: true, force: true }).catch(() => {});
+      throw err;
+    }
 
     // -- Step 3: decide which path to take ---------------------------------
     //   legacy:       preservation off OR no way to do Layer 2
