@@ -42,8 +42,10 @@ import * as JSZipModule from "jszip";
 import { cfx_deploy_asset } from "../../src/mcp/tools/deploy_asset.js";
 import type { AssetState } from "../../src/lib/state/state.js";
 import type { MappingFile, MappingEntry } from "../../src/lib/state/mapping.js";
-import { LockHeldError, PathTooLongError } from "../../src/lib/errors.js";
+import { LockHeldError, PathTooLongError, DeployInterruptedError } from "../../src/lib/errors.js";
 import { StateLock } from "../../src/lib/state/lock.js";
+import { cfx_rollback } from "../../src/mcp/tools/rollback.js";
+import { markerPath, readInFlightMarker } from "../../src/lib/deploy/inFlight.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const JSZip: any = (JSZipModule as any).default ?? JSZipModule;
@@ -238,7 +240,7 @@ describe("integration: Task 18 — failure-recovery scenarios", () => {
   // behavior. Acceptance: deploy either completes cleanly OR throws a typed
   // DeployInterruptedError that names the staging + backup paths.
   // -------------------------------------------------------------------------
-  it("Scenario 1: partial deploy (backup done, staging→live incomplete) — recovery", async () => {
+  it("Scenario 1: partial deploy (backup done, staging→live incomplete) — marker + DeployInterruptedError + rollback recovery", async () => {
     setupEnv(f);
 
     // Start from a first-deploy world so the swap path is exercised (target
@@ -258,19 +260,13 @@ describe("integration: Task 18 — failure-recovery scenarios", () => {
       }),
     ]);
 
-    // Inject failure: on the 2nd call whose destination equals `entry.target`
-    // (the staging→live rename), throw. The 1st call with that destination
-    // is... wait: actually, the FIRST rename in deploy() has `src=targetPath,
-    // dst=backupResourcePath` — destination is NOT targetPath. The SECOND
-    // rename has `src=stagingRoot, dst=targetPath`. So we match on
-    // destination == f.target, first hit.
+    // Inject failure on the staging→live rename (dst === entry.target).
     const realRename = fsP.rename.bind(fsP);
     const renameSpy = vi.spyOn(fsP, "rename").mockImplementation(async (src, dst) => {
       if (String(dst) === f.target) {
-        // Simulate process kill mid-swap. Throw a synthetic IO error that
-        // deploy() will surface. The live dir is gone (renamed away in step 1),
-        // staging is still in place (we never completed the 2nd rename),
-        // backup has content + manifest.
+        // Simulate process kill mid-swap. Live is already renamed away to
+        // backup, staging is still in place, marker is on disk, manifest is
+        // written. All that's missing is the final rename.
         throw Object.assign(new Error("SIMULATED_CRASH: process killed mid-swap"), {
           code: "EIO",
         });
@@ -278,7 +274,7 @@ describe("integration: Task 18 — failure-recovery scenarios", () => {
       return realRename(src, dst);
     });
 
-    // First call — fails inside deploy(). The original error propagates.
+    // First call — fails inside deploy(). The synthetic error propagates.
     await expect(cfx_deploy_asset({ grantId, dryRun: false })).rejects.toThrow(
       /SIMULATED_CRASH|mid-swap/
     );
@@ -294,47 +290,61 @@ describe("integration: Task 18 — failure-recovery scenarios", () => {
     const backupResource = path.join(slugBackupDir, backupIso, "resource");
     expect(existsSync(backupResource)).toBe(true);
     expect(readFileSync(path.join(backupResource, "fxmanifest.lua"), "utf8")).toBe("v1");
-    // The staging extract dir is also still on disk (the catch in
-    // deploy_asset's try/catch fires rm of unzip.root — but its rename failed
-    // AFTER the unzip succeeded, so staging dir is indeed removed as cleanup.
-    // We can't easily assert its path here; the interesting assertion is
-    // below — that recovery produces a consistent world.)
 
-    // Drop the patch and re-run. The second deploy sees:
-    //   - entry.target missing → hashTreeIfExists returns empty
-    //   - state still has pristineHashes=null (first-deploy flow)
-    //   - stateEntry.cachedZipPath still points at the valid pack zip
-    // Expected behavior: deploy completes successfully, live is populated,
-    // and we don't double-throw.
-    //
-    // ACCEPTANCE: either we throw DeployInterruptedError with staging+backup
-    // paths (explicit recovery prompt) OR we silently complete the swap
-    // (implicit recovery). The spec's wording is "resume swap OR throw
-    // DeployInterruptedError". The current implementation does NEITHER
-    // explicitly — it silently re-deploys because hashTreeIfExists handles
-    // the missing live dir. That's functionally a resume, but it doesn't
-    // reconcile the orphan backup from the aborted run.
+    // NEW: the in-flight marker must exist, with the paths the crashed deploy
+    // used. This is the breadcrumb that makes the next entry detect the torn
+    // state explicitly instead of silently re-running as first-deploy.
+    const expectedMarkerPath = markerPath(f.stateDir, grantId);
+    expect(existsSync(expectedMarkerPath)).toBe(true);
+    const marker = await readInFlightMarker(f.stateDir, grantId);
+    expect(marker).not.toBeNull();
+    expect(marker!.grantId).toBe(grantId);
+    expect(marker!.backupPath).toBe(path.join(slugBackupDir, backupIso));
+    expect(marker!.stagingPath).toMatch(/my_asset/);
+    expect(marker!.startedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+
+    // Drop the patch. Retry deploy — must throw DeployInterruptedError
+    // (NOT silently re-run as a fresh first-deploy). This is the explicit
+    // recovery prompt the operator needs.
     renameSpy.mockRestore();
 
-    const recoverResult = await cfx_deploy_asset({ grantId, dryRun: false });
+    let caught: unknown = null;
+    try {
+      await cfx_deploy_asset({ grantId, dryRun: false });
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).toBeInstanceOf(DeployInterruptedError);
+    const die = caught as DeployInterruptedError;
+    expect(die.code).toBe("DEPLOY_INTERRUPTED");
+    expect(die.grantId).toBe(grantId);
+    expect(die.backupPath).toBe(path.join(slugBackupDir, backupIso));
+    expect(die.markerPath).toBe(expectedMarkerPath);
+    expect(die.hint ?? "").toMatch(/cfx_rollback/);
 
-    // Recovery succeeded — live is populated with v2 content.
+    // Live is still missing and state still reflects pre-crash (save never ran).
+    expect(existsSync(f.target)).toBe(false);
+
+    // Operator runs cfx_rollback — restores the pre-crash live AND clears
+    // the marker.
+    const rb = await cfx_rollback({ grantId, toTimestamp: backupIso });
+    expect(rb.restoredPath).toBe(f.target);
+    // Live is back to v1.
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v1");
+    // Marker is cleared — no longer in flight.
+    expect(existsSync(expectedMarkerPath)).toBe(false);
+    expect(await readInFlightMarker(f.stateDir, grantId)).toBeNull();
+
+    // Now retry deploy — must succeed cleanly.
+    const recoverResult = await cfx_deploy_asset({ grantId, dryRun: false });
+    expect(recoverResult.preservationMode).toBe("first-deploy");
     expect(existsSync(f.target)).toBe(true);
     expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v2");
+    // Marker is still absent after successful completion.
+    expect(existsSync(expectedMarkerPath)).toBe(false);
     // State was updated with the successful deploy.
     const stateAfter = readState(f.stateDir).assets[String(grantId)]!;
     expect(stateAfter.deployedAt).not.toBe("");
-    // preservationMode will be "first-deploy" again since pristineHashes was
-    // still null after the aborted run (state was never saved).
-    expect(recoverResult.preservationMode).toBe("first-deploy");
-    // The orphan backup from the crashed attempt is still on disk — it
-    // wasn't rolled up into this deploy's backup chain. This is a GAP in
-    // the recovery story: the crashed backup is effectively orphaned and
-    // will only be cleaned by the retain policy over time. See report.
-    const backupIsosAfter = readdirSync(slugBackupDir);
-    // Recovery created at most one new backup; the crashed one survives
-    // (either as the sole backup or alongside it).
-    expect(backupIsosAfter.length).toBeGreaterThanOrEqual(1);
   });
 
   // -------------------------------------------------------------------------

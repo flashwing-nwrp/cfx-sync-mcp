@@ -54,8 +54,10 @@ import {
   NotFoundError,
   ConflictsUnresolvedError,
   CaseCollisionDetectedError,
+  DeployInterruptedError,
   EncryptedTamperDetectedError,
 } from "../../lib/errors.js";
+import { readInFlightMarker, markerPath } from "../../lib/deploy/inFlight.js";
 import type { DeployPlan, PlanRow, ValidationFailure, ResolutionChoice } from "../../lib/preservation/types.js";
 
 type Input = z.infer<typeof DeployAssetInput>;
@@ -67,6 +69,23 @@ export async function cfx_deploy_asset(input: Input): Promise<Output> {
   const lock = new StateLock(cfg.stateDir);
   await lock.acquire();
   try {
+    // -- Step 0: in-flight marker check ------------------------------------
+    // If a prior deploy of this grantId was killed mid-swap, the marker
+    // survived and the filesystem is in a torn state (live missing, backup
+    // present, maybe staging orphan). Refuse to silently re-run as a fresh
+    // first-deploy — the operator needs to decide between rollback and manual
+    // resolution. The marker itself is not cleared here; cfx_rollback clears
+    // it on successful rollback.
+    const marker = await readInFlightMarker(cfg.stateDir, input.grantId);
+    if (marker) {
+      throw new DeployInterruptedError(
+        marker.grantId,
+        marker.stagingPath,
+        marker.backupPath,
+        markerPath(cfg.stateDir, marker.grantId)
+      );
+    }
+
     // -- Step 1: load state + mapping --------------------------------------
     const state = new State(cfg.stateDir);
     await state.load();
@@ -169,6 +188,8 @@ async function runLegacy(ctx: PathCtx): Promise<Output> {
     slug: entry.slug,
     dryRun,
     backupRetain: cfg.backupRetain,
+    stateDir: cfg.stateDir,
+    grantId: stateEntry.grantId,
     // No pristine opts — we're not tracking pristine in this mode.
   });
 
@@ -227,6 +248,8 @@ async function runFirstDeploy(ctx: PathCtx): Promise<Output> {
     slug: entry.slug,
     dryRun,
     backupRetain: cfg.backupRetain,
+    stateDir: cfg.stateDir,
+    grantId: stateEntry.grantId,
     // Pristine opts included so the backup manifest schema is consistent, but
     // currentPristineVersionId=null tells deploy() "no prior pristine to snapshot".
     pristine: {
@@ -396,6 +419,8 @@ async function runLayer2(
     slug: entry.slug,
     dryRun: false,
     backupRetain: cfg.backupRetain,
+    stateDir: cfg.stateDir,
+    grantId: stateEntry.grantId,
     pristine: {
       grantId: stateEntry.grantId,
       currentPristineVersionId: stateEntry.pristineVersionId,

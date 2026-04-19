@@ -7,6 +7,7 @@ import { Mapping } from "../../lib/state/mapping.js";
 import { State } from "../../lib/state/state.js";
 import { StateLock } from "../../lib/state/lock.js";
 import { rollback } from "../../lib/deploy/rollback.js";
+import { clearInFlightMarker } from "../../lib/deploy/inFlight.js";
 import { NotFoundError, AmbiguousSlugError, MappingUnapprovedError } from "../../lib/errors.js";
 
 /**
@@ -105,6 +106,11 @@ export async function cfx_rollback(
       }
       await state.save();
     }
+
+    // Clear any in-flight deploy marker — the rollback restored the pre-crash
+    // state, so the grant is no longer "in flight". Safe to call whether or
+    // not a marker exists (ENOENT-tolerant).
+    await clearInFlightMarker(cfg.stateDir, grantId);
 
     return {
       restoredPath: r.restoredPath,

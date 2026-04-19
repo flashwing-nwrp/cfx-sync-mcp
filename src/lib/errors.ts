@@ -264,16 +264,28 @@ export class ConflictsUnresolvedError extends CfxError {
 }
 
 export class DeployInterruptedError extends CfxError {
+  readonly grantId: number;
   readonly stagingPath: string;
-  readonly backupPath: string;
-  constructor(stagingPath: string, backupPath: string = "") {
+  readonly backupPath: string | null;
+  readonly markerPath: string;
+  constructor(
+    grantId: number,
+    stagingPath: string,
+    backupPath: string | null = null,
+    markerPath: string = ""
+  ) {
+    const backupDescr = backupPath === null ? "<first-deploy: no prior backup>" : backupPath;
     super(
       "DEPLOY_INTERRUPTED",
-      `Deploy was interrupted mid-swap; partial state detected (staging=${stagingPath}, backup=${backupPath}).`,
-      `Inspect ${stagingPath} and ${backupPath}; resume manually or run cfx_rollback.`
+      `Prior deploy of grantId ${grantId} did not complete; in-flight marker detected (staging=${stagingPath}, backup=${backupDescr}).`,
+      backupPath !== null
+        ? `To recover: run cfx_rollback --grantId ${grantId} --toTimestamp <backup-iso> to restore pre-crash state, then retry deploy. Marker: ${markerPath}`
+        : `First-deploy crash (no prior live to restore). Manually remove leftover staging at ${stagingPath} and any partial live dir, then delete the marker (${markerPath}) and retry deploy.`
     );
+    this.grantId = grantId;
     this.stagingPath = stagingPath;
     this.backupPath = backupPath;
+    this.markerPath = markerPath;
   }
 }
 
