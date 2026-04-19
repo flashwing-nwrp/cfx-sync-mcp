@@ -21,6 +21,15 @@ import { TOOLS, toolNames } from "../../../src/mcp/tools/index.js";
 import { dispatch } from "../../../src/mcp/dispatch.js";
 import type { ScanUpdatesResult } from "../../../src/lib/updates/types.js";
 import type { MappingFile, MappingEntry } from "../../../src/lib/state/mapping.js";
+import { adaptPortalFetch } from "../../../src/mcp/tools/scan_updates.js";
+import {
+  AuthExpiredError,
+  AuthMissingError,
+  NetworkError,
+  PortalRateLimitError,
+  ForbiddenError,
+} from "../../../src/lib/errors.js";
+import type { CheckUpdatesResult } from "../../../src/lib/updates/scanner.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const REPO_ROOT = path.resolve(path.dirname(__filename), "../../..");
@@ -414,5 +423,189 @@ describe("cfx_scan_updates end-to-end smoke", () => {
 
     const { cfx_scan_updates } = await import("../../../src/mcp/tools/scan_updates.js");
     await expect(cfx_scan_updates({ slug: "not_there" })).rejects.toThrow(/not_there|No mapping/i);
+  });
+});
+
+/**
+ * Phase 1.6 follow-up — graceful degradation when the portal fetch fails
+ * with an expected error class (stale cookies, missing cookies, transient
+ * network, rate limit, revoked grant). The adapter must return the
+ * "did not poll" sentinel so the scanner can still process log signal.
+ * Unexpected errors (filesystem corruption, bug-class errors) must still
+ * propagate — we don't silently swallow genuine failures.
+ *
+ * Tests target the exported `adaptPortalFetch` helper directly, which
+ * keeps the assertions hermetic (no PortalApiClient mocking) and
+ * isolates the try/catch branch.
+ */
+describe("adaptPortalFetch — graceful degradation on portal auth failure", () => {
+  const STALE_SENTINEL: CheckUpdatesResult = {
+    updated: [],
+    stale: true,
+    portalFromCache: true,
+  };
+
+  it("returns stale sentinel on AuthExpiredError (cookies present but rejected)", async () => {
+    const result = await adaptPortalFetch(async () => {
+      throw new AuthExpiredError();
+    });
+    expect(result).toEqual(STALE_SENTINEL);
+  });
+
+  it("returns stale sentinel on AuthMissingError (no cookie file)", async () => {
+    const result = await adaptPortalFetch(async () => {
+      throw new AuthMissingError();
+    });
+    expect(result).toEqual(STALE_SENTINEL);
+  });
+
+  it("returns stale sentinel on NetworkError (transient connectivity)", async () => {
+    const result = await adaptPortalFetch(async () => {
+      throw new NetworkError("DNS lookup failed");
+    });
+    expect(result).toEqual(STALE_SENTINEL);
+  });
+
+  it("returns stale sentinel on PortalRateLimitError (429 from portal)", async () => {
+    const result = await adaptPortalFetch(async () => {
+      throw new PortalRateLimitError(60);
+    });
+    expect(result).toEqual(STALE_SENTINEL);
+  });
+
+  it("returns stale sentinel on ForbiddenError (403 / revoked grant)", async () => {
+    const result = await adaptPortalFetch(async () => {
+      throw new ForbiddenError("https://portal.cfx.re/api/list_grants");
+    });
+    expect(result).toEqual(STALE_SENTINEL);
+  });
+
+  it("propagates unexpected errors (generic Error) — does NOT swallow genuine bugs", async () => {
+    await expect(
+      adaptPortalFetch(async () => {
+        throw new Error("filesystem corrupted");
+      })
+    ).rejects.toThrow(/filesystem corrupted/);
+  });
+
+  it("propagates unexpected errors (TypeError) — bug-class still throws", async () => {
+    await expect(
+      adaptPortalFetch(async () => {
+        throw new TypeError("cannot read properties of undefined");
+      })
+    ).rejects.toThrow(TypeError);
+  });
+
+  it("returns successful result unchanged when fetchFn succeeds", async () => {
+    const success: CheckUpdatesResult = {
+      updated: [
+        { grantId: 42, slug: "cd_dispatch", assetName: "cd_dispatch", updatedAt: "2026-04-19T00:00:00Z" },
+      ],
+      stale: false,
+      portalFromCache: false,
+    };
+    const result = await adaptPortalFetch(async () => success);
+    expect(result).toEqual(success);
+  });
+});
+
+/**
+ * End-to-end: with no cookie file, cfx_scan_updates must NOT throw. The
+ * adapter catches AuthMissingError from loadCookiesFromFile and returns
+ * the stale sentinel; scanner surfaces it as portalPolled:false, and any
+ * supplied logLines are still parsed into the unmapped bucket.
+ */
+describe("cfx_scan_updates — graceful degradation end-to-end", () => {
+  let dir: string;
+  let stateDir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(path.join(tmpdir(), "cfx-scanupd-degrade-"));
+    stateDir = path.join(dir, "state");
+    mkdirSync(stateDir, { recursive: true });
+    process.env.CFX_SERVER_RESOURCES = dir;
+    process.env.CFX_STATE_DIR = stateDir;
+    process.env.CFX_CACHE_DIR = path.join(dir, "cache");
+    process.env.CFX_STAGING_DIR = path.join(dir, "staging");
+    process.env.CFX_BACKUP_DIR = path.join(dir, "backups");
+    // Point at a path that does NOT exist — loadCookiesFromFile raises
+    // AuthMissingError, which the adapter catches.
+    process.env.CFX_COOKIE_FILE = path.join(dir, "does-not-exist.cookies.json");
+    // Force FRESH gate decision: zero TTL means any prior timestamp is stale.
+    process.env.CFX_RATE_LIMIT_TTL_MS = "0";
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+    delete process.env.CFX_RATE_LIMIT_TTL_MS;
+  });
+
+  it("proceeds with log-only signal when cookies are missing (AuthMissingError)", async () => {
+    // Empty mapping so scanner has something to load; no pre-polled timestamp
+    // means the gate decides FRESH and the adapter runs, hitting AuthMissingError.
+    const state = {
+      version: 3,
+      rateLimit: {},
+      assets: {},
+    };
+    writeFileSync(path.join(stateDir, "state.json"), JSON.stringify(state));
+
+    const mapping: MappingFile = {
+      version: 3,
+      approvedAt: new Date().toISOString(),
+      entries: {},
+      newInstalls: [],
+      orphaned: [],
+    };
+    writeFileSync(
+      path.join(stateDir, "cfx-sync-map.json"),
+      JSON.stringify(mapping)
+    );
+
+    const { cfx_scan_updates } = await import("../../../src/mcp/tools/scan_updates.js");
+    const result = await cfx_scan_updates({
+      logLines: ["Started resource cd_dispatch", "some other log line"],
+    });
+
+    const parsed = ScanUpdatesOutput.parse(result);
+    // Portal path failed gracefully → portalPolled false, fromCache true.
+    expect(parsed.portalPolled).toBe(false);
+    expect(parsed.portalFromCache).toBe(true);
+    // Log scanning still ran.
+    expect(parsed.scannedLogLines).toBe(2);
+    expect(parsed.logHasStartupBoundary).toBe(true);
+  });
+
+  it("does NOT bump state.lastPolledAt when the portal fetch failed", async () => {
+    // Start with NO lastPolledAt. If the failed fetch wrongly bumped it,
+    // the next assertion would see a timestamp where there was none.
+    const state = {
+      version: 3,
+      rateLimit: {},
+      assets: {},
+    };
+    writeFileSync(path.join(stateDir, "state.json"), JSON.stringify(state));
+
+    const mapping: MappingFile = {
+      version: 3,
+      approvedAt: new Date().toISOString(),
+      entries: {},
+      newInstalls: [],
+      orphaned: [],
+    };
+    writeFileSync(
+      path.join(stateDir, "cfx-sync-map.json"),
+      JSON.stringify(mapping)
+    );
+
+    const { cfx_scan_updates } = await import("../../../src/mcp/tools/scan_updates.js");
+    await cfx_scan_updates({ logLines: [] });
+
+    // Re-read state.json — lastPolledAt must still be absent (failed poll
+    // must NOT count against the rate-limit gate).
+    const after = JSON.parse(readFileSync(path.join(stateDir, "state.json"), "utf8")) as {
+      rateLimit?: Record<string, { lastPolledAt?: string }>;
+    };
+    expect(after.rateLimit?.local?.lastPolledAt).toBeUndefined();
   });
 });
