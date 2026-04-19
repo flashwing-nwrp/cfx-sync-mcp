@@ -1,4 +1,17 @@
-# Security
+# Security Policy
+
+## Supported versions
+
+We ship security fixes for the latest minor release only. This tool is pre-1.0 and under active development; older minor versions are archived, not maintained.
+
+## Reporting a vulnerability
+
+If you believe you've found a security issue in cfx-sync-mcp, **please do not open a public GitHub issue**. Instead, report it privately:
+
+- **Preferred:** [GitHub Security Advisories](https://github.com/flashwing-nwrp/cfx-sync-mcp/security/advisories/new) — creates a private channel with maintainers
+- **Email:** flashwing@willow-wind.com
+
+We will acknowledge your report within 72 hours and work with you on a disclosure timeline. For issues affecting operators in the wild (credential leakage, path traversal, pack-tamper detection bypass), we aim to ship a patch release within 7 days of confirmation.
 
 ## Threat model
 

@@ -21,11 +21,13 @@ describe("GetOnlyClient", () => {
 
   it("exposes no mutation methods on the instance", () => {
     const client = new GetOnlyClient();
-    expect((client as any).post).toBeUndefined();
-    expect((client as any).put).toBeUndefined();
-    expect((client as any).patch).toBeUndefined();
-    expect((client as any).delete).toBeUndefined();
-    expect((client as any).request).toBeUndefined();
+    // Verifying absence of mutation methods — intentionally inspecting unknown keys.
+    const c = client as unknown as Record<string, unknown>;
+    expect(c.post).toBeUndefined();
+    expect(c.put).toBeUndefined();
+    expect(c.patch).toBeUndefined();
+    expect(c.delete).toBeUndefined();
+    expect(c.request).toBeUndefined();
   });
 
   it("passes custom headers through", async () => {
@@ -34,7 +36,7 @@ describe("GetOnlyClient", () => {
       .intercept({
         path: "/v1/me",
         method: "GET",
-        headers: (h: any) => h["x-test"] === "abc",
+        headers: (h: Record<string, string>) => h["x-test"] === "abc",
       })
       .reply(200, {});
     const client = new GetOnlyClient();

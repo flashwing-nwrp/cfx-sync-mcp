@@ -51,7 +51,7 @@ describe("CookieJar", () => {
 
   it("returns null longestExpiry when all cookies are session-only", () => {
     const jar = new CookieJar();
-    jar.replaceAll([cookie({ expires: -1 }), cookie({ name: "n2", expires: undefined as any })]);
+    jar.replaceAll([cookie({ expires: -1 }), cookie({ name: "n2", expires: undefined })]);
     expect(jar.longestExpiry()).toBe(null);
   });
 

@@ -15,7 +15,7 @@ Open-source MCP server that keeps a FiveM/RedM server's paid Cfx.re portal asset
 
 ## Customization preservation
 
-Portal packs ship author-pristine. You probably edit them — config files, permission lists, webhooks, locales, sometimes overlay files from tools like `flrp_clienttriage`. Before Phase 1.5, every deploy clobbered those edits and you hand-merged from a backup.
+Portal packs ship author-pristine. You probably edit them — config files, permission lists, webhooks, locales, sometimes overlay files from your own sibling tooling. Before Phase 1.5, every deploy clobbered those edits and you hand-merged from a backup.
 
 Phase 1.5 keeps them automatically. On the first successful deploy, cfx-sync-mcp snapshots the vendor's pack as a **pristine baseline**. On every deploy after that, it hashes pristine vs live vs new-pack and emits a 10-row decision per file: unchanged paths upgrade cleanly, your edits are preserved, conflicts surface in dry-run with four resolution options (`take-live`, `take-pack`, `merge-diff3` stub, `staged-for-merge`). Renames, case collisions, and encrypted-file tampering are all detected. Rollback restores live AND the matching pristine so the next deploy diffs against the correct baseline.
 

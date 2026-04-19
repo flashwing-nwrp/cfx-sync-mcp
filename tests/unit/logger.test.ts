@@ -5,7 +5,7 @@ describe("logger", () => {
   let stderr: string[];
   beforeEach(() => {
     stderr = [];
-    vi.spyOn(process.stderr, "write").mockImplementation((chunk: any) => {
+    vi.spyOn(process.stderr, "write").mockImplementation((chunk: string | Uint8Array) => {
       stderr.push(String(chunk));
       return true;
     });

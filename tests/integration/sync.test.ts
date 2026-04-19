@@ -2,9 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, existsSync, rmSync } from "node:fs";
 import path from "node:path";
 import { tmpdir } from "node:os";
-import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from "undici";
-import * as JSZipModule from "jszip";
-const JSZip: any = (JSZipModule as any).default ?? JSZipModule;
+import { MockAgent, setGlobalDispatcher, getGlobalDispatcher, type Dispatcher } from "undici";
+import JSZip from "jszip";
 import { cfx_list_grants } from "../../src/mcp/tools/list_grants.js";
 import { cfx_download_asset } from "../../src/mcp/tools/download_asset.js";
 import { cfx_deploy_asset } from "../../src/mcp/tools/deploy_asset.js";
@@ -12,7 +11,7 @@ import { cfx_approve_mapping } from "../../src/mcp/tools/approve_mapping.js";
 
 describe("integration: full sync pipeline", () => {
   let tmp: string;
-  let saved: any;
+  let saved: Dispatcher;
   let mock: MockAgent;
 
   beforeEach(async () => {

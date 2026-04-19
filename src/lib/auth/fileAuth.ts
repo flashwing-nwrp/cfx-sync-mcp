@@ -23,8 +23,12 @@ export async function loadCookiesFromFile(
   let cookies: CookieEntry[];
   if (Array.isArray(parsed)) {
     cookies = parsed as CookieEntry[];
-  } else if (parsed && typeof parsed === "object" && Array.isArray((parsed as any).cookies)) {
-    cookies = (parsed as any).cookies as CookieEntry[];
+  } else if (
+    parsed &&
+    typeof parsed === "object" &&
+    Array.isArray((parsed as { cookies?: unknown }).cookies)
+  ) {
+    cookies = (parsed as { cookies: CookieEntry[] }).cookies;
   } else {
     throw new IoError(`Cookie file has unexpected shape (expected array or { cookies: [...] })`);
   }

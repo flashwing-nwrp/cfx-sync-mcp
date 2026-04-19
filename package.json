@@ -14,7 +14,7 @@
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
-    "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
+    "lint": "eslint src tests --ext .ts",
     "grep-guard": "tsx scripts/grep-guard.ts",
     "refresh-fixtures": "tsx scripts/refresh-fixtures.ts",
     "ci": "npm run typecheck && npm run lint && npm run grep-guard && npm test"
