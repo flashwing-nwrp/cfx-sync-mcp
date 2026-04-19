@@ -29,6 +29,7 @@ import crypto from "node:crypto";
 import * as JSZipModule from "jszip";
 import { cfx_deploy_asset } from "../../src/mcp/tools/deploy_asset.js";
 import { cfx_rollback } from "../../src/mcp/tools/rollback.js";
+import { cfx_reset_pristine } from "../../src/mcp/tools/reset_pristine.js";
 import type { AssetState } from "../../src/lib/state/state.js";
 import type { MappingFile, MappingEntry } from "../../src/lib/state/mapping.js";
 import { ConflictsUnresolvedError } from "../../src/lib/errors.js";
@@ -598,5 +599,436 @@ describe("integration: cfx_deploy_asset → cfx_rollback round trip", () => {
     expect(stateAfter.pristineVersionId).toBeNull();
     expect(stateAfter.pristineCapturedAt).toBeNull();
     expect(stateAfter.pristineHashes).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Task 17 — 8 named end-to-end deploy scenarios (spec §Testing).
+//
+// Each scenario is labelled "Scenario N" so it maps 1:1 to the plan. The
+// earlier describe blocks exercise most of these branches already; this
+// suite re-asserts the scenario with the canonical name AND adds the three
+// scenarios that weren't previously covered (5: row-5 triage hook, 6: row-7
+// rename, 8: reset_pristine → next-deploy=first-deploy).
+//
+// Decision matrix rows asserted:
+//   Scenario 1 → first-deploy (no matrix row; seeds pristine)
+//   Scenario 2 → rows 1 + 2
+//   Scenario 3 → rows 2 + 3
+//   Scenario 4 → row 4 (both throw + take-live resolution)
+//   Scenario 5 → row 5 + row 1/2
+//   Scenario 6 → row 7
+//   Scenario 7 → rollback round-trip (rows 1/2 on follow-up deploy)
+//   Scenario 8 → reset then first-deploy
+// ---------------------------------------------------------------------------
+
+describe("integration: Task 17 — 8 named deploy scenarios", () => {
+  let f: Fixture;
+  const grantId = 42;
+
+  beforeEach(() => {
+    f = mkFixture();
+  });
+
+  afterEach(() => {
+    delete process.env.CFX_SYNC_PRESERVE;
+    delete process.env.CFX_PRISTINE_DIR;
+    delete process.env.CFX_PRISTINE_HISTORY_DIR;
+    delete process.env.CFX_CONFLICT_DIR;
+    rmSync(f.tmp, { recursive: true, force: true });
+  });
+
+  // ---- Scenario 1: First deploy (no pristine) -----------------------------
+  // Layer 1 hints surfaced via preservePathsHints; deploy proceeds; pristine
+  // captured. No decision matrix row applies (no diff on first deploy).
+  it("Scenario 1: first deploy captures pristine and surfaces Layer 1 hints", async () => {
+    setupEnv(f);
+    const v1Files = {
+      "fxmanifest.lua": "v1",
+      "server.lua": "print('v1')",
+      "config.lua": "BASE",
+    };
+    const zipPath = await makePackZip(f.cacheDir, "my_asset", v1Files);
+
+    // Mapping carries a Layer 1 preservePaths hint (the kind Task 11 would
+    // discover). Task 15 threads this through as preservePathsHints.
+    const entry: MappingEntry = {
+      ...makeEntry(f.target),
+      preservePaths: ["config.lua"],
+    };
+    writeMapping(f.stateDir, { [String(grantId)]: entry });
+    writeState(f.stateDir, [makeAssetState(grantId, zipPath, f.target)]);
+
+    const out = await cfx_deploy_asset({ grantId, dryRun: false });
+
+    expect(out.preservationMode).toBe("first-deploy");
+    expect(out.pristineCaptured).toBe(true);
+    // Layer 1 hint is surfaced back to the caller.
+    expect(out.preservePathsHints).toEqual(["config.lua"]);
+    // Live populated.
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v1");
+    // Pristine captured under CFX_PRISTINE_DIR/<grantId>/.
+    expect(existsSync(path.join(f.pristineDir, String(grantId), "fxmanifest.lua"))).toBe(true);
+    // State records the pristine baseline.
+    const onDisk = readState(f.stateDir);
+    expect(onDisk.assets[String(grantId)]!.pristineVersionId).toBe(10);
+    expect(onDisk.assets[String(grantId)]!.pristineHashes).not.toBeNull();
+  });
+
+  // ---- Scenario 2: Clean upgrade (no user mods) ---------------------------
+  // Live == pristine. Pack changes server.lua, leaves manifest alone. Expect
+  // all rows row 1 (unchanged/unchanged) or row 2 (unchanged/changed), no
+  // conflicts.
+  it("Scenario 2: clean upgrade produces only row-1/row-2 decisions", async () => {
+    setupEnv(f);
+    const v1Files = { "fxmanifest.lua": "v1", "server.lua": "print('v1')" };
+    seedLive(f.target, v1Files);
+    mkdirSync(path.join(f.pristineDir, String(grantId)), { recursive: true });
+    for (const [rel, body] of Object.entries(v1Files)) {
+      writeFileSync(path.join(f.pristineDir, String(grantId), rel), body);
+    }
+
+    const v2Files = { "fxmanifest.lua": "v1", "server.lua": "print('v2')" };
+    const zipPath = await makePackZip(f.cacheDir, "my_asset", v2Files);
+
+    writeMapping(f.stateDir, { [String(grantId)]: makeEntry(f.target) });
+    writeState(f.stateDir, [
+      makeAssetState(grantId, zipPath, f.target, {
+        versionId: 11,
+        deployedAt: "2026-04-17T00:00:00.000Z",
+        pristineVersionId: 10,
+        pristineCapturedAt: "2026-04-17T00:00:00.000Z",
+        pristineHashes: hashesFrom(v1Files),
+      }),
+    ]);
+
+    const out = await cfx_deploy_asset({ grantId, dryRun: false });
+
+    expect(out.preservationMode).toBe("layer-2");
+    expect(out.plan!.conflicts).toHaveLength(0);
+    expect(out.plan!.blockers).toHaveLength(0);
+    // Every row is row 1 or row 2, all take-newPack.
+    for (const row of out.plan!.rows) {
+      expect([1, 2]).toContain(row.rowNumber);
+      expect(row.decision).toBe("take-newPack");
+    }
+    // server.lua is specifically row 2 (pack changed).
+    const serverRow = out.plan!.rows.find((r) => r.path === "server.lua");
+    expect(serverRow?.rowNumber).toBe(2);
+    // fxmanifest.lua is row 1 (both unchanged).
+    const manifestRow = out.plan!.rows.find((r) => r.path === "fxmanifest.lua");
+    expect(manifestRow?.rowNumber).toBe(1);
+    expect(readFileSync(path.join(f.target, "server.lua"), "utf8")).toBe("print('v2')");
+  });
+
+  // ---- Scenario 3: User-modified config + pack updates unrelated file -----
+  // Row 3 preserves the user's config.lua; row 2 upgrades fxmanifest. No
+  // conflicts.
+  it("Scenario 3: user-modified config preserved (row 3), unrelated pack update applied (row 2)", async () => {
+    setupEnv(f);
+    const pristineFiles = { "fxmanifest.lua": "v1", "config.lua": "BASE" };
+    const liveFiles = { "fxmanifest.lua": "v1", "config.lua": "USER_EDIT" };
+    seedLive(f.target, liveFiles);
+    mkdirSync(path.join(f.pristineDir, String(grantId)), { recursive: true });
+    for (const [rel, body] of Object.entries(pristineFiles)) {
+      writeFileSync(path.join(f.pristineDir, String(grantId), rel), body);
+    }
+    // Pack bumps manifest only.
+    const packFiles = { "fxmanifest.lua": "v2", "config.lua": "BASE" };
+    const zipPath = await makePackZip(f.cacheDir, "my_asset", packFiles);
+
+    writeMapping(f.stateDir, { [String(grantId)]: makeEntry(f.target) });
+    writeState(f.stateDir, [
+      makeAssetState(grantId, zipPath, f.target, {
+        versionId: 11,
+        deployedAt: "2026-04-17T00:00:00.000Z",
+        pristineVersionId: 10,
+        pristineCapturedAt: "2026-04-17T00:00:00.000Z",
+        pristineHashes: hashesFrom(pristineFiles),
+      }),
+    ]);
+
+    const out = await cfx_deploy_asset({ grantId, dryRun: false });
+
+    expect(out.plan!.conflicts).toHaveLength(0);
+    const manifestRow = out.plan!.rows.find((r) => r.path === "fxmanifest.lua");
+    const configRow = out.plan!.rows.find((r) => r.path === "config.lua");
+    expect(manifestRow?.rowNumber).toBe(2);
+    expect(manifestRow?.decision).toBe("take-newPack");
+    expect(configRow?.rowNumber).toBe(3);
+    expect(configRow?.decision).toBe("preserve-live");
+    // Live reflects the plan: manifest upgraded, config preserved.
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v2");
+    expect(readFileSync(path.join(f.target, "config.lua"), "utf8")).toBe("USER_EDIT");
+  });
+
+  // ---- Scenario 4: Both user and pack changed the same config -------------
+  // Row 4: first call throws ConflictsUnresolvedError. Second call with
+  // conflictResolutions={config.lua: take-live} succeeds; live keeps user copy.
+  it("Scenario 4: row-4 conflict throws on first call, take-live resolves", async () => {
+    setupEnv(f);
+    const userMark = "USER_EDIT";
+    const pristineFiles = { "fxmanifest.lua": "v1", "config.lua": "BASE" };
+    const liveFiles = { "fxmanifest.lua": "v1", "config.lua": userMark };
+    seedLive(f.target, liveFiles);
+    mkdirSync(path.join(f.pristineDir, String(grantId)), { recursive: true });
+    for (const [rel, body] of Object.entries(pristineFiles)) {
+      writeFileSync(path.join(f.pristineDir, String(grantId), rel), body);
+    }
+    const packFiles = { "fxmanifest.lua": "v1", "config.lua": "VENDOR_CHANGE" };
+    const zipPath = await makePackZip(f.cacheDir, "my_asset", packFiles);
+
+    writeMapping(f.stateDir, { [String(grantId)]: makeEntry(f.target) });
+    writeState(f.stateDir, [
+      makeAssetState(grantId, zipPath, f.target, {
+        versionId: 11,
+        deployedAt: "2026-04-17T00:00:00.000Z",
+        pristineVersionId: 10,
+        pristineCapturedAt: "2026-04-17T00:00:00.000Z",
+        pristineHashes: hashesFrom(pristineFiles),
+      }),
+    ]);
+
+    // First call — unresolved conflict throws.
+    await expect(cfx_deploy_asset({ grantId, dryRun: false })).rejects.toBeInstanceOf(
+      ConflictsUnresolvedError
+    );
+    // Live still has the user's edit after the failure.
+    expect(readFileSync(path.join(f.target, "config.lua"), "utf8")).toBe(userMark);
+
+    // Second call — resolve with take-live.
+    const out = await cfx_deploy_asset({
+      grantId,
+      dryRun: false,
+      conflictResolutions: { "config.lua": "take-live" },
+    });
+    expect(out.preservationMode).toBe("layer-2");
+    expect(out.plan!.conflicts).toHaveLength(0);
+    const configRow = out.plan!.rows.find((r) => r.path === "config.lua");
+    expect(configRow?.rowNumber).toBe(4);
+    expect(configRow?.decision).toBe("preserve-live");
+    expect(readFileSync(path.join(f.target, "config.lua"), "utf8")).toBe(userMark);
+  });
+
+  // ---- Scenario 5: Live-only triage hook + unrelated pack upgrade ---------
+  // Row 5 preserves the live-only file; other files upgrade normally.
+  it("Scenario 5: triage hook (live-only, row 5) preserved across pack upgrade", async () => {
+    setupEnv(f);
+    const pristineFiles = { "fxmanifest.lua": "v1", "server.lua": "print('v1')" };
+    // Operator hand-injected a triage hook into live — not in pristine, not in pack.
+    const liveFiles = {
+      ...pristineFiles,
+      "client/triage_hook.lua": "-- FLRP triage injection",
+    };
+    seedLive(f.target, liveFiles);
+    mkdirSync(path.join(f.pristineDir, String(grantId)), { recursive: true });
+    for (const [rel, body] of Object.entries(pristineFiles)) {
+      writeFileSync(path.join(f.pristineDir, String(grantId), rel), body);
+    }
+    const packFiles = { "fxmanifest.lua": "v2", "server.lua": "print('v2')" };
+    const zipPath = await makePackZip(f.cacheDir, "my_asset", packFiles);
+
+    writeMapping(f.stateDir, { [String(grantId)]: makeEntry(f.target) });
+    writeState(f.stateDir, [
+      makeAssetState(grantId, zipPath, f.target, {
+        versionId: 11,
+        deployedAt: "2026-04-17T00:00:00.000Z",
+        pristineVersionId: 10,
+        pristineCapturedAt: "2026-04-17T00:00:00.000Z",
+        pristineHashes: hashesFrom(pristineFiles),
+      }),
+    ]);
+
+    const out = await cfx_deploy_asset({ grantId, dryRun: false });
+
+    expect(out.preservationMode).toBe("layer-2");
+    expect(out.plan!.conflicts).toHaveLength(0);
+    expect(out.plan!.blockers).toHaveLength(0);
+    const hookRow = out.plan!.rows.find((r) => r.path === "client/triage_hook.lua");
+    expect(hookRow?.rowNumber).toBe(5);
+    expect(hookRow?.decision).toBe("preserve-live");
+    // Triage hook still present after deploy.
+    expect(readFileSync(path.join(f.target, "client/triage_hook.lua"), "utf8")).toBe(
+      "-- FLRP triage injection"
+    );
+    // Unrelated files upgraded.
+    expect(readFileSync(path.join(f.target, "server.lua"), "utf8")).toBe("print('v2')");
+    // Pristine rotated. The snapshot is taken from the deployed live dir after
+    // applyPlan, so the row-5 preserved file is captured — subsequent deploys
+    // will see it as pristine-known and treat modifications as row-3/row-4.
+    expect(
+      readFileSync(path.join(f.pristineDir, String(grantId), "server.lua"), "utf8")
+    ).toBe("print('v2')");
+    // Pristine snapshot reflects the deployed live (which includes the
+    // preserved triage hook).
+    expect(
+      existsSync(path.join(f.pristineDir, String(grantId), "client/triage_hook.lua"))
+    ).toBe(true);
+  });
+
+  // ---- Scenario 6: Pack rename with unmodified live (row 7) ---------------
+  // Pristine has `old/foo.lua`; pack renames it to `new/foo.lua` with same
+  // content. Live also has `old/foo.lua` unchanged. Row 7 adopts the new
+  // path; pristine after rotation has ONLY the new path.
+  it("Scenario 6: pack rename with unmodified live adopts new path (row 7)", async () => {
+    setupEnv(f);
+    const pristineFiles = {
+      "fxmanifest.lua": "v1",
+      "old/foo.lua": "shared-content",
+    };
+    const liveFiles = { ...pristineFiles };
+    seedLive(f.target, liveFiles);
+    mkdirSync(path.join(f.pristineDir, String(grantId)), { recursive: true });
+    for (const [rel, body] of Object.entries(pristineFiles)) {
+      const abs = path.join(f.pristineDir, String(grantId), rel);
+      mkdirSync(path.dirname(abs), { recursive: true });
+      writeFileSync(abs, body);
+    }
+    // Pack moves old/foo.lua → new/foo.lua (same bytes, so rename detector
+    // pairs them).
+    const packFiles = {
+      "fxmanifest.lua": "v1",
+      "new/foo.lua": "shared-content",
+    };
+    const zipPath = await makePackZip(f.cacheDir, "my_asset", packFiles);
+
+    writeMapping(f.stateDir, { [String(grantId)]: makeEntry(f.target) });
+    writeState(f.stateDir, [
+      makeAssetState(grantId, zipPath, f.target, {
+        versionId: 11,
+        deployedAt: "2026-04-17T00:00:00.000Z",
+        pristineVersionId: 10,
+        pristineCapturedAt: "2026-04-17T00:00:00.000Z",
+        pristineHashes: hashesFrom(pristineFiles),
+      }),
+    ]);
+
+    const out = await cfx_deploy_asset({ grantId, dryRun: false });
+
+    expect(out.preservationMode).toBe("layer-2");
+    expect(out.plan!.conflicts).toHaveLength(0);
+    expect(out.plan!.blockers).toHaveLength(0);
+    // A row-7 (take-newPack-rename) entry exists for the new path.
+    const renameRow = out.plan!.rows.find(
+      (r) => r.decision === "take-newPack-rename" && r.path === "new/foo.lua"
+    );
+    expect(renameRow).toBeDefined();
+    expect(renameRow?.rowNumber).toBe(7);
+    expect(renameRow?.rename).toEqual({ oldPath: "old/foo.lua", newPath: "new/foo.lua" });
+    // Live: new path exists, old path is gone.
+    expect(readFileSync(path.join(f.target, "new/foo.lua"), "utf8")).toBe("shared-content");
+    expect(existsSync(path.join(f.target, "old/foo.lua"))).toBe(false);
+    // Pristine: tracks the rename — new path present, old path removed.
+    expect(
+      readFileSync(path.join(f.pristineDir, String(grantId), "new/foo.lua"), "utf8")
+    ).toBe("shared-content");
+    expect(existsSync(path.join(f.pristineDir, String(grantId), "old/foo.lua"))).toBe(false);
+    // State hashes contain new path but not old path.
+    const onDisk = readState(f.stateDir).assets[String(grantId)]!;
+    expect(onDisk.pristineHashes).not.toBeNull();
+    expect(Object.keys(onDisk.pristineHashes!)).toContain("new/foo.lua");
+    expect(Object.keys(onDisk.pristineHashes!)).not.toContain("old/foo.lua");
+  });
+
+  // ---- Scenario 7: Rollback after bad deploy ------------------------------
+  // Deploy v1 → v2, rollback, next deploy (v3) runs clean with no conflicts
+  // because pristine is correctly v1 and live == pristine.
+  it("Scenario 7: rollback rotates pristine; next deploy is clean", async () => {
+    setupEnv(f);
+
+    // Step A: first deploy v1.
+    const v1Files = { "fxmanifest.lua": "v1", "server.lua": "print('v1')" };
+    const zip1 = await makePackZip(f.cacheDir, "my_asset", v1Files);
+    writeMapping(f.stateDir, { [String(grantId)]: makeEntry(f.target) });
+    writeState(f.stateDir, [makeAssetState(grantId, zip1, f.target, { versionId: 1 })]);
+    const r1 = await cfx_deploy_asset({ grantId, dryRun: false });
+    expect(r1.preservationMode).toBe("first-deploy");
+    const stateV1 = readState(f.stateDir).assets[String(grantId)]!;
+    const v1Hashes = stateV1.pristineHashes;
+
+    // Step B: layer-2 deploy v2.
+    const v2Files = { "fxmanifest.lua": "v2", "server.lua": "print('v2')" };
+    const zip2 = await makePackZip(f.cacheDir, "my_asset", v2Files);
+    writeState(f.stateDir, [{ ...stateV1, cachedZipPath: zip2, versionId: 2 }]);
+    const r2 = await cfx_deploy_asset({ grantId, dryRun: false });
+    expect(r2.preservationMode).toBe("layer-2");
+
+    // Step C: rollback — pristine should rotate back to v1.
+    const rb = await cfx_rollback({ grantId });
+    expect(rb.pristineRotatedTo).toBe(1);
+    const stateAfterRb = readState(f.stateDir).assets[String(grantId)]!;
+    expect(stateAfterRb.pristineVersionId).toBe(1);
+    expect(stateAfterRb.pristineHashes).toEqual(v1Hashes);
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v1");
+
+    // Step D: next deploy v3 — live == pristine == v1, so every row is row 2,
+    // no conflicts.
+    const v3Files = { "fxmanifest.lua": "v3", "server.lua": "print('v3')" };
+    const zip3 = await makePackZip(f.cacheDir, "my_asset", v3Files);
+    writeState(f.stateDir, [{ ...stateAfterRb, cachedZipPath: zip3, versionId: 3 }]);
+    const r3 = await cfx_deploy_asset({ grantId, dryRun: false });
+    expect(r3.preservationMode).toBe("layer-2");
+    expect(r3.plan!.conflicts).toHaveLength(0);
+    expect(r3.plan!.blockers).toHaveLength(0);
+    // Every row is take-newPack (row 1 or row 2) since live was clean.
+    for (const row of r3.plan!.rows) {
+      expect(row.decision).toBe("take-newPack");
+      expect([1, 2]).toContain(row.rowNumber);
+    }
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v3");
+  });
+
+  // ---- Scenario 8: cfx_reset_pristine → next deploy is first-deploy -------
+  // Simulate pristine corruption by invoking cfx_reset_pristine. Next deploy
+  // must run as first-deploy (no diff), re-capture, leave live+pristine in
+  // sync.
+  it("Scenario 8: reset_pristine forces next deploy into first-deploy mode", async () => {
+    setupEnv(f);
+
+    // Step A: first deploy v1 so state has a pristine baseline.
+    const v1Files = { "fxmanifest.lua": "v1", "server.lua": "print('v1')" };
+    const zip1 = await makePackZip(f.cacheDir, "my_asset", v1Files);
+    writeMapping(f.stateDir, { [String(grantId)]: makeEntry(f.target) });
+    writeState(f.stateDir, [makeAssetState(grantId, zip1, f.target, { versionId: 1 })]);
+    const r1 = await cfx_deploy_asset({ grantId, dryRun: false });
+    expect(r1.preservationMode).toBe("first-deploy");
+    // Sanity: pristine dir exists, state has hashes.
+    expect(existsSync(path.join(f.pristineDir, String(grantId)))).toBe(true);
+    expect(readState(f.stateDir).assets[String(grantId)]!.pristineHashes).not.toBeNull();
+
+    // Step B: operator calls cfx_reset_pristine to wipe the baseline (e.g.
+    // after discovering pristine is corrupt).
+    const reset = await cfx_reset_pristine({ grantId });
+    expect(reset.removed).toEqual([grantId]);
+    // Pristine dir removed; state pristine fields cleared.
+    expect(existsSync(path.join(f.pristineDir, String(grantId)))).toBe(false);
+    const stateAfterReset = readState(f.stateDir).assets[String(grantId)]!;
+    expect(stateAfterReset.pristineVersionId).toBeNull();
+    expect(stateAfterReset.pristineCapturedAt).toBeNull();
+    expect(stateAfterReset.pristineHashes).toBeNull();
+
+    // Step C: next deploy (v2) — since state has no pristine, it runs as
+    // first-deploy and recaptures against the new pack contents.
+    const v2Files = { "fxmanifest.lua": "v2", "server.lua": "print('v2')" };
+    const zip2 = await makePackZip(f.cacheDir, "my_asset", v2Files);
+    writeState(f.stateDir, [
+      { ...stateAfterReset, cachedZipPath: zip2, versionId: 2 },
+    ]);
+    const r2 = await cfx_deploy_asset({ grantId, dryRun: false });
+
+    // Key assertion: this is first-deploy, NOT layer-2 (since pristine was reset).
+    expect(r2.preservationMode).toBe("first-deploy");
+    expect(r2.pristineCaptured).toBe(true);
+    // No plan on first-deploy.
+    expect(r2.plan).toBeNull();
+    // Live == pack v2.
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v2");
+    // Pristine recaptured at v2.
+    expect(
+      readFileSync(path.join(f.pristineDir, String(grantId), "fxmanifest.lua"), "utf8")
+    ).toBe("v2");
+    const stateV2 = readState(f.stateDir).assets[String(grantId)]!;
+    expect(stateV2.pristineVersionId).toBe(2);
+    expect(stateV2.pristineHashes).not.toBeNull();
   });
 });
