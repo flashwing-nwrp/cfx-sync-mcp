@@ -293,6 +293,33 @@ export const ScanUpdatesOutput = z.object({
   portalFromCache: z.boolean(),
 });
 
+// ---------------------------------------------------------------------------
+// Phase 1.6 — cfx_set_fork_mode (Task 11).
+//
+// Mutates a single mapping entry's `ignoreUpstreamUpdates*` triad so operators
+// don't hand-edit cfx-sync-map.json for the common fork case (e.g. ULC with
+// local 1.9.0 ahead of upstream v1.8.0). See spec §cfx_set_fork_mode.
+// ---------------------------------------------------------------------------
+
+export const SetForkModeInput = z.object({
+  slug: z.string().optional(),
+  grantId: z.number().int().positive().optional(),
+  enabled: z.boolean(),
+  reason: z.string().optional(),
+}).refine(
+  // Exactly one of {slug, grantId} must be supplied — xor.
+  (d) => (d.slug !== undefined) !== (d.grantId !== undefined),
+  { message: "Exactly one of slug or grantId is required" }
+);
+
+export const SetForkModeOutput = z.object({
+  slug: z.string(),
+  grantId: z.number().int(),
+  ignoreUpstreamUpdates: z.boolean(),
+  reason: z.string().optional(),
+  setAt: z.string(),
+});
+
 export const RollbackInput = z.object({
   grantId: z.number().optional(),
   slug: z.string().optional(),

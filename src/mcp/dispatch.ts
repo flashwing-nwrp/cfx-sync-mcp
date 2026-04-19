@@ -12,6 +12,7 @@ import { cfx_sync_all } from "./tools/sync_all.js";
 import { cfx_rollback } from "./tools/rollback.js";
 import { cfx_scan_configs } from "./tools/scan_configs.js";
 import { cfx_reset_pristine } from "./tools/reset_pristine.js";
+import { cfx_set_fork_mode } from "./tools/set_fork_mode.js";
 
 // Each handler accepts its own validated input type. The dispatch boundary
 // receives `unknown` from the MCP transport and passes it through — validation
@@ -38,6 +39,7 @@ const HANDLERS: Record<string, Handler> = {
   cfx_rollback:        wrap(cfx_rollback),
   cfx_scan_configs:    wrap(cfx_scan_configs),
   cfx_reset_pristine:  wrap(cfx_reset_pristine),
+  cfx_set_fork_mode:   wrap(cfx_set_fork_mode),
 };
 
 export async function dispatch(name: string, args: unknown): Promise<unknown> {
