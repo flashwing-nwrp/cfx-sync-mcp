@@ -38,7 +38,7 @@ function makeMappingEntry(partial: Partial<MappingEntry> & { slug: string; targe
 
 function writeMapping(stateDir: string, entries: Record<string, MappingEntry>): void {
   const file: MappingFile = {
-    version: 2,
+    version: 3,
     approvedAt: "2026-04-17T10:30:00.000Z",
     entries,
     newInstalls: [],

@@ -54,7 +54,7 @@ describe("Mapping", () => {
     expect(m.get(999)).toBeUndefined();
   });
 
-  it("migrates v1 → v2 preserving prior fields and backfilling preservePaths fields to null", async () => {
+  it("migrates v1 → v3 preserving prior fields and backfilling preservePaths fields to null", async () => {
     const file = path.join(dir, "cfx-sync-map.json");
     writeFileSync(
       file,
@@ -92,10 +92,10 @@ describe("Mapping", () => {
     // New preservePaths fields backfilled to null
     expect(entry?.preservePaths).toBe(null);
     expect(entry?.preservePathsSource).toBe(null);
-    // On save, written as v2
+    // On save, written as v3
     await m.save();
     const on_disk = JSON.parse(readFileSync(file, "utf8"));
-    expect(on_disk.version).toBe(2);
+    expect(on_disk.version).toBe(3);
     expect(on_disk.entries["12345"].preservePaths).toBe(null);
     expect(on_disk.entries["12345"].preservePathsSource).toBe(null);
     expect(on_disk.newInstalls).toEqual([999]);
@@ -123,15 +123,15 @@ describe("Mapping", () => {
     expect(entry?.preservePaths).toEqual(["config/server.lua", "data/players.json"]);
     expect(entry?.preservePathsSource).toBe("scan-v1");
     const on_disk = JSON.parse(readFileSync(path.join(dir, "cfx-sync-map.json"), "utf8"));
-    expect(on_disk.version).toBe(2);
+    expect(on_disk.version).toBe(3);
   });
 
-  it("refuses v3 mapping with StateSchemaTooNewError", async () => {
+  it("refuses v4 mapping with StateSchemaTooNewError citing v3 as max", async () => {
     const file = path.join(dir, "cfx-sync-map.json");
     writeFileSync(
       file,
       JSON.stringify({
-        version: 3,
+        version: 4,
         approvedAt: "2026-05-01T00:00:00Z",
         entries: {},
         newInstalls: [],
@@ -145,9 +145,97 @@ describe("Mapping", () => {
     } catch (e) {
       expect(e).toBeInstanceOf(StateSchemaTooNewError);
       const err = e as StateSchemaTooNewError;
-      expect(err.onDiskVersion).toBe(3);
-      expect(err.codeVersion).toBe(2);
+      expect(err.onDiskVersion).toBe(4);
+      expect(err.codeVersion).toBe(3);
       expect(err.requiredBinary).toMatch(/cfx-sync-mcp/);
     }
+  });
+
+  it("migrates v2 → v3: fork-mode fields default undefined, on-disk writes version 3", async () => {
+    const file = path.join(dir, "cfx-sync-map.json");
+    writeFileSync(
+      file,
+      JSON.stringify({
+        version: 2,
+        approvedAt: "2026-03-01T00:00:00Z",
+        entries: {
+          "99": {
+            slug: "some_resource",
+            target: "server/resources/[some]/some_resource",
+            disabled: false,
+            assetName: "Some Resource",
+            discoveredTier: 1,
+            discoveredConfidence: 0.95,
+            preservePaths: ["config/server.lua"],
+            preservePathsSource: "scan-v1",
+          },
+        },
+        newInstalls: [],
+        orphaned: [],
+      })
+    );
+    const m = new Mapping(dir);
+    await m.load();
+    const entry = m.get(99);
+    expect(entry).toBeDefined();
+    // Prior fields preserved
+    expect(entry?.slug).toBe("some_resource");
+    expect(entry?.preservePaths).toEqual(["config/server.lua"]);
+    expect(entry?.preservePathsSource).toBe("scan-v1");
+    // New v3 fields absent (undefined, not null)
+    expect(entry?.ignoreUpstreamUpdates).toBeUndefined();
+    expect(entry?.ignoreUpstreamUpdatesReason).toBeUndefined();
+    expect(entry?.ignoreUpstreamUpdatesSetAt).toBeUndefined();
+    // On save, written as v3
+    await m.save();
+    const on_disk = JSON.parse(readFileSync(file, "utf8"));
+    expect(on_disk.version).toBe(3);
+  });
+
+  it("round-trips v3 with fork-mode fields populated", async () => {
+    const m = new Mapping(dir);
+    m.approveFromProposed({
+      "77": {
+        slug: "bar",
+        target: "/srv/bar",
+        disabled: false,
+        assetName: "Bar",
+        discoveredTier: 1,
+        discoveredConfidence: 0.8,
+        ignoreUpstreamUpdates: true,
+        ignoreUpstreamUpdatesReason: "heavily customized — do not overwrite",
+        ignoreUpstreamUpdatesSetAt: "2026-04-18T12:00:00.000Z",
+      },
+    });
+    await m.save();
+    const m2 = new Mapping(dir);
+    await m2.load();
+    const entry = m2.get(77);
+    expect(entry?.ignoreUpstreamUpdates).toBe(true);
+    expect(entry?.ignoreUpstreamUpdatesReason).toBe("heavily customized — do not overwrite");
+    expect(entry?.ignoreUpstreamUpdatesSetAt).toBe("2026-04-18T12:00:00.000Z");
+    const on_disk = JSON.parse(readFileSync(path.join(dir, "cfx-sync-map.json"), "utf8"));
+    expect(on_disk.version).toBe(3);
+  });
+
+  it("new MappingEntry without fork-mode fields has undefined (not null) for those fields", async () => {
+    const m = new Mapping(dir);
+    m.approveFromProposed({
+      "55": {
+        slug: "baz",
+        target: "/srv/baz",
+        disabled: false,
+        assetName: "Baz",
+        discoveredTier: 1,
+        discoveredConfidence: 1.0,
+      },
+    });
+    await m.save();
+    const m2 = new Mapping(dir);
+    await m2.load();
+    const entry = m2.get(55);
+    expect(entry?.ignoreUpstreamUpdates).toBeUndefined();
+    expect(entry?.ignoreUpstreamUpdatesReason).toBeUndefined();
+    expect(entry?.ignoreUpstreamUpdatesSetAt).toBeUndefined();
   });
 });

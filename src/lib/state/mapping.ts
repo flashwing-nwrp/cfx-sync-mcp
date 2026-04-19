@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { StateSchemaTooNewError } from "../errors.js";
 
-const MAPPING_CODE_VERSION = 2;
+const MAPPING_CODE_VERSION = 3;
 const MAPPING_REQUIRED_BINARY = "cfx-sync-mcp >=0.2.0";
 
 export type PreservePathsSource = "scan-v1" | "kb-v1" | "user";
@@ -19,15 +19,33 @@ export interface MappingEntry {
   // (distinct from empty array which means "scanned, nothing to preserve").
   preservePaths?: string[] | null;
   preservePathsSource?: PreservePathsSource | null;
+  // v3: fork-mode flag triad. Undefined means "not set" (operator has not opted in).
+  ignoreUpstreamUpdates?: boolean;
+  ignoreUpstreamUpdatesReason?: string;
+  ignoreUpstreamUpdatesSetAt?: string;  // ISO timestamp
 }
 
 // v1 MappingEntry shape — identical minus preservePaths* fields.
-type MappingEntryV1 = Omit<MappingEntry, "preservePaths" | "preservePathsSource">;
+type MappingEntryV1 = Omit<MappingEntry, "preservePaths" | "preservePathsSource" | "ignoreUpstreamUpdates" | "ignoreUpstreamUpdatesReason" | "ignoreUpstreamUpdatesSetAt">;
+
+// v2 MappingEntry shape — identical minus ignoreUpstreamUpdates* fields.
+type MappingEntryV2 = Omit<MappingEntry, "ignoreUpstreamUpdates" | "ignoreUpstreamUpdatesReason" | "ignoreUpstreamUpdatesSetAt"> & {
+  preservePaths?: string[] | null;
+  preservePathsSource?: PreservePathsSource | null;
+};
 
 export interface MappingFile {
-  version: 2;
+  version: 3;
   approvedAt: string;
   entries: Record<string /* grantId */, MappingEntry>;
+  newInstalls: number[];
+  orphaned: string[];
+}
+
+interface MappingFileV2 {
+  version: 2;
+  approvedAt: string;
+  entries: Record<string, MappingEntryV2>;
   newInstalls: number[];
   orphaned: string[];
 }
@@ -41,10 +59,11 @@ interface MappingFileV1 {
 }
 
 function isV1(obj: unknown): obj is MappingFileV1 { return obj != null && (obj as MappingFileV1).version === 1; }
-function isV2(obj: unknown): obj is MappingFile { return obj != null && (obj as MappingFile).version === 2; }
+function isV2(obj: unknown): obj is MappingFileV2 { return obj != null && (obj as MappingFileV2).version === 2; }
+function isV3(obj: unknown): obj is MappingFile { return obj != null && (obj as MappingFile).version === 3; }
 
-function migrateV1ToV2(v1: MappingFileV1): MappingFile {
-  const migratedEntries: Record<string, MappingEntry> = {};
+function migrateV1ToV2(v1: MappingFileV1): MappingFileV2 {
+  const migratedEntries: Record<string, MappingEntryV2> = {};
   for (const [k, v] of Object.entries(v1.entries)) {
     migratedEntries[k] = {
       ...v,
@@ -58,6 +77,17 @@ function migrateV1ToV2(v1: MappingFileV1): MappingFile {
     entries: migratedEntries,
     newInstalls: v1.newInstalls,
     orphaned: v1.orphaned,
+  };
+}
+
+// v2 → v3 is a no-op migration: the three ignoreUpstreamUpdates* fields default undefined (absent).
+function migrateV2ToV3(v2: MappingFileV2): MappingFile {
+  return {
+    version: 3,
+    approvedAt: v2.approvedAt,
+    entries: v2.entries as Record<string, MappingEntry>,
+    newInstalls: v2.newInstalls,
+    orphaned: v2.orphaned,
   };
 }
 
@@ -77,8 +107,9 @@ export class Mapping {
       if (typeof onDiskVersion === "number" && onDiskVersion > MAPPING_CODE_VERSION) {
         throw new StateSchemaTooNewError(onDiskVersion, MAPPING_CODE_VERSION, MAPPING_REQUIRED_BINARY);
       }
-      if (isV2(parsed)) this.data = parsed;
-      else if (isV1(parsed)) this.data = migrateV1ToV2(parsed);
+      if (isV3(parsed)) this.data = parsed;
+      else if (isV2(parsed)) this.data = migrateV2ToV3(parsed);
+      else if (isV1(parsed)) this.data = migrateV2ToV3(migrateV1ToV2(parsed));
       else throw new Error(`Unknown cfx-sync-map.json version: ${String(onDiskVersion)} (file: ${this.file})`);
     } catch (e) {
       if ((e as NodeJS.ErrnoException)?.code === "ENOENT") {
@@ -106,7 +137,7 @@ export class Mapping {
    */
   approveFromProposed(entries: Record<string, MappingEntry>): void {
     this.data = {
-      version: 2,
+      version: 3,
       approvedAt: new Date().toISOString(),
       entries,
       newInstalls: [],

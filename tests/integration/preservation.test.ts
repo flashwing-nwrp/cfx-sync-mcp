@@ -97,7 +97,7 @@ function mkFixture(): Fixture {
 
 function writeMapping(stateDir: string, entries: Record<string, MappingEntry>): void {
   const file: MappingFile = {
-    version: 2,
+    version: 3,
     approvedAt: new Date().toISOString(),
     entries,
     newInstalls: [],
