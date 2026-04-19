@@ -77,6 +77,15 @@ export type BlockerCode =
  *   - liveSha / pristineSha / packSha: populated whenever the respective side
  *                        has a hash for this path, useful for debug and for
  *                        Task 12's merge helpers.
+ *
+ * IMPORTANT — Task 12 applyPlan contract for `take-newPack`:
+ *   The presence/absence of `packSha` distinguishes adoption from deletion:
+ *     - `packSha` defined → adopt pack content (rows 1, 2, residual re-add)
+ *     - `packSha` undefined → pack dropped the file; delete from live
+ *                             (row-2 "pack dropped unchanged file" branch)
+ *   Task 12 MUST switch on `packSha === undefined` for `take-newPack` rows.
+ *   This is intentional — see diffEngine.ts `classifyRow` for the exhaustive
+ *   enumeration.
  */
 export interface PlanRow {
   path: string;
