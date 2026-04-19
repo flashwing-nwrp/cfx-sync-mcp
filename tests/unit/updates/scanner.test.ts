@@ -25,7 +25,8 @@ function makeEntry(partial: Partial<MappingEntry> & { slug: string }): MappingEn
   return {
     slug: partial.slug,
     target: partial.target ?? `server/resources/[test]/${partial.slug}`,
-    disabled: partial.disabled ?? false,
+    status: partial.status ?? "active",
+    reviewedByUser: partial.reviewedByUser ?? true,
     assetName: partial.assetName ?? partial.slug,
     discoveredTier: partial.discoveredTier ?? 1,
     discoveredConfidence: partial.discoveredConfidence ?? 1,
@@ -40,7 +41,7 @@ function makeEntry(partial: Partial<MappingEntry> & { slug: string }): MappingEn
 
 function makeMapping(entries: Record<string, MappingEntry>): MappingFile {
   return {
-    version: 3,
+    version: 4,
     approvedAt: "2026-04-19T00:00:00Z",
     entries,
     newInstalls: [],
@@ -586,7 +587,7 @@ describe("scanUpdates — plumbing & filtering", () => {
   it("walks default set: skips disabled entries when no slug/grantId filter", async () => {
     const mapping = makeMapping({
       "100": makeEntry({ slug: "alive" }),
-      "200": makeEntry({ slug: "dead", disabled: true }),
+      "200": makeEntry({ slug: "dead", status: "disabled" }),
     });
     const state = makeState([makeAssetState({ grantId: 100 }), makeAssetState({ grantId: 200 })]);
     const checkUpdates = makeCheckUpdatesFn();

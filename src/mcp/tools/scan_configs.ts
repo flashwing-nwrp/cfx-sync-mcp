@@ -38,6 +38,7 @@ export async function cfx_scan_configs(input: Input): Promise<Output> {
     }
 
     const entries = mapping.entries();
+    const activeEntries = mapping.getActiveEntries();
 
     // Determine which grantIds to scan.
     let targets: number[];
@@ -48,16 +49,20 @@ export async function cfx_scan_configs(input: Input): Promise<Output> {
           `Grant ${input.grantId} not found in cfx-sync-map.json.`
         );
       }
-      if (entry.disabled) {
+      if (entry.status === "disabled") {
         throw new InvalidTargetError(
-          `Grant ${input.grantId} is disabled; scan refused. Remove disabled:true or pass a different grantId.`
+          `Grant ${input.grantId} is disabled; scan refused. Set status:'active' in cfx-sync-map.json or pass a different grantId.`
+        );
+      }
+      if (entry.status === "new-install") {
+        throw new InvalidTargetError(
+          `Grant ${input.grantId} is new-install (not yet deployed locally); scan refused.`
         );
       }
       targets = [input.grantId];
     } else {
-      // No args OR { all: true } → every non-disabled entry.
-      targets = Object.entries(entries)
-        .filter(([, e]) => !e.disabled)
+      // No args OR { all: true } → every active entry only.
+      targets = Object.entries(activeEntries)
         .map(([id]) => Number(id))
         .filter((n) => Number.isFinite(n))
         .sort((a, b) => a - b);
@@ -66,11 +71,13 @@ export async function cfx_scan_configs(input: Input): Promise<Output> {
     const scanned: Output["scanned"] = [];
     const skipped: NonNullable<Output["skipped"]> = [];
 
-    // In all-mode, surface disabled entries as skipped for visibility.
+    // In all-mode, surface non-active entries as skipped for visibility.
     if (input.grantId === undefined) {
       for (const [id, entry] of Object.entries(entries)) {
-        if (entry.disabled) {
+        if (entry.status === "disabled") {
           skipped.push({ grantId: Number(id), reason: "disabled" });
+        } else if (entry.status === "new-install") {
+          skipped.push({ grantId: Number(id), reason: "new-install" });
         }
       }
       skipped.sort((a, b) => a.grantId - b.grantId);

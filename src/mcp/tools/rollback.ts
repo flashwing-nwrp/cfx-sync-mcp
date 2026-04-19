@@ -58,6 +58,12 @@ export async function cfx_rollback(
 
     const entry = mapping.get(grantId);
     if (!entry) throw new NotFoundError(`grantId ${grantId} not in mapping`);
+    if (entry.status === "new-install") {
+      throw new Error(
+        `Entry for grant ${grantId} has status: 'new-install' (not installed locally). ` +
+        `Cannot rollback an entry that was never deployed.`
+      );
+    }
 
     const state = new State(cfg.stateDir);
     await state.load();

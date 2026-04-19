@@ -40,7 +40,8 @@ function makeMappingEntry(
   partial: Partial<MappingEntry> & { slug: string; target: string }
 ): MappingEntry {
   return {
-    disabled: false,
+    status: "active",
+    reviewedByUser: true,
     assetName: partial.slug,
     discoveredTier: 1,
     discoveredConfidence: 1.0,
@@ -55,7 +56,7 @@ function writeMapping(
   entries: Record<string, MappingEntry>
 ): void {
   const file: MappingFile = {
-    version: 3,
+    version: 4,
     approvedAt: "2026-04-19T10:00:00.000Z",
     entries,
     newInstalls: [],
@@ -292,7 +293,7 @@ describe("cfx_set_fork_mode behavior", () => {
     expect(entry.ignoreUpstreamUpdatesSetAt).toBeUndefined();
     // Make sure we didn't nuke the rest of the entry.
     expect(entry.slug).toBe("ulc_bodycams");
-    expect(entry.disabled).toBe(false);
+    expect(entry.status).toBe("active");
   });
 
   // Case 4: enabled: false on unflagged resource → idempotent no-op.

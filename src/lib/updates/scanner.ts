@@ -270,7 +270,7 @@ export async function scanUpdates(input: ScanUpdatesInput): Promise<ScanUpdatesR
  * Resolve which mapping entries participate in Pass 1.
  * - `grantId` → one entry (throws NotFoundError if missing)
  * - `slug` → one entry by slug match (throws NotFoundError if missing)
- * - neither → all entries where disabled === false
+ * - neither → all entries with status === 'active'
  */
 function selectEntriesToScan(
   input: ScanUpdatesInput
@@ -292,8 +292,8 @@ function selectEntriesToScan(
     }
     return [match];
   }
-  // Default: all enabled entries.
-  return Object.entries(input.mapping.entries).filter(([, e]) => e.disabled === false);
+  // Default: all active entries only.
+  return Object.entries(input.mapping.entries).filter(([, e]) => e.status === "active");
 }
 
 /**
