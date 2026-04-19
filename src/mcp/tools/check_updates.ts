@@ -29,7 +29,7 @@ export async function cfx_check_updates(
     force: input.force ?? false,
   });
 
-  let updated: z.infer<typeof CheckUpdatesOutput>["updated"] = [];
+  const updated: z.infer<typeof CheckUpdatesOutput>["updated"] = [];
   let stale = false;
 
   if (gateResult.decision === "STALE") {

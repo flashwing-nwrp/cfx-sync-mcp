@@ -69,7 +69,7 @@ describe("All 29 error classes exist and have unique codes", () => {
   it("all instantiate without args (except dynamic-message ones)", () => {
     const codes = new Set<string>();
     for (const Cls of classes) {
-      const instance = new (Cls as any)("test message");
+      const instance = new (Cls as new (msg?: string) => { code: string })("test message");
       expect(instance.code).toBeTruthy();
       codes.add(instance.code);
     }

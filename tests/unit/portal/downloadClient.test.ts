@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from "undici";
+import { MockAgent, setGlobalDispatcher, getGlobalDispatcher, type Dispatcher } from "undici";
 import { DownloadClient } from "../../../src/lib/portal/downloadClient.js";
 import { CookieJar } from "../../../src/lib/auth/cookieJar.js";
 import { InvalidTargetError } from "../../../src/lib/errors.js";
@@ -8,7 +8,7 @@ const PORTAL = "https://portal-api.cfx.re";
 
 describe("DownloadClient", () => {
   let mock: MockAgent;
-  let saved: any;
+  let saved: Dispatcher;
 
   beforeEach(() => {
     saved = getGlobalDispatcher();
@@ -42,7 +42,7 @@ describe("DownloadClient", () => {
       .intercept({
         path: "/v1/asset-grants/1/versions/2/packs/3/download",
         method: "GET",
-        headers: (h: any) => String(h.cookie || "").includes("session=SECRET"),
+        headers: (h: Record<string, string>) => String(h.cookie || "").includes("session=SECRET"),
       })
       .reply(200, "zipdata");
     const res = await mkClient().streamDownload(
@@ -57,7 +57,7 @@ describe("DownloadClient", () => {
     // Here we simulate by checking that `buildFollowHeaders` omits Cookie
     // when the redirect target is not a cfx.re host.
     const client = mkClient();
-    const follow = (client as any).buildFollowHeaders(
+    const follow = (client as unknown as { buildFollowHeaders: (u: URL) => Record<string, string> }).buildFollowHeaders(
       new URL("https://cdn.example.com/signed?sig=abc")
     ) as Record<string, string>;
     expect(follow.Cookie).toBeUndefined();
@@ -65,7 +65,7 @@ describe("DownloadClient", () => {
 
   it("keeps cookies on redirect to another cfx.re host", async () => {
     const client = mkClient();
-    const follow = (client as any).buildFollowHeaders(
+    const follow = (client as unknown as { buildFollowHeaders: (u: URL) => Record<string, string> }).buildFollowHeaders(
       new URL("https://portal.cfx.re/some-other-endpoint")
     ) as Record<string, string>;
     expect(follow.Cookie).toMatch(/session=SECRET/);
@@ -88,7 +88,7 @@ describe("DownloadClient", () => {
       .intercept({
         path: /\/signed/,
         method: "GET",
-        headers: (h: any) => !("cookie" in h) || !String(h.cookie).includes("SECRET"),
+        headers: (h: Record<string, string>) => !("cookie" in h) || !String(h.cookie).includes("SECRET"),
       })
       .reply(200, "zipdata");
 
@@ -114,7 +114,7 @@ describe("DownloadClient", () => {
       .intercept({
         path: "/real-download",
         method: "GET",
-        headers: (h: any) => String(h.cookie || "").includes("SECRET"),
+        headers: (h: Record<string, string>) => String(h.cookie || "").includes("SECRET"),
       })
       .reply(200, "zipdata");
 
@@ -140,7 +140,7 @@ describe("DownloadClient", () => {
       .intercept({
         path: "/step1",
         method: "GET",
-        headers: (h: any) => String(h.cookie || "").includes("SECRET"),
+        headers: (h: Record<string, string>) => String(h.cookie || "").includes("SECRET"),
       })
       .reply(302, "", { headers: { location: "https://cdn.example.com/signed" } });
 
@@ -150,7 +150,7 @@ describe("DownloadClient", () => {
         path: "/signed",
         method: "GET",
         // Crucial: Cookie must NOT be present on this hop
-        headers: (h: any) => !("cookie" in h) || !String(h.cookie).includes("SECRET"),
+        headers: (h: Record<string, string>) => !("cookie" in h) || !String(h.cookie).includes("SECRET"),
       })
       .reply(200, "zipdata");
 

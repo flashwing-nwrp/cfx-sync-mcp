@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import fsSync from "node:fs";
 import path from "node:path";
-import { CookieJar } from "./cookieJar.js";
+import { CookieJar, type CookieEntry } from "./cookieJar.js";
 import { applySecurePerms } from "./fileAuth.js";
 import { PlaywrightNotInstalledError, NetworkError } from "../errors.js";
 import { createLogger } from "../logger.js";
@@ -86,7 +86,7 @@ export async function playwrightLogin(opts: PlaywrightLoginOpts): Promise<Playwr
     if (!username) throw new NetworkError(`Timed out waiting for login after ${timeoutMs}ms`);
 
     const storage = await context.storageState();
-    opts.jar.replaceAll(storage.cookies as any);
+    opts.jar.replaceAll(storage.cookies as CookieEntry[]);
 
     // Persist cookies to disk and lock down perms.
     await fs.writeFile(opts.cookieFile, JSON.stringify(storage, null, 2), { mode: 0o600 });

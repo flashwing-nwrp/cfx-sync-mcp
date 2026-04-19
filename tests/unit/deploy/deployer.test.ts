@@ -4,7 +4,7 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { deploy } from "../../../src/lib/deploy/deployer.js";
 import type { BackupManifest } from "../../../src/lib/deploy/deployer.js";
-import { TargetParentMissingError, ValidationFailedError } from "../../../src/lib/errors.js";
+import { TargetParentMissingError } from "../../../src/lib/errors.js";
 
 describe("deploy", () => {
   let tmp: string;

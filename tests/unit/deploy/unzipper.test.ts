@@ -1,13 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, rmSync, readFileSync, existsSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { unzipToStaging } from "../../../src/lib/deploy/unzipper.js";
 import { ValidationFailedError } from "../../../src/lib/errors.js";
 
-// jszip@3.x ships CJS only; namespace-import pattern for ESM+NodeNext
-import * as JSZipModule from "jszip";
-const JSZip: any = (JSZipModule as any).default ?? JSZipModule;
+import JSZip from "jszip";
 
 async function buildZip(entries: Record<string, string>): Promise<Buffer> {
   const zip = new JSZip();

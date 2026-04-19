@@ -17,8 +17,8 @@ describe("downloadPack", () => {
       apiBase: "https://portal-api.cfx.re",
       cookieJar: new CookieJar(),
     });
-    // Stub streamDownload directly
-    (client as any).streamPresignedDownload = async () => ({
+    // Stub private streamPresignedDownload — test harness override, not public API.
+    (client as unknown as { streamPresignedDownload: () => Promise<unknown> }).streamPresignedDownload = async () => ({
       statusCode: 200,
       contentLength: 5,
       body: Readable.from(Buffer.from("hello")),
@@ -40,7 +40,7 @@ describe("downloadPack", () => {
       apiBase: "https://portal-api.cfx.re",
       cookieJar: new CookieJar(),
     });
-    (client as any).streamPresignedDownload = async () => ({
+    (client as unknown as { streamPresignedDownload: () => Promise<unknown> }).streamPresignedDownload = async () => ({
       statusCode: 200,
       contentLength: null,
       body: new Readable({ read() { this.destroy(new Error("simulated stall")); } }),

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from "undici";
+import { MockAgent, setGlobalDispatcher, getGlobalDispatcher, type Dispatcher } from "undici";
 import { PortalApiClient } from "../../../src/lib/portal/client.js";
 import { CookieJar } from "../../../src/lib/auth/cookieJar.js";
 import {
@@ -13,7 +13,7 @@ const BASE = "https://portal-api.cfx.re";
 
 describe("PortalApiClient", () => {
   let mock: MockAgent;
-  let saved: any;
+  let saved: Dispatcher;
 
   beforeEach(() => {
     saved = getGlobalDispatcher();
@@ -56,7 +56,7 @@ describe("PortalApiClient", () => {
       .intercept({
         path: "/v1/me",
         method: "GET",
-        headers: (h: any) => String(h.cookie || "").includes("session=abc"),
+        headers: (h: Record<string, string>) => String(h.cookie || "").includes("session=abc"),
       })
       .reply(200, {
         id: 1, username: "u", email: "e", avatar_url: "a",

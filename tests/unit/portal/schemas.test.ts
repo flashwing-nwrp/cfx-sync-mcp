@@ -52,7 +52,7 @@ describe("portal schemas", () => {
       item_count: 1,
     };
     const parsed = GrantsResponseSchema.parse(raw);
-    expect((parsed as any).grant_transfers).toBeUndefined();
+    expect((parsed as unknown as { grant_transfers?: unknown }).grant_transfers).toBeUndefined();
   });
 
   it("rejects grants missing required fields", () => {
