@@ -21,10 +21,28 @@ Log into the portal in the launched browser, browse to Granted Assets, exercise 
 ## Invariants that MUST NOT regress
 
 - **GET-only.** The `GetOnlyClient` wrapper is the only HTTP surface used by `src/lib/portal/`. Never import `undici` directly inside portal code.
-- **No mutation tools.** The 11 tools in `src/mcp/tools/index.ts` are the entire surface. Do not add tools for transfer/gift/revoke/share/purchase/subscribe/upload/publish.
+- **No mutation tools.** The 13 tools in `src/mcp/tools/index.ts` are the entire surface. Do not add tools for transfer/gift/revoke/share/purchase/subscribe/upload/publish.
 - **Cookies never logged.** Use the structured logger with named fields; never stringify request/response objects.
 
 CI enforces the first two via `tests/ci/getOnlyClient-ast.test.ts` and `scripts/grep-guard.ts`. The third is by convention — reviewers will flag.
+
+## Schema migrations
+
+Two on-disk schemas are versioned: `state.json` (currently v3) and `cfx-sync-map.json` (currently v2). Both ship with a load-time guard — `STATE_SCHEMA_TOO_NEW` — that refuses to run when on-disk `version > currentCodeVersion`. The guard makes upgrades one-way by construction and prevents an older binary from silently dropping fields it doesn't know about (which would corrupt state for the newer binary's next run).
+
+**Rules for schema changes:**
+
+- **Additive only.** Never remove a field. Never rename a field in place — add the new one, deprecate the old with a clear migration path.
+- **Bump the version on every structural change.** Both the on-disk literal and the code-side max version constant, in the same commit.
+- **Readable-backwards, writeable-forwards-only.** A vN binary must load vN-1 state without mangling the new vN fields it doesn't understand. A vN-1 binary encountering vN state must throw `STATE_SCHEMA_TOO_NEW` — not downgrade in place.
+- **Document the migration in CHANGELOG.md** alongside the version bump. Note which fields are new, their defaults, and whether the upgrade is automatic (it almost always is — first load rewrites the file with the new version).
+
+**Reference migrations:**
+
+- **state.json v2 → v3** (Phase 1.5) — added `pristineVersionId`, `pristineCapturedAt`, `pristineHashes` per-grant. Backwards-readable: v2 state loads with those fields defaulted to `null`; first save rewrites as v3.
+- **cfx-sync-map.json v1 → v2** (Phase 1.5) — added `preservePaths` and `preservePathsSource` per-entry. Same pattern.
+
+Both were additive with null defaults, so upgrade is silent. A v0.1.0 binary hitting post-1.5 state throws the typed error with a hint to upgrade the binary.
 
 ## Pinning
 
