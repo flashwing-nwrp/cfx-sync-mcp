@@ -228,6 +228,98 @@ export const ResetPristineOutput = z.object({
   orphansGced: z.array(z.number()),
 }).strict();
 
+// ---------------------------------------------------------------------------
+// Phase 1.6 — cfx_scan_updates (Task 10).
+//
+// Schema mirrors `ScanUpdatesResult` (src/lib/updates/types.ts) 1:1 so the
+// tool layer is purely a shape-forwarding adapter. Three of the four output
+// buckets wrap a shared `ResourceSignal` base plus `source`; the fourth
+// (`unmapped`) is narrower because log-only signals lack portal context.
+// ---------------------------------------------------------------------------
+
+export const ScanUpdatesInput = z.object({
+  slug: z.string().optional(),
+  grantId: z.number().int().positive().optional(),
+  logLines: z.array(z.string()).optional(),
+  forcePortal: z.boolean().optional(),
+}).refine(
+  (d) => !(d.slug !== undefined && d.grantId !== undefined),
+  { message: "slug and grantId are mutually exclusive" }
+);
+
+const SignalSourceEnum = z.enum(["portal", "log", "portal+log"]);
+
+// ResourceSignal base shape shared by available / suppressed / unknownSource.
+// Expressed as an object literal (not a schema) so each bucket can merge its
+// own tag fields while keeping field definitions DRY.
+const ResourceSignalShape = {
+  slug: z.string(),
+  grantId: z.number().int().optional(),
+  current: z.string().nullable(),
+  announced: z.string(),
+  releaseNotesUrl: z.string().optional(),
+  severityNote: z.string().optional(),
+  updatedAt: z.string().optional(),
+  boundaryKnown: z.boolean(),
+};
+
+export const ScanUpdatesOutput = z.object({
+  available: z.array(z.object({
+    ...ResourceSignalShape,
+    source: SignalSourceEnum,
+  })),
+  suppressed: z.array(z.object({
+    ...ResourceSignalShape,
+    source: SignalSourceEnum,
+    reason: z.enum(["local-ahead", "local-equal", "ignore-upstream-updates"]),
+  })),
+  unknownSource: z.array(z.object({
+    ...ResourceSignalShape,
+    source: SignalSourceEnum,
+    reason: z.enum(["no-semver", "missing-current", "missing-announced"]),
+  })),
+  unmapped: z.array(z.object({
+    slug: z.string(),
+    current: z.string().nullable(),
+    announced: z.string(),
+    source: z.literal("log"),
+    releaseNotesUrl: z.string().optional(),
+    severityNote: z.string().optional(),
+    boundaryKnown: z.boolean(),
+  })),
+  scannedLogLines: z.number().int().nonnegative(),
+  logHasStartupBoundary: z.boolean(),
+  portalPolled: z.boolean(),
+  portalFromCache: z.boolean(),
+});
+
+// ---------------------------------------------------------------------------
+// Phase 1.6 — cfx_set_fork_mode (Task 11).
+//
+// Mutates a single mapping entry's `ignoreUpstreamUpdates*` triad so operators
+// don't hand-edit cfx-sync-map.json for the common fork case (e.g. ULC with
+// local 1.9.0 ahead of upstream v1.8.0). See spec §cfx_set_fork_mode.
+// ---------------------------------------------------------------------------
+
+export const SetForkModeInput = z.object({
+  slug: z.string().optional(),
+  grantId: z.number().int().positive().optional(),
+  enabled: z.boolean(),
+  reason: z.string().optional(),
+}).refine(
+  // Exactly one of {slug, grantId} must be supplied — xor.
+  (d) => (d.slug !== undefined) !== (d.grantId !== undefined),
+  { message: "Exactly one of slug or grantId is required" }
+);
+
+export const SetForkModeOutput = z.object({
+  slug: z.string(),
+  grantId: z.number().int(),
+  ignoreUpstreamUpdates: z.boolean(),
+  reason: z.string().optional(),
+  setAt: z.string(),
+});
+
 export const RollbackInput = z.object({
   grantId: z.number().optional(),
   slug: z.string().optional(),

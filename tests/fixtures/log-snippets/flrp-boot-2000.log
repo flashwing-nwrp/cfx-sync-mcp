@@ -1,0 +1,2001 @@
+[          svadhesive] Authenticating server license key...
+[          svadhesive] Server license key authentication succeeded. Welcome!
+[    c-scripting-core] Creating script environments for monitor
+[      script:monitor] [txAdmin] Resource v8.0.1 threads and commands set up. All Ready.
+[           resources] Started resource monitor
+[           resources] Started resource qs-loadingscreen
+[    c-scripting-core] Creating script environments for lation_ui
+[           resources] Started resource lation_ui
+[           resources] Started resource gameconfig
+[    c-scripting-core] Creating script environments for mapmanager
+[           resources] Started resource mapmanager
+[           resources] Started resource spawnmanager
+[    c-scripting-core] Creating script environments for sessionmanager
+[           resources] Started resource sessionmanager
+[    c-scripting-core] Creating script environments for hardcap
+[           resources] Started resource hardcap
+[    c-scripting-core] Creating script environments for baseevents
+[           resources] Started resource baseevents
+[    c-scripting-core] Creating script environments for ox_lib
+[           resources] Started resource ox_lib
+[    c-scripting-core] Creating script environments for oxmysql
+[           resources] Started resource oxmysql
+[    c-scripting-core] Creating script environments for qbx_core
+[     script:qbx_core] [qbx_core] [INFO] Stopping hardcap...
+[           resources] Stopping resource hardcap
+[           resources] Started resource qbx_core
+[    c-scripting-core] Creating script environments for ox_target
+[           resources] Started resource ox_target
+[           resources] Started resource cr-3dnui
+[    c-scripting-core] Creating script environments for flrp_clienttriage
+[script:flrp_clienttr] [flrp_clienttriage] Server aggregator started — sweep every 60s, threshold: 1 player(s)
+[script:flrp_clienttr] [flrp_clienttriage] Scanner module loaded
+[script:flrp_clienttr] [flrp_clienttriage] Injector module loaded (file deployment via triage_deploy.ps1)
+[script:flrp_clienttr] [flrp_clienttriage] Server-side Citizen.Trace override active — capturing server SCRIPT ERRORs
+[           resources] Started resource flrp_clienttriage
+[    c-scripting-core] Creating script environments for flrp_fuel
+[    script:flrp_fuel] [flrp_fuel] [INFO] [flrp_fuel] charging server module loaded (Tier 2 v1)
+[    script:flrp_fuel] [flrp_fuel] [INFO] [flrp_fuel] Fuel system loaded (providing ox_fuel)
+[           resources] Started resource flrp_fuel
+[    c-scripting-core] Creating script environments for sv_panel_placer
+[script:sv_panel_plac] [sv_panel_placer] Server module loaded
+[           resources] Started resource sv_panel_placer
+[    c-scripting-core] Creating script environments for ulc
+[          script:ulc] Server thread loaded.
+[           resources] Started resource ulc
+[    c-scripting-core] Creating script environments for Renewed-Sirensync
+[           resources] Started resource Renewed-Sirensync
+[           resources] Started resource MugShotBase64
+[    c-scripting-core] Creating script environments for qs-inventory
+[           resources] Started resource qs-inventory
+[    c-scripting-core] Creating script environments for qs-advancedshops
+[script:qs-advancedsh] [INFO] Successfully loaded the framework.	qb
+[           resources] Started resource qs-advancedshops
+[    c-scripting-core] Creating script environments for qs-armor
+[           resources] Started resource qs-armor
+[    c-scripting-core] Creating script environments for qs-backpacks
+[           resources] Started resource qs-backpacks
+[           resources] Started resource qs-inventory-objects
+[    c-scripting-core] Creating script environments for qs-licenses
+[           resources] Started resource qs-licenses
+[    c-scripting-core] Creating script environments for qs-weapondraw
+[           resources] Started resource qs-weapondraw
+[    c-scripting-core] Creating script environments for qs-weaponsonback
+[           resources] Started resource qs-weaponsonback
+[    c-scripting-core] Creating script environments for rcore_clothing
+[           resources] Started resource rcore_clothing
+[           resources] Started resource rcore_clothing_for_photos
+[    c-scripting-core] Creating script environments for qs-vehiclekeys
+[           resources] Started resource qs-vehiclekeys
+[    c-scripting-core] Creating script environments for cd_bridge
+[           resources] Started resource cd_bridge
+[    c-scripting-core] Creating script environments for cd_doorlock
+[           resources] Started resource cd_doorlock
+[    c-scripting-core] Creating script environments for fast-multicharacterv2
+[           resources] Started resource fast-multicharacterv2
+[    c-scripting-core] Creating script environments for flrp_arrival
+[           resources] Started resource flrp_arrival
+[    c-scripting-core] Creating script environments for flrp_perception
+[           resources] Started resource flrp_perception
+[    c-scripting-core] Creating script environments for flrp_ballistics
+[script:flrp_ballisti] [flrp_ballistics] [INFO] [flrp_ballistics] Server initialized
+[           resources] Started resource flrp_ballistics
+[    c-scripting-core] Creating script environments for flrp_campaigns
+[script:flrp_campaign] [campaigns] Test runner loaded — use "campaign_test_all" or "campaign_test_suite <name>" from server console
+[           resources] Started resource flrp_campaigns
+[    c-scripting-core] Creating script environments for flrp_chat
+[           resources] Started resource flrp_chat
+[    c-scripting-core] Creating script environments for flrp_trading
+[ script:flrp_trading] [flrp_trading] [INFO] flrp_trading loaded — Nottingham Stock Exchange
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] Loaded 140 image URLs from news_image_catalog.json (imgur)
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] News system loaded — 3 streams active (+ crypto)
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] server/wire.lua loaded — wire transfer system ready
+[           resources] Started resource flrp_trading
+[    c-scripting-core] Creating script environments for flrp_crypto
+[  script:flrp_crypto] [flrp_crypto] [INFO] [flrp_crypto] Wallet system loaded — 256 seed words, 4 coin columns whitelisted
+[  script:flrp_crypto] [flrp_crypto] [INFO] [flrp_crypto] Authorization bridge loaded
+[  script:flrp_crypto] [flrp_crypto] [INFO] [flrp_crypto] Exchange buy/sell system loaded — 4 coins, 5 fee tiers
+[  script:flrp_crypto] [flrp_crypto] [INFO] [flrp_crypto] Transfer system loaded — withdraw, deposit, exchange P2P, device P2P
+[  script:flrp_crypto] [flrp_crypto] [INFO] [flrp_crypto] Dark market loaded — base fee 8.0%, max fee 20.0%, surge thresholds: volume $500000 / profit $200000
+[  script:flrp_crypto] [flrp_crypto] [INFO] [flrp_crypto] LEO integration loaded — 7 functions, 6 callbacks
+[           resources] Started resource flrp_crypto
+[    c-scripting-core] Creating script environments for flrp_nexus_tools
+[script:flrp_nexus_to] [flrp_nexus_tools]	Registered element library tools
+[script:flrp_nexus_to] [flrp_nexus_tools]	Registered gameplay tools
+[script:flrp_nexus_to] [flrp_nexus_tools]	Registered multiplayer tools
+[script:flrp_nexus_to] [Framework] Using: qbx_core
+[script:flrp_nexus_to] [flrp_nexus_tools]	Loaded	2	blueprints
+[script:flrp_nexus_to] [flrp_nexus_tools]	flrp_nexus_tools initialized
+[           resources] Started resource flrp_nexus_tools
+[    c-scripting-core] Creating script environments for flrp_dispatch_missions
+[script:flrp_dispatch] [flrp_dispatch_missions] [INFO] [dispatch] flrp_dispatch_missions started
+[script:flrp_dispatch] [flrp_dispatch_missions] [INFO] [dispatch] AI primary: ollama (qwen3.5:27b)
+[           resources] Started resource flrp_dispatch_missions
+[    c-scripting-core] Creating script environments for flrp_minigames
+[           resources] Started resource flrp_minigames
+[    c-scripting-core] Creating script environments for flrp_mr_x
+[    script:flrp_mr_x] [MR_X:Framework] Framework abstraction layer loaded (server)
+[    script:flrp_mr_x] [MR_X] Fact Discovery module loading...
+[    script:flrp_mr_x] [MR_X] Fact Discovery module loaded - exports registered
+[    script:flrp_mr_x] [MR_X] Camera Intel module loaded
+[    script:flrp_mr_x] [MR_X] Static camera zones: 32, Blind spots: 9
+[    script:flrp_mr_x] [MR_X] rcore_cam cameras will be loaded after 5 seconds...
+[    script:flrp_mr_x] [MR_X] Intel Acquisition module loaded
+[    script:flrp_mr_x] 
+[    script:flrp_mr_x] ╔══════════════════════════════════════════╗
+[    script:flrp_mr_x] ║           MR. X - THE FIXER              ║
+[    script:flrp_mr_x] ║        Full Life Roleplay v1.0.0        ║
+[    script:flrp_mr_x] ╚══════════════════════════════════════════╝
+[    script:flrp_mr_x] 
+[    script:flrp_mr_x] [MR_X] ✓ ox_lib - loaded
+[    script:flrp_mr_x] [MR_X] ✓ oxmysql - loaded
+[    script:flrp_mr_x] [MR_X] ✓ qbx_core - loaded
+[    script:flrp_mr_x] [MR_X] ✗ flrp_phone - REQUIRED but not started!
+[    script:flrp_mr_x] [MR_X] ✓ flrp_nexus_tools - loaded
+[    script:flrp_mr_x] [MR_X] ⚠ sonorancad - optional, not started
+[    script:flrp_mr_x] [MR_X] Warning: PhoneMode not set, defaulting to "unique"
+[    script:flrp_mr_x] [MR_X] Configuration validated successfully
+[    script:flrp_mr_x] [MR_X] Missing required dependencies! Resource may not function correctly.
+[    script:flrp_mr_x] 
+[    script:flrp_mr_x] [MR_X] Test Mode: DISABLED
+[    script:flrp_mr_x] [MR_X] Chaos Engine: Disabled
+[    script:flrp_mr_x] [MR_X] Proactive Contact: Enabled
+[    script:flrp_mr_x] 
+[    script:flrp_mr_x] 
+[    script:flrp_mr_x] [MR_X] Mr. X is watching...
+[    script:flrp_mr_x] 
+[           resources] Started resource flrp_mr_x
+[    c-scripting-core] Creating script environments for flrp_prison_release
+[           resources] Started resource flrp_prison_release
+[    c-scripting-core] Creating script environments for flrp_reputation
+[           resources] Started resource flrp_reputation
+[    c-scripting-core] Creating script environments for flrp_rpg_skills
+[script:flrp_rpg_skil] [flrp_rpg_skills] Server main.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_core.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_skills.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_subskills.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_weapon_mastery.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_craft_mastery.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_food_buffs.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_ai.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_bespoke.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] Archetype perks module loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_prestige.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_decay.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_strain.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] [INFO] [tells] tells_catalog.lua loaded — 9 tell types defined
+[script:flrp_rpg_skil] [flrp_rpg_skills] [INFO] [tells] tells_engine.lua loaded — behavioral tells system active
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_opposition.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_squad.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_chemistry.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_chemistry_detection.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_licenses.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_training.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_mentorship.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_hooks.lua loaded - All exports registered
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_data_collector.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] rpg_telemetry.lua loaded
+[script:flrp_rpg_skil] [flrp_rpg_skills] admin.lua loaded
+[           resources] Started resource flrp_rpg_skills
+[    c-scripting-core] Creating script environments for flrp_sentencing
+[           resources] Started resource flrp_sentencing
+[    c-scripting-core] Creating script environments for flrp_stresstest
+[script:flrp_stresste] [flrp_stresstest] [INFO] [flrp_stresstest] Loaded. Use /stresstest <mode> <count> [rampTo] or console commands stresstest_start / stresstest_stop / stresstest_status.
+[           resources] Started resource flrp_stresstest
+[    c-scripting-core] Creating script environments for flrp_taxes
+[   script:flrp_taxes] [flrp_taxes] [INFO] [flrp_taxes] engine.lua loaded
+[   script:flrp_taxes] [flrp_taxes] [INFO] [flrp_taxes] history.lua loaded
+[   script:flrp_taxes] [flrp_taxes] [INFO] [flrp_taxes] treasury.lua loaded
+[   script:flrp_taxes] [flrp_taxes] [INFO] [flrp_taxes] Tax engine loaded
+[           resources] Started resource flrp_taxes
+[    c-scripting-core] Creating script environments for flrp_testrunner
+[script:flrp_testrunn] [flrp_testrunner] Server test helpers loaded
+[script:flrp_testrunn] [flrp_testrunner] Server test commands ready — 14 suites registered
+[script:flrp_testrunn] [flrp_testrunner] Commands: /servertest [suite], servertestlist
+[script:flrp_testrunn] [flrp_testrunner] Server handler ready
+[script:flrp_testrunn] [flrp_testrunner] Console commands: runtests <id>, testlist, testresults
+[           resources] Started resource flrp_testrunner
+[    c-scripting-core] Creating script environments for flrp_timesync
+[           resources] Started resource flrp_timesync
+[    c-scripting-core] Creating script environments for flrp_tracker
+[ script:flrp_tracker] [flrp_tracker] Staff Duty Tracker loaded - tracking: leo, ems
+[           resources] Started resource flrp_tracker
+[    c-scripting-core] Creating script environments for flrp_licenses
+[script:flrp_licenses] [flrp_licenses] [INFO] [flrp_licenses] License & Badge Manager loaded
+[           resources] Started resource flrp_licenses
+[    c-scripting-core] Creating script environments for flrp_medical
+[           resources] Started resource flrp_medical
+[    c-scripting-core] Creating script environments for nearest-postal
+[           resources] Started resource nearest-postal
+[   resources:pNotify] Warning: could not find file `html/sound-example.wav` (defined in __resource.lua:10)
+[           resources] Started resource pNotify (1 warning)
+[           resources] Started resource sonoran_idcard
+[    c-scripting-core] Creating script environments for sonoran_updatehelper
+[           resources] Started resource sonoran_updatehelper
+[    c-scripting-core] Creating script environments for sonorancad
+[   script:sonorancad]     _____                                    _________    ____
+[   script:sonorancad]    / ___/____  ____  ____  _________ _____  / ____/   |  / __ \
+[   script:sonorancad]    \__ \/ __ \/ __ \/ __ \/ ___/ __ `/ __ \/ /   / /| | / / / /
+[   script:sonorancad]   ___/ / /_/ / / / / /_/ / /  / /_/ / / / / /___/ ___ |/ /_/ /
+[   script:sonorancad]  /____/\____/_/ /_/\____/_/   \__,_/_/ /_/\____/_/  |_/_____/
+[   script:sonorancad] 
+[   script:sonorancad] 
+[   script:sonorancad] [12:14:24][core/logging.lua:0:INFO] Starting up...
+[resources:sonorancad] Warning: could not find client_script `submodules/**/cl_*.js` (defined in fxmanifest.lua:29)
+[resources:sonorancad] Warning: could not find file `stream/**/*.ytyp` (defined in fxmanifest.lua:42)
+[resources:sonorancad] Warning: could not find file `submodules/recordPrinter/pdfs/**/*.pdf` (defined in fxmanifest.lua:42)
+[           resources] Started resource sonorancad (3 warnings)
+[    c-scripting-core] Creating script environments for tablet
+[           resources] Started resource tablet
+[    c-scripting-core] Creating script environments for tablet_backup
+[           resources] Started resource tablet_backup
+[    c-scripting-core] Creating script environments for sonorancms
+[           resources] Started resource sonorancms
+[    c-scripting-core] Creating script environments for sonoranradio
+[ script:sonoranradio] [SonoranRadio] - Attempting to set server IP for radio service...
+[resources:sonoranrad] Asset sonoranradio/mobilecell+hi.ytd uses 24.5 MiB of physical memory.
+[resources:sonoranrad] Asset sonoranradio/serverrack+hi.ytd uses 16.5 MiB of physical memory.
+[           resources] Started resource sonoranradio (2 warnings)
+[    c-scripting-core] Creating script environments for sonoranradio_updatehelper
+[           resources] Started resource sonoranradio_updatehelper
+[resources:16gescrb:s] Asset 16gescrb/16gescrb.yft uses 21.1 MiB of virtual memory.
+[resources:16gescrb:s] Asset 16gescrb/16gescrb.ytd uses 90.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:16gescrb:s] Asset 16gescrb/16gescrb_hi.yft uses 16.4 MiB of virtual memory.
+[           resources] Started resource 16gescrb (3 warnings)
+[resources:2013_capri] Asset 2013_caprice_rb/Valor4rb.yft uses 17.2 MiB of virtual memory.
+[resources:2013_capri] Asset 2013_caprice_rb/Valor4rb.ytd uses 190.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource 2013_caprice_rb (2 warnings)
+[resources:2017_viper] Asset 2017_viper_speed_unit/viperleo+hi.ytd uses 24.0 MiB of physical memory.
+[resources:2017_viper] Asset 2017_viper_speed_unit/viperleo.yft uses 26.5 MiB of virtual memory.
+[resources:2017_viper] Asset 2017_viper_speed_unit/viperleo.ytd uses 89.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:2017_viper] Asset 2017_viper_speed_unit/viperleo_hi.yft uses 26.5 MiB of virtual memory.
+[           resources] Started resource 2017_viper_speed_unit (4 warnings)
+[resources:2018_amg_g] Asset 2018_amg_gtr_speed_unit/amggtrleo+hi.ytd uses 72.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:2018_amg_g] Asset 2018_amg_gtr_speed_unit/amggtrleo.yft uses 23.5 MiB of virtual memory.
+[resources:2018_amg_g] Asset 2018_amg_gtr_speed_unit/amggtrleo.ytd uses 138.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:2018_amg_g] Asset 2018_amg_gtr_speed_unit/amggtrleo_hi.yft uses 23.5 MiB of virtual memory.
+[           resources] Started resource 2018_amg_gtr_speed_unit (4 warnings)
+[resources:2018_gener] Asset 2018_generic_sports_car_rb/18gscrb.yft uses 20.8 MiB of virtual memory.
+[resources:2018_gener] Asset 2018_generic_sports_car_rb/18gscrb.ytd uses 126.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:2018_gener] Asset 2018_generic_sports_car_rb/18gscrb_hi.yft uses 20.8 MiB of virtual memory.
+[           resources] Started resource 2018_generic_sports_car_rb (3 warnings)
+[resources:2018_porsc] Asset 2018_porsche_911_speed_unit/911turboleo+hi.ytd uses 33.0 MiB of physical memory.
+[resources:2018_porsc] Asset 2018_porsche_911_speed_unit/911turboleo.yft uses 16.5 MiB of virtual memory.
+[resources:2018_porsc] Asset 2018_porsche_911_speed_unit/911turboleo.ytd uses 124.5 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:2018_porsc] Asset 2018_porsche_911_speed_unit/911turboleo_hi.yft uses 16.5 MiB of virtual memory.
+[           resources] Started resource 2018_porsche_911_speed_unit (4 warnings)
+[resources:2020_tahoe] Asset 2020_tahoe_rb/valor8rb.yft uses 22.4 MiB of virtual memory.
+[resources:2020_tahoe] Asset 2020_tahoe_rb/valor8rb.ytd uses 176.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:2020_tahoe] Asset 2020_tahoe_rb/valor8rb_hi.yft uses 19.0 MiB of virtual memory.
+[           resources] Started resource 2020_tahoe_rb (3 warnings)
+[resources:2022_gener] Asset 2022_generic_sports_car_bb/22gscbb.yft uses 17.2 MiB of virtual memory.
+[resources:2022_gener] Asset 2022_generic_sports_car_bb/22gscbb.ytd uses 108.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:2022_gener] Asset 2022_generic_sports_car_bb/22gscbb_hi.yft uses 17.2 MiB of virtual memory.
+[           resources] Started resource 2022_generic_sports_car_bb (3 warnings)
+[resources:23camslick] Warning: could not find file `vehiclelayouts.meta` (defined in fxmanifest.lua:4)
+[resources:23camslick] Asset 23camslick/23camslick.ytd uses 64.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource 23camslick (2 warnings)
+[resources:24mustslic] Warning: could not find file `vehiclelayouts.meta` (defined in fxmanifest.lua:4)
+[resources:24mustslic] Asset 24mustslick/24mustslick.ytd uses 52.5 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:24mustslic] Asset 24mustslick/24mustslick_hi.yft uses 16.3 MiB of virtual memory.
+[           resources] Started resource 24mustslick (3 warnings)
+[resources:25tahoedvi] Warning: could not find file `data/**/vehiclelayouts.meta` (defined in fxmanifest.lua:7)
+[resources:25tahoedvi] Warning: could not find file `data/**/dlctext.meta` (defined in fxmanifest.lua:7)
+[resources:25tahoedvi] Asset 25tahoedvidb/25tahoedvidb+hi.ytd uses 24.0 MiB of physical memory.
+[resources:25tahoedvi] Asset 25tahoedvidb/25tahoedvidb.yft uses 21.0 MiB of virtual memory.
+[resources:25tahoedvi] Asset 25tahoedvidb/25tahoedvidb.ytd uses 66.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:25tahoedvi] Asset 25tahoedvidb/25tahoedvidb_hi.yft uses 17.5 MiB of virtual memory.
+[           resources] Started resource 25tahoedvidb (6 warnings)
+[resources:25tahoedvi] Warning: could not find file `data/**/vehiclelayouts.meta` (defined in fxmanifest.lua:7)
+[resources:25tahoedvi] Warning: could not find file `data/**/dlctext.meta` (defined in fxmanifest.lua:7)
+[resources:25tahoedvi] Asset 25tahoedvivisordb/25tahoedvivisordb+hi.ytd uses 24.0 MiB of physical memory.
+[resources:25tahoedvi] Asset 25tahoedvivisordb/25tahoedvivisordb.yft uses 18.6 MiB of virtual memory.
+[resources:25tahoedvi] Asset 25tahoedvivisordb/25tahoedvivisordb.ytd uses 69.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:25tahoedvi] Asset 25tahoedvivisordb/25tahoedvivisordb_hi.yft uses 16.5 MiB of virtual memory.
+[           resources] Started resource 25tahoedvivisordb (6 warnings)
+[resources:c3hcat:str] Asset c3hcat/c3hcat.yft uses 22.0 MiB of virtual memory.
+[resources:c3hcat:str] Asset c3hcat/c3hcat.ytd uses 114.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:c3hcat:str] Asset c3hcat/c3hcat_hi.yft uses 18.2 MiB of virtual memory.
+[           resources] Started resource c3hcat (3 warnings)
+[resources:c3hcatBB:s] Asset c3hcatBB/c3hcatBB.yft uses 22.0 MiB of virtual memory.
+[resources:c3hcatBB:s] Asset c3hcatBB/c3hcatBB.ytd uses 114.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:c3hcatBB:s] Asset c3hcatBB/c3hcatBB_hi.yft uses 18.2 MiB of virtual memory.
+[           resources] Started resource c3hcatBB (3 warnings)
+[resources:c3outlaw:s] Asset c3outlaw/c3outlaw.ytd uses 94.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource c3outlaw (1 warning)
+[resources:c3ucminiva] Asset c3ucminivan/c3ucminivan.yft uses 16.2 MiB of virtual memory.
+[resources:c3ucminiva] Asset c3ucminivan/c3ucminivan.ytd uses 128.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:c3ucminiva] Asset c3ucminivan/c3ucminivan_hi.yft uses 16.2 MiB of virtual memory.
+[           resources] Started resource c3ucminivan (3 warnings)
+[resources:c3um14ss:s] Asset c3um14ss/c3um14ss.yft uses 21.2 MiB of virtual memory.
+[resources:c3um14ss:s] Asset c3um14ss/c3um14ss.ytd uses 92.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:c3um14ss:s] Asset c3um14ss/c3um14ss_hi.yft uses 21.2 MiB of virtual memory.
+[           resources] Started resource c3um14ss (3 warnings)
+[    c-scripting-core] Creating script environments for cd_dispatch
+[           resources] Started resource cd_dispatch
+[resources:dbjd25f150] Asset dbjd25f150stx/dbjd25f150stx+hi.ytd uses 32.0 MiB of physical memory.
+[resources:dbjd25f150] Asset dbjd25f150stx/dbjd25f150stx.yft uses 29.7 MiB of virtual memory.
+[resources:dbjd25f150] Asset dbjd25f150stx/dbjd25f150stx.ytd uses 37.0 MiB of physical memory.
+[resources:dbjd25f150] Asset dbjd25f150stx/dbjd25f150stx_hi.yft uses 18.2 MiB of virtual memory.
+[           resources] Started resource dbjd25f150stx (4 warnings)
+[resources:dbjdhard23] Asset dbjdhard23tahoe/dbjdhard23tahoe+hi.ytd uses 24.0 MiB of physical memory.
+[resources:dbjdhard23] Asset dbjdhard23tahoe/dbjdhard23tahoe.yft uses 30.0 MiB of virtual memory.
+[resources:dbjdhard23] Asset dbjdhard23tahoe/dbjdhard23tahoe.ytd uses 100.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource dbjdhard23tahoe (3 warnings)
+[resources:fedsig11cv] Warning: could not find client_script `vehicle_names.lua` (defined in __resource.lua:19)
+[resources:fedsig11cv] Warning: could not find file `vehiclelayouts.meta` (defined in __resource.lua:3)
+[resources:fedsig11cv] Warning: could not find file `dlctext.meta` (defined in __resource.lua:3)
+[resources:fedsig11cv] Asset fedsig11cvpi/fedsig11cvpi+hi.ytd uses 38.0 MiB of physical memory.
+[resources:fedsig11cv] Asset fedsig11cvpi/fedsig11cvpi.ytd uses 95.5 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig11cv] Asset fedsig11cvpi/fs_alprs1_11cvpi.yft uses 24.0 MiB of physical memory.
+[resources:fedsig11cv] Asset fedsig11cvpi/fs_alprs_11cvpi.yft uses 24.0 MiB of physical memory.
+[           resources] Started resource fedsig11cvpi (7 warnings)
+[resources:fedsig13ta] Warning: could not find client_script `vehicle_names.lua` (defined in __resource.lua:19)
+[resources:fedsig13ta] Warning: could not find file `vehiclelayouts.meta` (defined in __resource.lua:3)
+[resources:fedsig13ta] Warning: could not find file `dlctext.meta` (defined in __resource.lua:3)
+[resources:fedsig13ta] Asset fedsig13taurusSbb/fedsig13taurusSbb+hi.ytd uses 84.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig13ta] Asset fedsig13taurusSbb/fedsig13taurusSbb.ytd uses 101.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig13ta] Asset fedsig13taurusSbb/fs_alprs1_13taurus.yft uses 24.0 MiB of physical memory.
+[resources:fedsig13ta] Asset fedsig13taurusSbb/fs_alprs_13taurus.yft uses 24.0 MiB of physical memory.
+[resources:fedsig13ta] Asset fedsig13taurusSbb/fs_partition_13taurus.yft uses 24.0 MiB of physical memory.
+[resources:fedsig13ta] Asset fedsig13taurusSbb/fs_radar1_13taurus.yft uses 24.0 MiB of physical memory.
+[resources:fedsig13ta] Asset fedsig13taurusSbb/fs_radar_13taurus.yft uses 24.0 MiB of physical memory.
+[           resources] Started resource fedsig13taurusSbb (10 warnings)
+[resources:fedsig14ch] Warning: could not find client_script `vehicle_names.lua` (defined in fxmanifest.lua:20)
+[resources:fedsig14ch] Warning: could not find file `vehiclelayouts.meta` (defined in fxmanifest.lua:4)
+[resources:fedsig14ch] Warning: could not find file `dlctext.meta` (defined in fxmanifest.lua:4)
+[resources:fedsig14ch] Asset fedsig14char/fedsig14char+hi.ytd uses 60.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig14ch] Asset fedsig14char/fedsig14char.ytd uses 94.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig14ch] Asset fedsig14char/fs_alprs1_14char.yft uses 24.0 MiB of physical memory.
+[resources:fedsig14ch] Asset fedsig14char/fs_alprs_14char.yft uses 24.0 MiB of physical memory.
+[resources:fedsig14ch] Asset fedsig14char/fs_partition_14char.yft uses 24.0 MiB of physical memory.
+[resources:fedsig14ch] Asset fedsig14char/fs_radar1_14char.yft uses 24.0 MiB of physical memory.
+[resources:fedsig14ch] Asset fedsig14char/fs_radar_14char.yft uses 24.0 MiB of physical memory.
+[           resources] Started resource fedsig14char (10 warnings)
+[resources:fedsig16fp] Warning: could not find client_script `vehicle_names.lua` (defined in __resource.lua:19)
+[resources:fedsig16fp] Warning: could not find file `vehiclelayouts.meta` (defined in __resource.lua:3)
+[resources:fedsig16fp] Warning: could not find file `dlctext.meta` (defined in __resource.lua:3)
+[resources:fedsig16fp] Asset fedsig16fpiu/fedsig16fpiu.ytd uses 131.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig16fp] Asset fedsig16fpiu/fs_alprs1_16fpiu.yft uses 24.0 MiB of physical memory.
+[resources:fedsig16fp] Asset fedsig16fpiu/fs_alprs_16fpiu.yft uses 32.0 MiB of physical memory.
+[resources:fedsig16fp] Asset fedsig16fpiu/fs_partition_16fpiu.yft uses 48.0 MiB of physical memory.
+[resources:fedsig16fp] Asset fedsig16fpiu/fs_radar1_16fpiu.yft uses 24.0 MiB of physical memory.
+[resources:fedsig16fp] Asset fedsig16fpiu/fs_radar_16fpiu.yft uses 24.0 MiB of physical memory.
+[           resources] Started resource fedsig16fpiu (9 warnings)
+[resources:fedsig16fp] Warning: could not find client_script `vehicle_names.lua` (defined in __resource.lua:19)
+[resources:fedsig16fp] Warning: could not find file `vehiclelayouts.meta` (defined in __resource.lua:3)
+[resources:fedsig16fp] Warning: could not find file `dlctext.meta` (defined in __resource.lua:3)
+[resources:fedsig16fp] Asset fedsig16fpiuS/fedsig16fpiuS.ytd uses 124.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig16fp] Asset fedsig16fpiuS/fs_alprs1_16fpiu.yft uses 24.0 MiB of physical memory.
+[resources:fedsig16fp] Asset fedsig16fpiuS/fs_alprs_16fpiu.yft uses 32.0 MiB of physical memory.
+[resources:fedsig16fp] Asset fedsig16fpiuS/fs_partition_16fpiu.yft uses 48.0 MiB of physical memory.
+[resources:fedsig16fp] Asset fedsig16fpiuS/fs_radar1_16fpiu.yft uses 24.0 MiB of physical memory.
+[resources:fedsig16fp] Asset fedsig16fpiuS/fs_radar_16fpiu.yft uses 24.0 MiB of physical memory.
+[           resources] Started resource fedsig16fpiuS (9 warnings)
+[resources:fedsig18ch] Warning: could not find client_script `vehicle_names.lua` (defined in __resource.lua:19)
+[resources:fedsig18ch] Warning: could not find file `vehiclelayouts.meta` (defined in __resource.lua:3)
+[resources:fedsig18ch] Warning: could not find file `dlctext.meta` (defined in __resource.lua:3)
+[resources:fedsig18ch] Asset fedsig18charSbb/fedsig18charSbb+hi.ytd uses 71.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig18ch] Asset fedsig18charSbb/fedsig18charSbb.ytd uses 93.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig18ch] Asset fedsig18charSbb/fs_alprs1_18char.yft uses 24.0 MiB of physical memory.
+[resources:fedsig18ch] Asset fedsig18charSbb/fs_alprs_18char.yft uses 32.0 MiB of physical memory.
+[resources:fedsig18ch] Asset fedsig18charSbb/fs_partition_18char.yft uses 24.0 MiB of physical memory.
+[resources:fedsig18ch] Asset fedsig18charSbb/fs_radar1_18char.yft uses 24.0 MiB of physical memory.
+[resources:fedsig18ch] Asset fedsig18charSbb/fs_radar_18char.yft uses 32.0 MiB of physical memory.
+[           resources] Started resource fedsig18charSbb (10 warnings)
+[resources:fedsig18ta] Warning: could not find file `vehiclelayouts.meta` (defined in fxmanifest.lua:4)
+[resources:fedsig18ta] Warning: could not find file `dlctext.meta` (defined in fxmanifest.lua:4)
+[resources:fedsig18ta] Asset fedsig18tahoeSbb/fedsig18tahoeSbb+hi.ytd uses 82.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig18ta] Asset fedsig18tahoeSbb/fedsig18tahoeSbb.ytd uses 93.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig18ta] Asset fedsig18tahoeSbb/fs_alprs1_18tahoe.yft uses 32.0 MiB of physical memory.
+[resources:fedsig18ta] Asset fedsig18tahoeSbb/fs_alprs_18tahoe.yft uses 24.0 MiB of physical memory.
+[resources:fedsig18ta] Asset fedsig18tahoeSbb/fs_partition_18tahoe.yft uses 48.0 MiB of physical memory.
+[resources:fedsig18ta] Asset fedsig18tahoeSbb/fs_radar1_18tahoe.yft uses 24.0 MiB of physical memory.
+[resources:fedsig18ta] Asset fedsig18tahoeSbb/fs_radar_18tahoe.yft uses 24.0 MiB of physical memory.
+[           resources] Started resource fedsig18tahoeSbb (9 warnings)
+[resources:fedsig21du] Warning: could not find client_script `vehicle_names.lua` (defined in __resource.lua:19)
+[resources:fedsig21du] Warning: could not find file `vehiclelayouts.meta` (defined in __resource.lua:3)
+[resources:fedsig21du] Warning: could not find file `dlctext.meta` (defined in __resource.lua:3)
+[resources:fedsig21du] Asset fedsig21durangoSbb/fedsig21durangoSbb+hi.ytd uses 36.0 MiB of physical memory.
+[resources:fedsig21du] Asset fedsig21durangoSbb/fedsig21durangoSbb.yft uses 18.0 MiB of virtual memory.
+[resources:fedsig21du] Asset fedsig21durangoSbb/fedsig21durangoSbb.ytd uses 103.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fedsig21du] Asset fedsig21durangoSbb/fs_alprs1_21durango.yft uses 24.0 MiB of physical memory.
+[resources:fedsig21du] Asset fedsig21durangoSbb/fs_alprs_21durango.yft uses 24.0 MiB of physical memory.
+[resources:fedsig21du] Asset fedsig21durangoSbb/fs_partition_21durango.yft uses 24.0 MiB of physical memory.
+[resources:fedsig21du] Asset fedsig21durangoSbb/fs_radar1_21durango.yft uses 24.0 MiB of physical memory.
+[resources:fedsig21du] Asset fedsig21durangoSbb/fs_radar_21durango.yft uses 24.0 MiB of physical memory.
+[           resources] Started resource fedsig21durangoSbb (11 warnings)
+[resources:fineline:s] Asset fineline/lib18chgr.bak uses 19.1 MiB of virtual memory.
+[resources:fineline:s] Asset fineline/lib18chgr.yft uses 19.1 MiB of virtual memory.
+[resources:fineline:s] Asset fineline/lib18chgr.ytd uses 76.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fineline:s] Asset fineline/lib18chgr_hi.yft uses 19.1 MiB of virtual memory.
+[resources:fineline:s] Asset fineline/maghc.yft uses 23.2 MiB of virtual memory.
+[resources:fineline:s] Asset fineline/maghc.ytd uses 81.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:fineline:s] Asset fineline/maghc_hi.yft uses 23.2 MiB of virtual memory.
+[           resources] Started resource fineline (7 warnings)
+[    c-scripting-core] Creating script environments for flrp_banking
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] server/invoicing.lua loaded — invoice creation, queries, actions, payment, void/refund, encumbrance
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] invoicing_tax.lua loaded
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] server/society.lua loaded — society accounts + Renewed-Banking/qb-management compat exports registered
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] server/exports.lua loaded — all public exports registered
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] server/tests.lua loaded — /banktest command registered
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] server/main.lua loaded — all NUI bridge callbacks registered
+[           resources] Started resource flrp_banking
+[    c-scripting-core] Creating script environments for flrp_dojterminal
+[           resources] Started resource flrp_dojterminal
+[    c-scripting-core] Creating script environments for flrp_police
+[           resources] Started resource flrp_police
+[resources:generic_po] Asset generic_police_suv_rb/gsuv1rb.yft uses 17.0 MiB of virtual memory.
+[resources:generic_po] Asset generic_police_suv_rb/gsuv1rb.ytd uses 104.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:generic_po] Asset generic_police_suv_rb/gsuv1rb_hi.yft uses 17.0 MiB of virtual memory.
+[           resources] Started resource generic_police_suv_rb (3 warnings)
+[resources:ghoulchgrb] Asset ghoulchgrb/ghoulchgrb.yft uses 25.5 MiB of virtual memory.
+[resources:ghoulchgrb] Asset ghoulchgrb/ghoulchgrb.ytd uses 67.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:ghoulchgrb] Asset ghoulchgrb/ghoulchgrb_hi.yft uses 25.5 MiB of virtual memory.
+[           resources] Started resource ghoulchgrb (3 warnings)
+[ resources:ja:stream] Asset ja/leg13taurus+hi.ytd uses 40.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg13taurus.ytd uses 98.5 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[ resources:ja:stream] Asset ja/leg13taurusS+hi.ytd uses 20.5 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg13taurusS.ytd uses 95.5 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[ resources:ja:stream] Asset ja/leg18charger+hi.ytd uses 52.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[ resources:ja:stream] Asset ja/leg18charger.ytd uses 126.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[ resources:ja:stream] Asset ja/leg18chargerS+hi.ytd uses 60.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[ resources:ja:stream] Asset ja/leg18chargerS.ytd uses 130.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[ resources:ja:stream] Asset ja/leg20fpiu+hi.ytd uses 36.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg20fpiu.ytd uses 119.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[ resources:ja:stream] Asset ja/leg20fpiuS.ytd uses 119.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[ resources:ja:stream] Asset ja/leg21durango+hi.ytd uses 32.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg21durango.yft uses 16.8 MiB of virtual memory.
+[ resources:ja:stream] Asset ja/leg21durango.ytd uses 102.5 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[ resources:ja:stream] Asset ja/leg21durango_hi.yft uses 16.8 MiB of virtual memory.
+[ resources:ja:stream] Asset ja/leg_alprs1_13taurus.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_alprs1_18charger.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_alprs1_20fpiu.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_alprs1_21durango.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_alprs_13taurus.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_alprs_18charger.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_alprs_20fpiu.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_alprs_21durango.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_partition_13taurus.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_partition_18charger.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_partition_20fpiu.yft uses 48.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_partition_21durango.yft uses 48.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_radar1_13taurus.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_radar1_18charger.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_radar1_20fpiu.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_radar1_21durango.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_radar_13taurus.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_radar_18charger.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_radar_20fpiu.yft uses 24.0 MiB of physical memory.
+[ resources:ja:stream] Asset ja/leg_radar_21durango.yft uses 24.0 MiB of physical memory.
+[           resources] Started resource ja (35 warnings)
+[resources:ja_speed_9] Asset ja_speed_911_gt3_slicktop_rb/911gt3_alprs1_speed.yft uses 32.0 MiB of physical memory.
+[resources:ja_speed_9] Asset ja_speed_911_gt3_slicktop_rb/speed911gt3s.ytd uses 102.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource ja_speed_911_gt3_slicktop_rb (2 warnings)
+[resources:ja_speed_f] Asset ja_speed_f12_tdf_slicktop_rb/f12tdf_alprs_1.yft uses 32.0 MiB of physical memory.
+[resources:ja_speed_f] Asset ja_speed_f12_tdf_slicktop_rb/speedf12tdfs+hi.ytd uses 44.0 MiB of physical memory.
+[resources:ja_speed_f] Asset ja_speed_f12_tdf_slicktop_rb/speedf12tdfs.ytd uses 81.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:ja_speed_f] Asset ja_speed_f12_tdf_slicktop_rb/speedf12tdfs_hi.yft uses 17.2 MiB of virtual memory.
+[           resources] Started resource ja_speed_f12_tdf_slicktop_rb (4 warnings)
+[resources:ja_speed_h] Asset ja_speed_huracan_slicktop_rb/15huracan_alprs1_speed.yft uses 32.0 MiB of physical memory.
+[resources:ja_speed_h] Asset ja_speed_huracan_slicktop_rb/15huracan_radar1_speed.yft uses 24.0 MiB of physical memory.
+[resources:ja_speed_h] Asset ja_speed_huracan_slicktop_rb/15huracan_radar_speed.yft uses 24.0 MiB of physical memory.
+[resources:ja_speed_h] Asset ja_speed_huracan_slicktop_rb/speed15huracanS.ytd uses 93.5 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:ja_speed_h] Asset ja_speed_huracan_slicktop_rb/speed15huracanS_hi.yft uses 17.2 MiB of virtual memory.
+[           resources] Started resource ja_speed_huracan_slicktop_rb (5 warnings)
+[resources:jddbepd15f] Asset jddbepd15fpiu/jddbepd15fpiu.yft uses 20.5 MiB of virtual memory.
+[resources:jddbepd15f] Asset jddbepd15fpiu/jddbepd15fpiu.ytd uses 130.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource jddbepd15fpiu (2 warnings)
+[resources:jddbhard23] Asset jddbhard23tahoebb/jddbhard23tahoebb+hi.ytd uses 24.0 MiB of physical memory.
+[resources:jddbhard23] Asset jddbhard23tahoebb/jddbhard23tahoebb.yft uses 29.7 MiB of virtual memory.
+[resources:jddbhard23] Asset jddbhard23tahoebb/jddbhard23tahoebb.ytd uses 100.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource jddbhard23tahoebb (3 warnings)
+[resources:jddblib15f] Asset jddblib15fpiu/jddblib15fpiu.yft uses 20.5 MiB of virtual memory.
+[resources:jddblib15f] Asset jddblib15fpiu/jddblib15fpiu.ytd uses 130.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource jddblib15fpiu (2 warnings)
+[resources:jw_pursuit] Asset jw_pursuitdemon/jw_pursuitdemon.yft uses 18.8 MiB of virtual memory.
+[resources:jw_pursuit] Asset jw_pursuitdemon/jw_pursuitdemon.ytd uses 70.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:jw_pursuit] Asset jw_pursuitdemon/jw_pursuitdemon_hi.yft uses 18.8 MiB of virtual memory.
+[           resources] Started resource jw_pursuitdemon (3 warnings)
+[resources:jw_pursuit] Asset jw_pursuitdemonslick/jw_pursuitdemonslick.yft uses 18.8 MiB of virtual memory.
+[resources:jw_pursuit] Asset jw_pursuitdemonslick/jw_pursuitdemonslick.ytd uses 69.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:jw_pursuit] Asset jw_pursuitdemonslick/jw_pursuitdemonslick_hi.yft uses 18.8 MiB of virtual memory.
+[           resources] Started resource jw_pursuitdemonslick (3 warnings)
+[resources:jw_rav4uc:] Asset jw_rav4uc/jw_rav4uc.ytd uses 58.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource jw_rav4uc (1 warning)
+[resources:jw_supersn] Asset jw_supersnakeslick/jw_supersnakeslick.yft uses 21.0 MiB of virtual memory.
+[resources:jw_supersn] Asset jw_supersnakeslick/jw_supersnakeslick.ytd uses 95.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:jw_supersn] Asset jw_supersnakeslick/jw_supersnakeslick_hi.yft uses 21.0 MiB of virtual memory.
+[           resources] Started resource jw_supersnakeslick (3 warnings)
+[resources:newvic:str] Asset newvic/11cvpiw+hi.ytd uses 72.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:newvic:str] Asset newvic/11cvpiw.ytd uses 106.5 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:newvic:str] Asset newvic/wheel_rcvpi_01.ydr uses 24.0 MiB of physical memory.
+[resources:newvic:str] Asset newvic/wheel_rcvpi_02.ydr uses 32.0 MiB of physical memory.
+[resources:newvic:str] Asset newvic/wheel_rcvpi_03.ydr uses 32.0 MiB of physical memory.
+[resources:newvic:str] Asset newvic/wheel_rcvpi_04.ydr uses 32.0 MiB of physical memory.
+[resources:newvic:str] Asset newvic/wheel_rcvpi_05.ydr uses 40.0 MiB of physical memory.
+[resources:newvic:str] Asset newvic/wheel_rcvpi_06.ydr uses 32.0 MiB of physical memory.
+[           resources] Started resource newvic (8 warnings)
+[resources:nypd22mach] Warning: could not find file `vehiclelayouts.meta` (defined in fxmanifest.lua:4)
+[resources:nypd22mach] Asset nypd22mach/nypd22mach+hi.ytd uses 17.5 MiB of physical memory.
+[resources:nypd22mach] Asset nypd22mach/nypd22mach.ytd uses 60.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource nypd22mach (3 warnings)
+[resources:razer:stre] Asset razer/01camss.ytd uses 17.5 MiB of physical memory.
+[resources:razer:stre] Asset razer/23f150xlt+hi.ytd uses 28.0 MiB of physical memory.
+[resources:razer:stre] Asset razer/25expe+hi.ytd uses 24.0 MiB of physical memory.
+[resources:razer:stre] Asset razer/350ramlh.ytd uses 17.0 MiB of physical memory.
+[           resources] Started resource razer (4 warnings)
+[resources:rw22navi:s] Asset rw22navi/rw22navi.ytd uses 72.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource rw22navi (1 warning)
+[ resources:speedc8bb] Warning: could not find file `vehiclelayouts.meta` (defined in __resource.lua:3)
+[resources:speedc8bb:] Asset speedc8bb/speedc8bb.ytd uses 140.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource speedc8bb (2 warnings)
+[resources:uc23suburb] Warning: could not find file `ulc.meta` (defined in fxmanifest.lua:7)
+[resources:uc23suburb] Asset uc23suburban/uc23suburban+hi.ytd uses 54.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:uc23suburb] Asset uc23suburban/uc23suburban.ytd uses 51.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource uc23suburban (3 warnings)
+[    resources:ucdura] Warning: could not find client_script `vehicle_names.lua` (defined in fxmanifest.lua:18)
+[    resources:ucdura] Warning: could not find file `vehiclelayouts.meta` (defined in fxmanifest.lua:4)
+[resources:ucdura:str] Asset ucdura/ucdura+hi.ytd uses 64.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:ucdura:str] Asset ucdura/ucdura.yft uses 20.8 MiB of virtual memory.
+[resources:ucdura:str] Asset ucdura/ucdura.ytd uses 89.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:ucdura:str] Asset ucdura/ucdura_hi.yft uses 20.8 MiB of virtual memory.
+[           resources] Started resource ucdura (6 warnings)
+[    c-scripting-core] Creating script environments for wk_wars2x
+[           resources] Started resource wk_wars2x
+[resources:xbr_camaro] Warning: could not find file `data/handling.meta` (defined in __resource.lua:5)
+[resources:xbr_camaro] Asset xbr_camaro/camaro.yft uses 21.5 MiB of virtual memory.
+[resources:xbr_camaro] Asset xbr_camaro/camaro.ytd uses 76.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:xbr_camaro] Asset xbr_camaro/camaro_hi.yft uses 21.5 MiB of virtual memory.
+[           resources] Started resource xbr_camaro (4 warnings)
+[    c-scripting-core] Creating script environments for qbx_adminmenu
+[           resources] Started resource qbx_adminmenu
+[    c-scripting-core] Creating script environments for qbx_binoculars
+[           resources] Started resource qbx_binoculars
+[    c-scripting-core] Creating script environments for qbx_carwash
+[           resources] Started resource qbx_carwash
+[    c-scripting-core] Creating script environments for qbx_cityhall
+[           resources] Started resource qbx_cityhall
+[    c-scripting-core] Creating script environments for qbx_customs
+[           resources] Started resource qbx_customs
+[           resources] Started resource qbx_density
+[    c-scripting-core] Creating script environments for qbx_divegear
+[           resources] Started resource qbx_divegear
+[    c-scripting-core] Creating script environments for qbx_diving
+[           resources] Started resource qbx_diving
+[    c-scripting-core] Creating script environments for qbx_fireworks
+[           resources] Started resource qbx_fireworks
+[    c-scripting-core] Creating script environments for qbx_houserobbery
+[           resources] Started resource qbx_houserobbery
+[    c-scripting-core] Creating script environments for qbx_jewelery
+[           resources] Started resource qbx_jewelery
+[    c-scripting-core] Creating script environments for qbx_management
+[           resources] Started resource qbx_management
+[    c-scripting-core] Creating script environments for qbx_newsjob
+[           resources] Started resource qbx_newsjob
+[    c-scripting-core] Creating script environments for qbx_pawnshop
+[           resources] Started resource qbx_pawnshop
+[    c-scripting-core] Creating script environments for qbx_radialmenu
+[           resources] Started resource qbx_radialmenu
+[    c-scripting-core] Creating script environments for qbx_recyclejob
+[           resources] Started resource qbx_recyclejob
+[    c-scripting-core] Creating script environments for qbx_scoreboard
+[           resources] Started resource qbx_scoreboard
+[    c-scripting-core] Creating script environments for qbx_scrapyard
+[           resources] Started resource qbx_scrapyard
+[    c-scripting-core] Creating script environments for qbx_smallresources
+[script:qbx_smallreso] [qbx_smallresources] [WARN] [qbx_entitiesblacklist] You have entity blacklist enabled, this means that any entity that is blacklisted in config.lua will not be able to spawn, you can change this in qbx_smallresource/qbx_entitiesblacklist/config.lua
+[           resources] Started resource qbx_smallresources
+[    c-scripting-core] Creating script environments for qbx_spawn
+[           resources] Started resource qbx_spawn
+[    c-scripting-core] Creating script environments for qbx_taxijob
+[           resources] Started resource qbx_taxijob
+[    c-scripting-core] Creating script environments for qbx_vehicles
+[           resources] Started resource qbx_vehicles
+[    c-scripting-core] Creating script environments for qbx_vineyard
+[           resources] Started resource qbx_vineyard
+[    c-scripting-core] Creating script environments for CR-Common
+[           resources] Started resource CR-Common
+[    c-scripting-core] Creating script environments for PolyZone
+[           resources] Started resource PolyZone
+[    c-scripting-core] Creating script environments for SmartTaser
+[           resources] Started resource SmartTaser
+[    c-scripting-core] Creating script environments for an_badgeSystem
+[           resources] Started resource an_badgeSystem
+[           resources] Started resource an_dialogBox
+[    c-scripting-core] Creating script environments for bikehire
+[resources:bikehire:s] Asset bikehire/prop_cycle_terminal.ytd uses 128.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource bikehire (1 warning)
+[           resources] Started resource bob74_ipl
+[    c-scripting-core] Creating script environments for cd_terminalhacker
+[           resources] Started resource cd_terminalhacker
+[    c-scripting-core] Creating script environments for dps-EmergencyVehicleMenu
+[           resources] Started resource dps-EmergencyVehicleMenu
+[    c-scripting-core] Creating script environments for duff
+[           resources] Started resource duff
+[    c-scripting-core] Creating script environments for emfan-framework
+[           resources] Started resource emfan-framework
+[    c-scripting-core] Creating script environments for emfan-vape
+[           resources] Started resource emfan-vape
+[    c-scripting-core] Creating script environments for flrp_admin_api
+[script:flrp_admin_ap] [flrp_admin_api] HTTP endpoint active — POST /flrp_admin_api/action
+[           resources] Started resource flrp_admin_api
+[    c-scripting-core] Creating script environments for flrp_locksmith
+[           resources] Started resource flrp_locksmith
+[    c-scripting-core] Creating script environments for fxs_mcp_agent
+[           resources] Started resource fxs_mcp_agent
+[    c-scripting-core] Creating script environments for grappler
+[           resources] Started resource grappler
+[    c-scripting-core] Creating script environments for informational
+[           resources] Started resource informational
+[    c-scripting-core] Creating script environments for jim_bridge
+[   script:jim_bridge] Bridge: 'qbx_core' detected
+[   script:jim_bridge] Bridge: 'ox_lib' detected
+[   script:jim_bridge] Bridge: 'ox_target' detected
+[   script:jim_bridge] Bridge: 'qb-core' detected
+[   script:jim_bridge] Bridge: 'qb-target' detected
+[   script:jim_bridge] Bridge: 'qb-menu' detected
+[   script:jim_bridge] Bridge: 'ox_inventory' detected
+[resources:jim_bridge] Warning: could not find file `shared/auth/*.lua` (defined in fxmanifest.lua:10)
+[resources:jim_bridge] Warning: could not find file `shared/modules/*.lua` (defined in fxmanifest.lua:10)
+[resources:jim_bridge] Warning: could not find file `shared/wrappers/*.lua` (defined in fxmanifest.lua:10)
+[           resources] Started resource jim_bridge (3 warnings)
+[    c-scripting-core] Creating script environments for jim-closedshops
+[           resources] Started resource jim-closedshops
+[    c-scripting-core] Creating script environments for kimi_callbacks
+[           resources] Started resource kimi_callbacks
+[    c-scripting-core] Creating script environments for lc_utils
+[           resources] Started resource lc_utils
+[    c-scripting-core] Creating script environments for mana_audio
+[           resources] Started resource mana_audio
+[           resources] Started resource mhacking
+[    c-scripting-core] Creating script environments for mk_utils
+[     script:mk_utils] [MANKIND] [DEBUG] qbx.lua bridge loading... qbx_core state: started
+[     script:mk_utils] [MANKIND] [DEBUG] Checking qbx_core dependency...
+[     script:mk_utils] [MANKIND] [DEBUG] qbx_core OK. Checking qbx_vehicles dependency...
+[     script:mk_utils] [MANKIND] [DEBUG] qbx_vehicles OK. Checking inventory...
+[     script:mk_utils] [MANKIND] [DEBUG] Getting QBX core object...
+[     script:mk_utils] [MANKIND] [DEBUG] QBX core object: table: 00000207392106C0
+[     script:mk_utils] [MANKIND] [DEBUG] Framework set to QBOX successfully!
+[           resources] Started resource mk_utils
+[    c-scripting-core] Creating script environments for policetracker
+[   script:sonorancad] [12:14:41][SonoranCAD:WARNING] API request failed: endpoint GET_BLIPS is not registered. Use the registerApiType function to register this endpoint with the appropriate type.
+[           resources] Started resource policetracker
+[    c-scripting-core] Creating script environments for qb-menu
+[           resources] Started resource qb-menu
+[           resources] Started resource rahe-hackingdevice
+[           resources] Started resource rcore_cam_assets
+[    c-scripting-core] Creating script environments for rm_minigames
+[           resources] Started resource rm_minigames
+[           resources] Started resource safecracker
+[    c-scripting-core] Creating script environments for screencapture
+[           resources] Started resource screencapture
+[    c-scripting-core] Creating script environments for scully_emotemenu
+[           resources] Started resource scully_emotemenu
+[    c-scripting-core] Creating script environments for smartdrone
+[resources:smartdrone] Asset smartdrone/drone1.ytd uses 88.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:smartdrone] Asset smartdrone/drone2.ytd uses 32.0 MiB of physical memory.
+[           resources] Started resource smartdrone (2 warnings)
+[    c-scripting-core] Creating script environments for turbo_admin
+[           resources] Started resource turbo_admin
+[    c-scripting-core] Creating script environments for ultra-voltlab
+[           resources] Started resource ultra-voltlab
+[    c-scripting-core] Creating script environments for vehiclehandler
+[           resources] Started resource vehiclehandler
+[    c-scripting-core] Creating script environments for xsound
+[           resources] Started resource xsound
+[    c-scripting-core] Creating script environments for xt-prison
+[           resources] Started resource xt-prison
+[    c-scripting-core] Creating script environments for Audio_Pack
+[           resources] Started resource Audio_Pack
+[           resources] Started resource aq02coyotef150
+[           resources] Started resource aq09mazbpze
+[           resources] Started resource aq29viperv10
+[           resources] Started resource aq30tahoe53v8
+[           resources] Started resource aq32hond16z6
+[           resources] Started resource aq33viperv10dl
+[           resources] Started resource aq37nisrb20de
+[           resources] Started resource aq42chedrag427
+[           resources] Started resource aq46forgtebv6
+[           resources] Started resource aq49dodeagle57v8
+[           resources] Started resource aq56honf20c
+[           resources] Started resource aq57mit4g63t
+[           resources] Started resource aq58honk20a
+[           resources] Started resource aq59pagm297
+[           resources] Started resource aq61subfa20
+[           resources] Started resource aq67merm177
+[           resources] Started resource aq68lam52v10
+[           resources] Started resource aq71for427fe
+[           resources] Started resource aq72fer250v12
+[           resources] Started resource aq75subej255
+[           resources] Started resource aq77bmws85
+[           resources] Started resource aq78bmws65
+[           resources] Started resource aq80chels9
+[           resources] Started resource aq82mclm838t
+[           resources] Started resource aq83aud42v8b8
+[           resources] Started resource aq85formod5432v
+[           resources] Started resource aq86subfa20f
+[           resources] Started resource aq87toy4age
+[           resources] Started resource aq88koe50v8
+[           resources] Started resource aq90subej207
+[           resources] Started resource aq91hellcatv8
+[           resources] Started resource aq93bmws55
+[           resources] Started resource aq94toy3sgte
+[           resources] Started resource aq95bmwb58
+[           resources] Started resource aq96bmwb57
+[           resources] Started resource aq97toy1jzgte
+[           resources] Started resource aq98amgm279
+[           resources] Started resource cummins5924v
+[           resources] Started resource cvpiv8
+[           resources] Started resource ecoboostv6
+[resources:harleysoun] Warning: could not find client_script `vehicle_names.lua` (defined in __resource.lua:14)
+[           resources] Started resource harleysound (1 warning)
+[resources:harleysoun] Warning: could not find client_script `vehicle_names.lua` (defined in __resource.lua:14)
+[           resources] Started resource harleysound2 (1 warning)
+[           resources] Started resource kc125harleysofttail
+[           resources] Started resource lg14c6vette
+[           resources] Started resource lg81hcredeye
+[           resources] Started resource ml720v8eng
+[           resources] Started resource npolchar
+[  resources:r35sound] Warning: could not find client_script `vehicle_names.lua` (defined in __resource.lua:14)
+[           resources] Started resource r35sound (1 warning)
+[           resources] Started resource rb26dett
+[           resources] Started resource rb28dett
+[           resources] Started resource s63b44
+[           resources] Started resource str10b302
+[resources:flrpeup:st] Asset flrpeup/mp_f_freemode_01_p_mp_f_flrpeup^p_head_021.ydd uses 64.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:flrpeup:st] Asset flrpeup/mp_m_freemode_01_p_mp_m_flrpeup^p_eyes_007.ydd uses 64.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:flrpeup:st] Asset flrpeup/mp_m_freemode_01_p_mp_m_flrpeup^p_head_diff_017_a.ytd uses 32.0 MiB of physical memory.
+[resources:flrpeup:st] Asset flrpeup/mp_m_freemode_01_p_mp_m_flrpeup^p_head_diff_017_b.ytd uses 32.0 MiB of physical memory.
+[resources:flrpeup:st] Asset flrpeup/mp_m_freemode_01_p_mp_m_flrpeup^p_head_diff_017_c.ytd uses 32.0 MiB of physical memory.
+[resources:flrpeup:st] Asset flrpeup/mp_m_freemode_01_p_mp_m_flrpeup^p_head_diff_017_d.ytd uses 32.0 MiB of physical memory.
+[resources:flrpeup:st] Asset flrpeup/mp_m_freemode_01_p_mp_m_flrpeup^p_head_diff_017_e.ytd uses 32.0 MiB of physical memory.
+[           resources] Started resource flrpeup (7 warnings)
+[resources:lumin_lspd] Asset lumin_lspd_badges_pack/mp_f_freemode_01_lspd_badge_la_style_by_lumin^hand_002_u.ydd uses 24.0 MiB of physical memory.
+[resources:lumin_lspd] Asset lumin_lspd_badges_pack/mp_f_freemode_01_lspd_badge_la_style_by_lumin^hand_003_u.ydd uses 24.0 MiB of physical memory.
+[resources:lumin_lspd] Asset lumin_lspd_badges_pack/mp_m_freemode_01_lspd_badge_la_style_by_lumin^hand_002_u.ydd uses 24.0 MiB of physical memory.
+[resources:lumin_lspd] Asset lumin_lspd_badges_pack/mp_m_freemode_01_lspd_badge_la_style_by_lumin^hand_003_u.ydd uses 24.0 MiB of physical memory.
+[           resources] Started resource lumin_lspd_badges_pack (4 warnings)
+[           resources] Started resource jg-textui
+[    c-scripting-core] Creating script environments for jg-hud
+[           resources] Started resource jg-hud
+[    c-scripting-core] Creating script environments for jg-stress-addon
+[           resources] Started resource jg-stress-addon
+[    c-scripting-core] Creating script environments for jg-vehiclemileage
+[           resources] Started resource jg-vehiclemileage
+[           resources] Started resource jg-mechanic-props
+[    c-scripting-core] Creating script environments for jg-mechanic
+[           resources] Started resource jg-mechanic
+[    c-scripting-core] Creating script environments for jg-handling
+[           resources] Started resource jg-handling
+[    c-scripting-core] Creating script environments for qs-housing
+[           resources] Started resource qs-housing
+[    c-scripting-core] Creating script environments for qs-weed
+[           resources] Started resource qs-weed
+[    c-scripting-core] Creating script environments for qs-motorhome
+[           resources] Started resource qs-motorhome
+[    c-scripting-core] Creating script environments for AdvancedParking
+[           resources] Started resource AdvancedParking
+[    c-scripting-core] Creating script environments for jim-parking
+[  script:jim-parking] Jim-Parking v1.5.2 - Persistant Parking Script by Jimathy
+[           resources] Started resource jim-parking
+[    c-scripting-core] Creating script environments for persistent_garages
+[           resources] Started resource persistent_garages
+[    c-scripting-core] Creating script environments for 17mov_Deliverer
+[resources:17mov_Deli] Asset 17mov_Deliverer/17mov_DeliveryCar.ytd uses 19.0 MiB of physical memory.
+[           resources] Started resource 17mov_Deliverer (1 warning)
+[    c-scripting-core] Creating script environments for 17mov_GarbageCollector
+[           resources] Started resource 17mov_GarbageCollector
+[    c-scripting-core] Creating script environments for 17mov_TreasureHunter
+[resources:17mov_Trea] Asset 17mov_TreasureHunter/17mov_treasureBoat.ytd uses 17.0 MiB of physical memory.
+[           resources] Started resource 17mov_TreasureHunter (1 warning)
+[    c-scripting-core] Creating script environments for ds-mining
+[           resources] Started resource ds-mining
+[    c-scripting-core] Creating script environments for ebu_flatbeds
+[ script:ebu_flatbeds] [ebu_flatbeds v0.7.7b] loaded! Check out more scripts by Theebu at: discord.gg/SvxZj2h 
+[           resources] Started resource ebu_flatbeds
+[    c-scripting-core] Creating script environments for flrp_towtruck
+[           resources] Started resource flrp_towtruck
+[    c-scripting-core] Creating script environments for lc_truck_logistics
+[           resources] Started resource lc_truck_logistics
+[    c-scripting-core] Creating script environments for rtx_gopostal
+[           resources] Started resource rtx_gopostal
+[           resources] Started resource bzzz_weedpack_v2
+[    c-scripting-core] Creating script environments for CR-GunshotWoundV10
+[           resources] Started resource CR-GunshotWoundV10
+[    c-scripting-core] Creating script environments for boii-consumables
+[script:boii-consumab] --<!>-- BOII | DEVELOPMENT --<!>-- UTLITY: CONSUMABLES V2.0.3 --<!>--
+[           resources] Started resource boii-consumables
+[    c-scripting-core] Creating script environments for boii-drugs
+[   script:boii-drugs] --<!>-- BOII | DEVELOPMENT --<!>-- DRUG SYSTEM V1.1.1 --<!>--
+[           resources] Started resource boii-drugs
+[    c-scripting-core] Creating script environments for boii-farming
+[ script:boii-farming] --<!>-- BOII | DEVELOPMENT --<!>-- ACTIVITY: FARMING V1.0.5 --<!>--
+[           resources] Started resource boii-farming
+[    c-scripting-core] Creating script environments for boii-pizzathis
+[           resources] Started resource boii-pizzathis
+[    c-scripting-core] Creating script environments for flrp_drugmarket
+[           resources] Started resource flrp_drugmarket
+[    c-scripting-core] Creating script environments for flrp_forgery
+[ script:flrp_forgery] [flrp_forgery] [INFO] [flrp_forgery] Document Forgery System loaded
+[           resources] Started resource flrp_forgery
+[    c-scripting-core] Creating script environments for flrp_heists
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Server main loaded
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Reputation system loaded
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Cooldown system loaded
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Crew system loaded
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Heist state machine loaded
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Security system loaded
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Dispatch system loaded
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Loot system loaded
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Banking integration loaded
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Evidence system loaded
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Webhook system loaded
+[  script:flrp_heists] [flrp_heists] [INFO] [flrp_heists] Public exports registered
+[           resources] Started resource flrp_heists
+[    c-scripting-core] Creating script environments for flrp_storerobs
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Server main loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Webhook system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Economy system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Cooldown system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Notoriety system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Clerk system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Security system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Dispatch system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Evidence system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Casing system loaded (interactive scouting)
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Recovery system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Dynamic events system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Chain system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Fence network loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Convoy system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Truck system loaded (virtual simulation + on-demand materialization)
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Accomplice system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Dye pack system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Robbery system loaded
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Exports registered
+[           resources] Started resource flrp_storerobs
+[    c-scripting-core] Creating script environments for money_wash
+[           resources] Started resource money_wash
+[    c-scripting-core] Creating script environments for r14-evidence
+[           resources] Started resource r14-evidence
+[    c-scripting-core] Creating script environments for rahe-boosting
+[           resources] Started resource rahe-boosting
+[    c-scripting-core] Creating script environments for rahe-racing
+[           resources] Started resource rahe-racing
+[    c-scripting-core] Creating script environments for rcore_cam
+[           resources] Started resource rcore_cam
+[    c-scripting-core] Creating script environments for pma-voice
+[           resources] Started resource pma-voice
+[    c-scripting-core] Creating script environments for flrp_phone
+[   script:flrp_phone] [flrp_phone] [INFO] [Full Life Times] News server loaded
+[   script:flrp_phone] [flrp_phone] [INFO] [flrp_phone] Test commands loaded — /phonetest [subcommand]
+[           resources] Started resource flrp_phone
+[    c-scripting-core] Creating script environments for flrp_phone_leo
+[script:flrp_phone_le] [flrp_phone_leo] [INFO] flrp_phone_leo loaded
+[           resources] Started resource flrp_phone_leo
+[    c-scripting-core] Creating script environments for flrp_phone_tests
+[           resources] Started resource flrp_phone_tests
+[    c-scripting-core] Creating script environments for VehicleTransport
+[           resources] Started resource VehicleTransport
+[    c-scripting-core] Creating script environments for emfan-vehicleshop
+[           resources] Started resource emfan-vehicleshop
+[    c-scripting-core] Creating script environments for flrp_carjack_defense
+[           resources] Started resource flrp_carjack_defense
+[    c-scripting-core] Creating script environments for flrp_dealerships
+[           resources] Started resource flrp_dealerships
+[    c-scripting-core] Creating script environments for flrp_insurance
+[           resources] Started resource flrp_insurance
+[    c-scripting-core] Creating script environments for flrp_rentals
+[           resources] Started resource flrp_rentals
+[    c-scripting-core] Creating script environments for flrp_vehiclesale
+[           resources] Started resource flrp_vehiclesale
+[    c-scripting-core] Creating script environments for kq_carlift
+[           resources] Started resource kq_carlift
+[    c-scripting-core] Creating script environments for kq_wheeldamage
+[           resources] Started resource kq_wheeldamage
+[    c-scripting-core] Creating script environments for lc_dealership
+[           resources] Started resource lc_dealership
+[    c-scripting-core] Creating script environments for mk_usedvehicles
+[           resources] Started resource mk_usedvehicles
+[resources:motorhome-] Asset motorhome-vehicles/sr650fly.ytd uses 17.0 MiB of physical memory.
+[           resources] Started resource motorhome-vehicles (1 warning)
+[resources:FMShared:s] Asset FMShared/fmflsh_13.ytd uses 20.0 MiB of physical memory.
+[           resources] Started resource FMShared (1 warning)
+[resources:Glock19Gen] Asset Glock19Gen4/glock19gen4.ytd uses 35.0 MiB of physical memory.
+[           resources] Started resource Glock19Gen4 (1 warning)
+[resources:HandgunPac] Asset HandgunPack/fm1_cz75.ytd uses 19.0 MiB of physical memory.
+[           resources] Started resource HandgunPack (1 warning)
+[resources:LAPDWeapon] Asset LAPDWeaponPack/fm41.ytd uses 28.8 MiB of physical memory.
+[resources:LAPDWeapon] Asset LAPDWeaponPack/fm42.ytd uses 30.0 MiB of physical memory.
+[resources:LAPDWeapon] Asset LAPDWeaponPack/glock19_frame_01.ytd uses 17.0 MiB of physical memory.
+[resources:LAPDWeapon] Asset LAPDWeaponPack/glock19_frame_02.ytd uses 17.0 MiB of physical memory.
+[resources:LAPDWeapon] Asset LAPDWeaponPack/glock19_frame_03.ytd uses 17.0 MiB of physical memory.
+[resources:LAPDWeapon] Asset LAPDWeaponPack/glock19_frame_04.ytd uses 17.0 MiB of physical memory.
+[resources:LAPDWeapon] Asset LAPDWeaponPack/glock19_frame_05.ytd uses 17.0 MiB of physical memory.
+[resources:LAPDWeapon] Asset LAPDWeaponPack/w_ar_carbineriflemk2.ytd uses 40.2 MiB of physical memory.
+[           resources] Started resource LAPDWeaponPack (8 warnings)
+[resources:MilisimSta] Asset MilisimStarter/hk417_frame_01.ytd uses 17.0 MiB of physical memory.
+[resources:MilisimSta] Asset MilisimStarter/hk417_frame_02.ytd uses 21.0 MiB of physical memory.
+[resources:MilisimSta] Asset MilisimStarter/hk417_frame_03.ytd uses 21.0 MiB of physical memory.
+[resources:MilisimSta] Asset MilisimStarter/hk417_frame_04.ytd uses 21.0 MiB of physical memory.
+[resources:MilisimSta] Asset MilisimStarter/hk417_frame_05.ytd uses 21.0 MiB of physical memory.
+[resources:MilisimSta] Asset MilisimStarter/hk417_frame_06.ytd uses 21.0 MiB of physical memory.
+[resources:MilisimSta] Asset MilisimStarter/m249.ytd uses 19.0 MiB of physical memory.
+[           resources] Started resource MilisimStarter (7 warnings)
+[resources:Mk14:strea] Asset Mk14/mk14.ytd uses 21.5 MiB of physical memory.
+[           resources] Started resource Mk14 (1 warning)
+[resources:Mk47Mutant] Asset Mk47MutantFluffysMods/MK47FluffysMods.ytd uses 27.0 MiB of physical memory.
+[           resources] Started resource Mk47MutantFluffysMods (1 warning)
+[resources:Remington7] Asset Remington700/fm1_remington700.ytd uses 25.8 MiB of physical memory.
+[resources:Remington7] Asset Remington700/fm3_remington700.ytd uses 24.5 MiB of physical memory.
+[resources:Remington7] Asset Remington700/fm4_remington700.ytd uses 21.0 MiB of physical memory.
+[           resources] Started resource Remington700 (3 warnings)
+[resources:ScarScFluf] Asset ScarScFluffyMods/scarsc.ytd uses 18.0 MiB of physical memory.
+[           resources] Started resource ScarScFluffyMods (1 warning)
+[resources:Tec9:strea] Asset Tec9/w_sb_compactsmg.ytd uses 32.0 MiB of physical memory.
+[           resources] Started resource Tec9 (1 warning)
+[    c-scripting-core] Creating script environments for kyros-weapon-pack-v6
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosar16.ytd uses 54.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosbluearp+hi.ytd uses 56.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosbluearp.ydr uses 112.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosbluearp.ytd uses 56.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosbluearp_hi.ydr uses 112.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosbluearp_mag4.ydr uses 32.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyroscbren+hi.ytd uses 88.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyroscbren.ytd uses 88.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosdviper+hi.ytd uses 40.5 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosdviper.ytd uses 48.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosdviper_mag2.ydr uses 32.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosmkalash+hi.ytd uses 41.2 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosmkalash.ytd uses 41.2 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrospeix9+hi.ytd uses 40.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrospeix9.ydr uses 30.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrospeix9.ytd uses 40.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrospeix9_hi.ydr uses 30.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrospeix9_mag2.ytd uses 32.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosraven7k+hi.ytd uses 44.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosraven7k.ytd uses 44.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosstklance+hi.ytd uses 64.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrosstklance.ytd uses 64.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrostmk47+hi.ytd uses 32.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_ar_kyrostmk47.ytd uses 32.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_at_ar_flsh_kyrosstklance.ytd uses 36.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_at_scope_medium_kyrosstklance+hi.ytd uses 64.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_at_scope_medium_kyrosstklance.ytd uses 64.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosctp9sf+hi.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosctp9sf.ydr uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosctp9sf.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosctp9sf_hi.ydr uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosdemontitan+hi.ytd uses 32.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosdemontitan.ytd uses 32.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosggx4.ydr uses 32.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosggx4_hi.ydr uses 32.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosggx4_mag2.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosilltitan19s+hi.ytd uses 23.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosilltitan19s.ytd uses 23.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosilltitan19s_mag2.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosilltitan19s_mag4.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrost19xd+hi.ytd uses 98.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrost19xd.ytd uses 98.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrost19xd_mag2.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrost19xd_mag4.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan20e+hi.ytd uses 43.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan20e.ytd uses 43.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan20e_mag4.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan22.ytd uses 20.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan22_mag2.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan22_mag4.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan22s.ytd uses 28.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan22s_mag2.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan22s_mag4.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan45+hi.ytd uses 88.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan45.ytd uses 88.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrostitan45_mag4.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosttitan45+hi.ytd uses 232.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosttitan45.ytd uses 232.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosttitan45_mag1.ytd uses 35.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_pi_kyrosttitan45_mag4.ytd uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_sb_kyrosksub2000.ydr uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_sb_kyrosksub2000_hi.ydr uses 24.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_sb_kyrosmayo41+hi.ytd uses 40.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_sb_kyrosmayo41.ytd uses 32.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_sb_kyrosrapex+hi.ytd uses 48.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_sb_kyrosrapex.ytd uses 48.0 MiB of physical memory.
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_sb_kyrosraven9+hi.ytd uses 88.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:kyros-weap] Asset kyros-weapon-pack-v6/w_sb_kyrosraven9.ytd uses 88.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource kyros-weapon-pack-v6 (68 warnings)
+[    c-scripting-core] Creating script environments for mmflashbang
+[           resources] Started resource mmflashbang
+[    c-scripting-core] Creating script environments for tstudio_zmapdata
+[script:tstudio_zmapd] [ TStudio Patch Loader] 🔎 Loading patch configurations from patches/ folder...
+[script:tstudio_zmapd] [ TStudio Patch Loader] Found 9 patch config(s) in manifest
+[script:tstudio_zmapd] [ TStudio Patch Loader] Loading patches for: TStudio Maps (62 patches)
+[script:tstudio_zmapd] [ TStudio Patch Loader] Loading patches for: Fiv3Devs Maps (3 patches)
+[script:tstudio_zmapd] [ TStudio Patch Loader] Loading patches for: Kiiya Maps (15 patches)
+[script:tstudio_zmapd] [ TStudio Patch Loader] Loading patches for: FM Maps (7 patches)
+[script:tstudio_zmapd] [ TStudio Patch Loader] Loading patches for: NTeam Maps (6 patches)
+[script:tstudio_zmapd] [ TStudio Patch Loader] Loading patches for: Molo Maps (1 patches)
+[script:tstudio_zmapd] [ TStudio Patch Loader] Loading patches for: RTX Maps (2 patches)
+[script:tstudio_zmapd] [ TStudio Patch Loader] Loading patches for: Ambitioneers Maps (4 patches)
+[script:tstudio_zmapd] [ TStudio Patch Loader] Loading patches for: Hane Maps (3 patches)
+[script:tstudio_zmapd] [ TStudio Patch Loader] ✅ Loaded 103 compatibility patches from 9 creators
+[           resources] Started resource tstudio_zmapdata
+[           resources] Started resource tstudio_audioocclusion
+[           resources] Started resource tstudio_doortuning
+[    c-scripting-core] Creating script environments for tstudio_mrpd
+[resources:tstudio_mr] Asset tstudio_mrpd/tstudio_mrpd_ext_textures.ytd uses 20.8 MiB of physical memory.
+[resources:tstudio_mr] Asset tstudio_mrpd/tstudio_mrpd_int_textures.ytd uses 31.8 MiB of physical memory.
+[resources:tstudio_mr] Asset tstudio_mrpd/tstudio_mrpd_parent_textures.ytd uses 27.2 MiB of physical memory.
+[resources:tstudio_mr] Asset tstudio_mrpd/tstudio_mrpd_tex_misc.ytd uses 23.2 MiB of physical memory.
+[resources:tstudio_mr] Asset tstudio_mrpd/tstudio_mrpd_tex_misc2.ytd uses 19.8 MiB of physical memory.
+[resources:tstudio_mr] Asset tstudio_mrpd/tstudio_mrpd_tex_seats.ytd uses 24.2 MiB of physical memory.
+[resources:tstudio_mr] Asset tstudio_mrpd/tstudio_mrpd_tex_tables.ytd uses 19.8 MiB of physical memory.
+[           resources] Started resource tstudio_mrpd (7 warnings)
+[           resources] Started resource tstudio_scenarios
+[           resources] Started resource 25sandyltdpizza_ext_rsm
+[resources:25sandyltd] Asset 25sandyltdpizza_int_rsm/i45rs_sgp_pizza_01.ytd uses 20.0 MiB of physical memory.
+[           resources] Started resource 25sandyltdpizza_int_rsm (1 warning)
+[           resources] Started resource 25senorahp_ext_rsm
+[resources:25senorahp] Asset 25senorahp_int_rsm/igro45_senorapd_int.ytd uses 39.0 MiB of physical memory.
+[           resources] Started resource 25senorahp_int_rsm (1 warning)
+[           resources] Started resource DigitalDen
+[           resources] Started resource K4MB1-Motorhomes
+[           resources] Started resource K4MB1-StarterShells
+[    c-scripting-core] Creating script environments for KawaiixQuasar_props
+[           resources] Started resource KawaiixQuasar_props
+[    c-scripting-core] Creating script environments for KillstorexQuasar_props
+[           resources] Started resource KillstorexQuasar_props
+[resources:apollo_pd_] Warning: could not find client_script `client.lua` (defined in fxmanifest.lua:11)
+[           resources] Started resource apollo_pd_impound (1 warning)
+[           resources] Started resource apollo_weapon_crafting
+[           resources] Started resource apollo_weed_crafting
+[resources:as_autoexo] Asset as_autoexotic_ds/as_shell.ydr uses 26.0 MiB of physical memory.
+[           resources] Started resource as_autoexotic_ds (1 warning)
+[           resources] Started resource as_mapdata
+[resources:bounty_off] Asset bounty_office/m24_1_int_01_m241_shell_txd.ytd uses 42.0 MiB of physical memory.
+[resources:bounty_off] Asset bounty_office/m24_1_int_01_m241_txd.ytd uses 24.5 MiB of physical memory.
+[           resources] Started resource bounty_office (2 warnings)
+[resources:brofx_chur] Asset brofx_church/brofx_church_txt.ytd uses 18.0 MiB of physical memory.
+[           resources] Started resource brofx_church (1 warning)
+[           resources] Started resource brofx_farmhouse_02
+[           resources] Started resource brofx_mansion_03
+[           resources] Started resource brofx_mansion_06
+[           resources] Started resource brofx_mansion_07
+[           resources] Started resource brofx_mansion_08
+[resources:brofx_vill] Warning: could not find file `stream/interiorproxies.meta` (defined in fxmanifest.lua:11)
+[           resources] Started resource brofx_villa_01 (1 warning)
+[           resources] Started resource brofx_villa_02
+[           resources] Started resource brofx_villa_04
+[           resources] Started resource brofx_villa_05
+[           resources] Started resource cfx-mxc-doorsounds
+[resources:cfx-mxc-fi] Asset cfx-mxc-fib/mxc_fib_shell_ytd.ytd uses 19.0 MiB of physical memory.
+[resources:cfx-mxc-fi] Asset cfx-mxc-fib/mxc_fib_weapons_ytd.ytd uses 28.0 MiB of physical memory.
+[resources:cfx-mxc-fi] Asset cfx-mxc-fib/mxc_fib_ytd.ytd uses 29.4 MiB of physical memory.
+[           resources] Started resource cfx-mxc-fib (3 warnings)
+[           resources] Started resource cfx-mxc-mapdata
+[           resources] Started resource cfx-nteam-hideout
+[           resources] Started resource cfx-nteam-river
+[           resources] Started resource cfx-nteam-tunnel
+[    c-scripting-core] Creating script environments for cfx_chuz_sandy_shores_boat_house
+[resources:cfx_chuz_s] Asset cfx_chuz_sandy_shores_boat_house/chuz_is_txd_rest.ytd uses 18.8 MiB of physical memory.
+[           resources] Started resource cfx_chuz_sandy_shores_boat_house (1 warning)
+[    c-scripting-core] Creating script environments for cfx_gn_collection
+[           resources] Started resource cfx_gn_collection
+[           resources] Started resource cfx_gn_sandy_mapdata
+[           resources] Started resource cfx_gn_scenario
+[resources:cfx_gn_she] Asset cfx_gn_sheriff_dlc/gn_sheriff_txd.ytd uses 28.0 MiB of physical memory.
+[           resources] Started resource cfx_gn_sheriff_dlc (1 warning)
+[           resources] Started resource cfx_gn_sheriff_sandyshores
+[resources:cfx_prompt] Asset cfx_prompt_custom_Truck_Repairs/prompt_dot.ytd uses 21.0 MiB of physical memory.
+[resources:cfx_prompt] Asset cfx_prompt_custom_Truck_Repairs/prompt_dot_ground_txd.ytd uses 20.1 MiB of physical memory.
+[           resources] Started resource cfx_prompt_custom_Truck_Repairs (2 warnings)
+[           resources] Started resource core_insurancelot
+[resources:department] Asset department_of_justice/shmann_justice_textures.ytd uses 28.8 MiB of physical memory.
+[           resources] Started resource department_of_justice (1 warning)
+[           resources] Started resource dtpl_carrental
+[           resources] Started resource fiv3devs_mapdata
+[resources:fiv3devs_b] Asset fiv3devs_blazeit/burrito.ytd uses 48.0 MiB of physical memory.
+[           resources] Started resource fiv3devs_blazeit (1 warning)
+[resources:fiv3devs_r] Asset fiv3devs_risingsun/5d_officina_shell.ytd uses 16.9 MiB of physical memory.
+[           resources] Started resource fiv3devs_risingsun (1 warning)
+[resources:fiv3devs_t] Asset fiv3devs_thehole/5d_sewers_shell.ydr uses 22.3 MiB of physical memory.
+[           resources] Started resource fiv3devs_thehole (1 warning)
+[resources:fiv3devs_v] Asset fiv3devs_vespucci/5d_vb_txt.ytd uses 24.0 MiB of physical memory.
+[           resources] Started resource fiv3devs_vespucci (1 warning)
+[   script:mapmanager] Started gametype Freeroam
+[           resources] Started resource basic-gamemode
+[   script:mapmanager] Started map fivem-map-hipster
+[           resources] Started resource fivem-map-hipster
+[   script:mapmanager] Changing map from fivem-map-hipster to fivem-map-skater
+[           resources] Stopping resource fivem-map-hipster
+[   script:mapmanager] Started map fivem-map-skater
+[           resources] Started resource fivem-map-skater
+[resources:fivem_gn_m] Asset fivem_gn_mz_hopital/ch_chint06_dlc_casino_back.ytd uses 21.5 MiB of physical memory.
+[resources:fivem_gn_m] Asset fivem_gn_mz_hopital/moutnz_zonah.ytd uses 25.0 MiB of physical memory.
+[resources:fivem_gn_m] Asset fivem_gn_mz_hopital/mz_carpak_shell.ydr uses 25.5 MiB of physical memory.
+[           resources] Started resource fivem_gn_mz_hopital (3 warnings)
+[resources:gc_fish_st] Asset gc_fish_store/gc_fishs_int.ytd uses 25.2 MiB of physical memory.
+[           resources] Started resource gc_fish_store (1 warning)
+[           resources] Started resource go_postal_mlo
+[           resources] Started resource housing-addons
+[resources:housing-is] Asset housing-island/qs_island_04.ytd uses 16.5 MiB of physical memory.
+[           resources] Started resource housing-island (1 warning)
+[           resources] Started resource housing-sign
+[           resources] Started resource int_yachtclub
+[           resources] Started resource k4mb1-miningcave
+[           resources] Started resource laundry
+[           resources] Started resource lbc_rockford_autos
+[    c-scripting-core] Creating script environments for lunaticstudio_promo001
+[           resources] Started resource lunaticstudio_promo001
+[           resources] Started resource maruii_shells
+[resources:molo_lux:s] Asset molo_lux/molo_lux_lod.ydr uses 23.0 MiB of physical memory.
+[resources:molo_lux:s] Asset molo_lux/molo_lux_textures.ytd uses 32.2 MiB of physical memory.
+[           resources] Started resource molo_lux (2 warnings)
+[    c-scripting-core] Creating script environments for molo_lux_lift
+[script:molo_lux_lift] ╔══════════════════════════════════════╗
+[script:molo_lux_lift] ║  L.U.X Elevator v2.0               ║
+[script:molo_lux_lift] ║  Molo Modding                       ║
+[script:molo_lux_lift] ╚══════════════════════════════════════╝
+[           resources] Started resource molo_lux_lift
+[    c-scripting-core] Creating script environments for murm_dec_pack
+[           resources] Started resource murm_dec_pack
+[resources:navypanda_] Asset navypanda_shells/d3_shell_v1.ytd uses 19.0 MiB of physical memory.
+[resources:navypanda_] Asset navypanda_shells/d3_shell_v2.ytd uses 18.0 MiB of physical memory.
+[           resources] Started resource navypanda_shells (2 warnings)
+[resources:pablito_la] Asset pablito_lamesa_prison/pablito_lamesa_prison_interior_props.ytd uses 16.2 MiB of physical memory.
+[           resources] Started resource pablito_lamesa_prison (1 warning)
+[    c-scripting-core] Creating script environments for pablito_lamesa_prison_alarm
+[           resources] Started resource pablito_lamesa_prison_alarm
+[    c-scripting-core] Creating script environments for pablito_lamesa_prison_escape
+[           resources] Started resource pablito_lamesa_prison_escape
+[    c-scripting-core] Creating script environments for pablito_lamesa_prison_gate
+[           resources] Started resource pablito_lamesa_prison_gate
+[           resources] Started resource prompt_ammunation_rework
+[    c-scripting-core] Creating script environments for prompt_anim_core_2_new
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] [GROUP MANAGER] Group management system loaded
+[           resources] Started resource prompt_anim_core_2_new
+[    c-scripting-core] Creating script environments for prompt_barber
+[resources:prompt_bar] Asset prompt_barber/prompt_vbarber_txd.ytd uses 34.0 MiB of physical memory.
+[           resources] Started resource prompt_barber (1 warning)
+[           resources] Started resource prompt_bolingbroke_prison_interiors
+[           resources] Started resource prompt_church_prison
+[    c-scripting-core] Creating script environments for prompt_gym
+[resources:prompt_gym] Asset prompt_gym/bosse_visiongym_txd.ytd uses 44.1 MiB of physical memory.
+[           resources] Started resource prompt_gym (1 warning)
+[resources:prompt_pri] Asset prompt_prison_escape_dlc/rd_pris_back.ytd uses 16.2 MiB of physical memory.
+[           resources] Started resource prompt_prison_escape_dlc (1 warning)
+[    c-scripting-core] Creating script environments for prompt_prison_study
+[script:prompt_prison] [prison_gym]	Prison gym server initialized
+[resources:prompt_pri] Asset prompt_prison_study/i45pt_prison_study_gym_txd.ytd uses 44.1 MiB of physical memory.
+[resources:prompt_pri] Asset prompt_prison_study/i45pt_prison_study_txd.ytd uses 25.0 MiB of physical memory.
+[           resources] Started resource prompt_prison_study (2 warnings)
+[resources:prompt_pri] Asset prompt_prison_tower_23/chuz_prompt_is_green_mile_txd.ytd uses 18.2 MiB of physical memory.
+[resources:prompt_pri] Asset prompt_prison_tower_23/prompt_prison.ytd uses 49.5 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:prompt_pri] Asset prompt_prison_tower_23/rd_pris_garden.ytd uses 26.0 MiB of physical memory.
+[           resources] Started resource prompt_prison_tower_23 (3 warnings)
+[    c-scripting-core] Creating script environments for prompt_repair_shops
+[resources:prompt_rep] Asset prompt_repair_shops/prompt_dlcmeca_txd.ytd uses 39.0 MiB of physical memory.
+[resources:prompt_rep] Asset prompt_repair_shops/prompt_dlcmeca_txd2.ytd uses 18.0 MiB of physical memory.
+[           resources] Started resource prompt_repair_shops (2 warnings)
+[    c-scripting-core] Creating script environments for prompt_sahp
+[resources:prompt_sah] Asset prompt_sahp/chuz_is_exterior_props.ytd uses 16.4 MiB of physical memory.
+[resources:prompt_sah] Asset prompt_sahp/chuz_is_interior_pd_hw.ytd uses 19.0 MiB of physical memory.
+[           resources] Started resource prompt_sahp (2 warnings)
+[    c-scripting-core] Creating script environments for prompt_sandy_airfield
+[resources:prompt_san] Asset prompt_sandy_airfield/chuz_is_txd.ytd uses 17.5 MiB of physical memory.
+[resources:prompt_san] Asset prompt_sandy_airfield/prompt_sdair_txd.ytd uses 37.0 MiB of physical memory.
+[           resources] Started resource prompt_sandy_airfield (2 warnings)
+[    c-scripting-core] Creating script environments for prompt_sandy_apts
+[resources:prompt_san] Asset prompt_sandy_apts/prompt_sandy_apts_ints.ytd uses 23.4 MiB of physical memory.
+[resources:prompt_san] Asset prompt_sandy_apts/sm_cs4_apa_lease_int.ytd uses 17.0 MiB of physical memory.
+[           resources] Started resource prompt_sandy_apts (2 warnings)
+[    c-scripting-core] Creating script environments for prompt_sandy_bank
+[resources:prompt_san] Asset prompt_sandy_bank/d1n_sandy_bank_props_txd.ytd uses 21.0 MiB of physical memory.
+[resources:prompt_san] Asset prompt_sandy_bank/d1n_sandy_bank_txd.ytd uses 27.0 MiB of physical memory.
+[           resources] Started resource prompt_sandy_bank (2 warnings)
+[    c-scripting-core] Creating script environments for prompt_sandy_beaches
+[script:prompt_sandy_] Prompt supporter tag is enabled
+[           resources] Started resource prompt_sandy_beaches
+[    c-scripting-core] Creating script environments for prompt_sandy_church
+[           resources] Started resource prompt_sandy_church
+[    c-scripting-core] Creating script environments for prompt_sandy_fire2
+[resources:prompt_san] Asset prompt_sandy_fire2/escobar_fd_txd.ytd uses 41.0 MiB of physical memory.
+[           resources] Started resource prompt_sandy_fire2 (1 warning)
+[    c-scripting-core] Creating script environments for prompt_sandy_hospital2
+[resources:prompt_san] Asset prompt_sandy_hospital2/i45pt_s_hsp_txd.ytd uses 63.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource prompt_sandy_hospital2 (1 warning)
+[    c-scripting-core] Creating script environments for prompt_sandy_illegal_garage
+[resources:prompt_san] Asset prompt_sandy_illegal_garage/prompt_sandy_is_txd.ytd uses 62.2 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource prompt_sandy_illegal_garage (1 warning)
+[    c-scripting-core] Creating script environments for prompt_sandy_market
+[resources:prompt_san] Asset prompt_sandy_market/i45pt_s_m_int.ytd uses 51.8 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource prompt_sandy_market (1 warning)
+[    c-scripting-core] Creating script environments for prompt_sandy_mechanic
+[resources:prompt_san] Asset prompt_sandy_mechanic/car_service_shell.ydr uses 18.0 MiB of physical memory.
+[           resources] Started resource prompt_sandy_mechanic (1 warning)
+[    c-scripting-core] Creating script environments for prompt_tattoo
+[resources:prompt_tat] Warning: could not find file `prompt_barber_new.xml` (defined in fxmanifest.lua:7)
+[resources:prompt_tat] Asset prompt_tattoo/prompt_v_tattoo_txd.ytd uses 42.0 MiB of physical memory.
+[           resources] Started resource prompt_tattoo (2 warnings)
+[           resources] Started resource pugsmind_impound
+[    c-scripting-core] Creating script environments for rdzk_c_square
+[           resources] Started resource rdzk_c_square
+[resources:rfc_mappin] Asset rfc_mapping_western_motorcycle/rfc_moto_showroom_tex.ytd uses 31.8 MiB of physical memory.
+[           resources] Started resource rfc_mapping_western_motorcycle (1 warning)
+[           resources] Started resource shells1
+[resources:shells2:st] Asset shells2/k4mb1_penthouse2_shell.ytd uses 19.0 MiB of physical memory.
+[resources:shells2:st] Asset shells2/k4mb1_penthouse_shell.ydr uses 17.5 MiB of physical memory.
+[resources:shells2:st] Asset shells2/luxury_housing_k4mb1_txd.ytd uses 16.5 MiB of physical memory.
+[           resources] Started resource shells2 (3 warnings)
+[resources:subhampro_] Asset subhampro_exclusive_shells/m_sh_08_subhampro_tebex_io.ydr uses 21.2 MiB of physical memory.
+[resources:subhampro_] Asset subhampro_exclusive_shells/mv_sh_01_subhampro_tebex_io.ydr uses 24.0 MiB of physical memory.
+[           resources] Started resource subhampro_exclusive_shells (2 warnings)
+[resources:20ramcwr:s] Asset 20ramcwr/20ramcwr+hi.ytd uses 96.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:20ramcwr:s] Asset 20ramcwr/20ramcwr.yft uses 31.2 MiB of virtual memory.
+[resources:20ramcwr:s] Asset 20ramcwr/20ramcwr.ytd uses 151.5 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:20ramcwr:s] Asset 20ramcwr/20ramcwr_hi.yft uses 31.2 MiB of virtual memory.
+[           resources] Started resource 20ramcwr (4 warnings)
+[resources:22f550cesu] Asset 22f550cesu/22f550cesu+hi.ytd uses 32.0 MiB of physical memory.
+[resources:22f550cesu] Asset 22f550cesu/22f550cesu.yft uses 26.8 MiB of virtual memory.
+[resources:22f550cesu] Asset 22f550cesu/22f550cesu.ytd uses 149.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:22f550cesu] Asset 22f550cesu/22f550cesu_hi.yft uses 26.8 MiB of virtual memory.
+[           resources] Started resource 22f550cesu (4 warnings)
+[resources:83diplomat] Warning: could not find file `handling.meta` (defined in fxmanifest.lua:9)
+[resources:83diplomat] Warning: could not find file `caraddoncontentunlocks.meta` (defined in fxmanifest.lua:9)
+[resources:83diplomat] Warning: could not find file `dlctext.meta` (defined in fxmanifest.lua:9)
+[resources:83diplomat] Warning: could not find file `vehiclelayouts.meta` (defined in fxmanifest.lua:9)
+[resources:83diplomat] Warning: could not find file `weaponarchetypes.meta` (defined in fxmanifest.lua:9)
+[resources:83diplomat] Warning: could not find file `explosion.meta` (defined in fxmanifest.lua:9)
+[resources:83diplomat] Warning: could not find file `yf22weapons.meta` (defined in fxmanifest.lua:9)
+[resources:83diplomat] Asset 83diplomatrb/83diplomatrb.yft uses 18.3 MiB of virtual memory.
+[resources:83diplomat] Asset 83diplomatrb/83diplomatrb.ytd uses 72.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:83diplomat] Asset 83diplomatrb/83diplomatrb_hi.yft uses 18.3 MiB of virtual memory.
+[           resources] Started resource 83diplomatrb (10 warnings)
+[resources:BoCheCheDe] Asset BoCheCheDesings_KenW90050TRotator_DOT/banner.ytd uses 17.0 MiB of physical memory.
+[resources:BoCheCheDe] Asset BoCheCheDesings_KenW90050TRotator_DOT/bochechedesigns_w90050rotator.yft uses 30.0 MiB of virtual memory.
+[resources:BoCheCheDe] Asset BoCheCheDesings_KenW90050TRotator_DOT/bochechedesigns_w90050rotator.ytd uses 72.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:BoCheCheDe] Asset BoCheCheDesings_KenW90050TRotator_DOT/bochechedesigns_w90050rotator_hi.yft uses 30.0 MiB of virtual memory.
+[resources:BoCheCheDe] Asset BoCheCheDesings_KenW90050TRotator_DOT/spreaderbar.ytd uses 17.0 MiB of physical memory.
+[           resources] Started resource BoCheCheDesings_KenW90050TRotator_DOT (5 warnings)
+[resources:ambo:strea] Asset ambo/ambo.yft uses 31.8 MiB of virtual memory.
+[resources:ambo:strea] Asset ambo/ambo.ytd uses 210.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:ambo:strea] Asset ambo/ambo_hi.yft uses 31.8 MiB of virtual memory.
+[           resources] Started resource ambo (3 warnings)
+[resources:c325ambo:s] Asset c325ambo/c325ambo.yft uses 24.5 MiB of virtual memory.
+[resources:c325ambo:s] Asset c325ambo/c325ambo.ytd uses 197.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:c325ambo:s] Asset c325ambo/c325ambo_hi.yft uses 24.5 MiB of virtual memory.
+[           resources] Started resource c325ambo (3 warnings)
+[resources:dbfdsub:st] Asset dbfdsub/dbfdsub.yft uses 30.9 MiB of virtual memory.
+[resources:dbfdsub:st] Asset dbfdsub/dbfdsub.ytd uses 154.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:dbfdsub:st] Asset dbfdsub/dbfdsub_hi.yft uses 20.0 MiB of virtual memory.
+[           resources] Started resource dbfdsub (3 warnings)
+[resources:dbfdsubt:s] Asset dbfdsubt/dbfdsubt.yft uses 30.8 MiB of virtual memory.
+[resources:dbfdsubt:s] Asset dbfdsubt/dbfdsubt.ytd uses 69.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:dbfdsubt:s] Asset dbfdsubt/dbfdsubt_hi.yft uses 20.0 MiB of virtual memory.
+[           resources] Started resource dbfdsubt (3 warnings)
+[resources:emergency_] Asset emergency_aircraft/909_seahawk.ytd uses 30.2 MiB of physical memory.
+[resources:emergency_] Asset emergency_aircraft/as365.ytd uses 176.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:emergency_] Asset emergency_aircraft/c3aw139.yft uses 29.4 MiB of virtual memory.
+[resources:emergency_] Asset emergency_aircraft/c3aw139.ytd uses 29.0 MiB of physical memory.
+[resources:emergency_] Asset emergency_aircraft/c3aw139_hi.yft uses 29.4 MiB of virtual memory.
+[resources:emergency_] Asset emergency_aircraft/c3swathawk.ytd uses 30.2 MiB of physical memory.
+[resources:emergency_] Asset emergency_aircraft/cessna909.ytd uses 78.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:emergency_] Asset emergency_aircraft/ec145med.yft uses 17.1 MiB of virtual memory.
+[resources:emergency_] Asset emergency_aircraft/ec145med.ytd uses 44.0 MiB of physical memory.
+[resources:emergency_] Asset emergency_aircraft/ec145med_hi.yft uses 17.1 MiB of virtual memory.
+[resources:emergency_] Asset emergency_aircraft/swat145c.ytd uses 18.2 MiB of physical memory.
+[resources:emergency_] Asset emergency_aircraft/swatec135.ytd uses 42.0 MiB of physical memory.
+[           resources] Started resource emergency_aircraft (12 warnings)
+[ resources:ems20fpiu] Warning: could not find file `data/**/*.xml` (defined in fxmanifest.lua:7)
+[ resources:ems20fpiu] Warning: could not find file `data/**/*.dat` (defined in fxmanifest.lua:7)
+[ resources:ems20fpiu] Warning: could not find file `data/**/*.ytyp` (defined in fxmanifest.lua:7)
+[resources:ems20fpiu:] Asset ems20fpiu/ems20fpiu.yft uses 23.2 MiB of virtual memory.
+[resources:ems20fpiu:] Asset ems20fpiu/ems20fpiu.ytd uses 82.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:ems20fpiu:] Asset ems20fpiu/ems20fpiu_hi.yft uses 23.2 MiB of virtual memory.
+[           resources] Started resource ems20fpiu (6 warnings)
+[     resources:f25ss] Warning: could not find file `audioconfig/aq02coyotef150_game.dat151.rel` (defined in fxmanifest.lua:5)
+[     resources:f25ss] Warning: could not find file `audioconfig/aq02coyotef150_sounds.dat54.rel` (defined in fxmanifest.lua:5)
+[     resources:f25ss] Warning: could not find file `sfx/dlc_aq02coyotef150/aq02coyotef150.awc` (defined in fxmanifest.lua:5)
+[     resources:f25ss] Warning: could not find file `sfx/dlc_aq02coyotef150/aq02coyotef150_npc.awc` (defined in fxmanifest.lua:5)
+[     resources:f25ss] Warning: could not find file `data/carcols.meta` (defined in fxmanifest.lua:5)
+[     resources:f25ss] Warning: could not find file `data/vehiclelayouts.meta` (defined in fxmanifest.lua:5)
+[resources:f25ss:stre] Asset f25ss/f25ss.ytd uses 56.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource f25ss (7 warnings)
+[resources:f450ambo:s] Asset f450ambo/f450ambo.yft uses 26.0 MiB of virtual memory.
+[resources:f450ambo:s] Asset f450ambo/f450ambo.ytd uses 182.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:f450ambo:s] Asset f450ambo/f450ambo_hi.yft uses 26.0 MiB of virtual memory.
+[           resources] Started resource f450ambo (3 warnings)
+[resources:largeboat:] Asset largeboat/largeboat.yft uses 26.1 MiB of virtual memory.
+[resources:largeboat:] Asset largeboat/largeboat.ytd uses 160.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:largeboat:] Asset largeboat/largeboat_hi.yft uses 26.1 MiB of virtual memory.
+[           resources] Started resource largeboat (3 warnings)
+[resources:m2ccmed:st] Asset m2ccmed/m2ccmed.yft uses 22.8 MiB of virtual memory.
+[resources:m2ccmed:st] Asset m2ccmed/m2ccmed.ytd uses 206.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:m2ccmed:st] Asset m2ccmed/m2ccmed_hi.yft uses 22.8 MiB of virtual memory.
+[           resources] Started resource m2ccmed (3 warnings)
+[resources:mazda_rx7:] Asset mazda_rx7/rmodrx7.yft uses 16.8 MiB of virtual memory.
+[resources:mazda_rx7:] Asset mazda_rx7/rmodrx7.ytd uses 104.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:mazda_rx7:] Asset mazda_rx7/rmodrx7_hi.yft uses 16.8 MiB of virtual memory.
+[           resources] Started resource mazda_rx7 (3 warnings)
+[resources:mercedes_a] Asset mercedes_amg_one/rmodamgone.yft uses 24.6 MiB of virtual memory.
+[resources:mercedes_a] Asset mercedes_amg_one/rmodamgone.ytd uses 24.0 MiB of physical memory.
+[resources:mercedes_a] Asset mercedes_amg_one/rmodamgone_hi.yft uses 22.2 MiB of virtual memory.
+[           resources] Started resource mercedes_amg_one (3 warnings)
+[resources:porsche_91] Asset porsche_911_gtrsr/rmod911gtrsr.ytd uses 30.0 MiB of physical memory.
+[           resources] Started resource porsche_911_gtrsr (1 warning)
+[resources:ram3500hrr] Asset ram3500hrr/ram3500hrr.ytd uses 27.2 MiB of physical memory.
+[           resources] Started resource ram3500hrr (1 warning)
+[resources:rambulance] Asset rambulance/rambulance.yft uses 30.8 MiB of virtual memory.
+[resources:rambulance] Asset rambulance/rambulance.ytd uses 118.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:rambulance] Asset rambulance/rambulance_hi.yft uses 22.5 MiB of virtual memory.
+[           resources] Started resource rambulance (3 warnings)
+[resources:rmod240sx:] Asset rmod240sx/rmod240sx.yft uses 17.9 MiB of virtual memory.
+[resources:rmod240sx:] Asset rmod240sx/rmod240sx.ytd uses 43.0 MiB of physical memory.
+[           resources] Started resource rmod240sx (2 warnings)
+[resources:rmod918spy] Asset rmod918spyder/rmod918spyder.ytd uses 96.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource rmod918spyder (1 warning)
+[           resources] Started resource rmod_laferrari_aperta
+[resources:rmodessenz] Asset rmodessenza/rmodessenza.ytd uses 60.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource rmodessenza (1 warning)
+[resources:rmodf40:st] Asset rmodf40/rmodf40.ytd uses 25.0 MiB of physical memory.
+[           resources] Started resource rmodf40 (1 warning)
+[resources:rmodg65:st] Asset rmodg65/rmodg65.yft uses 16.8 MiB of virtual memory.
+[resources:rmodg65:st] Asset rmodg65/rmodg65.ytd uses 28.5 MiB of physical memory.
+[           resources] Started resource rmodg65 (2 warnings)
+[resources:rmodi8ks:s] Asset rmodi8ks/rmodi8ks.yft uses 16.9 MiB of virtual memory.
+[resources:rmodi8ks:s] Asset rmodi8ks/rmodi8ks.ytd uses 50.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[           resources] Started resource rmodi8ks (2 warnings)
+[resources:rmodlfa:st] Asset rmodlfa/rmodlfa.ytd uses 28.5 MiB of physical memory.
+[           resources] Started resource rmodlfa (1 warning)
+[resources:rmodp1gtr:] Asset rmodp1gtr/rmodp1gtr.ytd uses 47.0 MiB of physical memory.
+[           resources] Started resource rmodp1gtr (1 warning)
+[resources:rmodrover:] Asset rmodrover/rmodrover.yft uses 16.3 MiB of virtual memory.
+[resources:rmodrover:] Asset rmodrover/rmodrover.ytd uses 25.5 MiB of physical memory.
+[           resources] Started resource rmodrover (2 warnings)
+[resources:rmodsennag] Asset rmodsennagtr/rmodsennagtr.ytd uses 26.0 MiB of physical memory.
+[           resources] Started resource rmodsennagtr (1 warning)
+[resources:rmodsuprap] Asset rmodsuprapandem/rmodsuprapandem.ytd uses 42.0 MiB of physical memory.
+[           resources] Started resource rmodsuprapandem (1 warning)
+[resources:safr:strea] Asset safr/c318firesedan.ytd uses 125.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:safr:strea] Asset safr/c318intfiresedan.ytd uses 130.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:safr:strea] Asset safr/fordambo.yft uses 26.2 MiB of virtual memory.
+[resources:safr:strea] Asset safr/fordambo.ytd uses 112.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:safr:strea] Asset safr/fordambo_hi.yft uses 26.2 MiB of virtual memory.
+[resources:safr:strea] Asset safr/safe33f.yft uses 22.9 MiB of virtual memory.
+[resources:safr:strea] Asset safr/safe33f.ytd uses 16.4 MiB of physical memory.
+[resources:safr:strea] Asset safr/safe33f_hi.yft uses 22.9 MiB of virtual memory.
+[           resources] Started resource safr (8 warnings)
+[resources:smallboat:] Asset smallboat/smallboat.yft uses 28.3 MiB of virtual memory.
+[resources:smallboat:] Asset smallboat/smallboat.ytd uses 128.0 MiB of physical memory. Oversized assets can and WILL lead to streaming issues (such as models not loading/rendering).
+[resources:smallboat:] Asset smallboat/smallboat_hi.yft uses 28.3 MiB of virtual memory.
+[           resources] Started resource smallboat (3 warnings)
+[           resources] Started resource stretcher
+[    c-scripting-core] Creating script environments for stretcherscript
+[           resources] Started resource stretcherscript
+[resources:trucks:str] Asset trucks/blacktop.ytd uses 16.2 MiB of physical memory.
+[           resources] Started resource trucks (1 warning)
+[           resources] Started resource pillbox
+[    c-scripting-core] Creating script environments for cfx_prompt_sandy_mapdata
+[resources:cfx_prompt] Asset cfx_prompt_sandy_mapdata/prompt_sandy_repair_exterior.ytd uses 18.0 MiB of physical memory.
+[           resources] Started resource cfx_prompt_sandy_mapdata (1 warning)
+[    c-scripting-core] Creating script environments for cfx_prompt_paleto_mapdata
+[           resources] Started resource cfx_prompt_paleto_mapdata
+[    c-scripting-core] Creating script environments for vertex-hub
+[           resources] Started resource vertex-hub
+[          script:ulc] [ULC] My Version: [1.9.0]
+[          script:ulc] [ULC] Latest Version: [v1.8.0]
+[          script:ulc]     ___  ___   ___        ________
+[          script:ulc]    |\  \|\  \ |\  \      |\   ____\
+[          script:ulc]    \ \  \\\  \\ \  \     \ \  \___|
+[          script:ulc]     \ \  \\\  \\ \  \     \ \  \
+[          script:ulc]      \ \  \\\  \\ \  \____ \ \  \____
+[          script:ulc]       \ \_______\\ \_______\\ \_______\
+[          script:ulc]        \|_______| \|_______| \|_______|
+[          script:ulc] 
+[          script:ulc]     ULTIMATE LIGHTING CONTROLLER
+[          script:ulc]     by Dawnstar
+[          script:ulc]     Loaded
+[          script:ulc]  
+[          script:ulc] [ULC] OUTDATED. A NEW VERSION (v1.8.0) IS AVAILABLE.
+[          script:ulc] [ULC] YOUR VERSION: 1.9.0
+[          script:ulc] [ULC] GET LATEST VERSION HERE: https://github.com/Flohhhhh/ultimate-lighting-controller/releases/
+[ script:qs-inventory] New version available for qs-advancedinventory!
+[ script:qs-inventory] You have version 1.5.56, upgrade to version 1.5.71!
+[script:qs-vehiclekey] You are using the latest version of qs-vehiclekeys!
+[script:dps-Emergency] [VERSION-CHECK]: EmergencyVehicleMenu v2.2.0-DSRP is up to date
+[   script:qs-housing] New version available for qs-housing!
+[   script:qs-housing] You have version 5.2.29, upgrade to version 5.3.17!
+[ script:qs-motorhome] You are using the latest version of qs-motorhome!
+[  script:jim-parking] Version Check: Running: 1.5.2 Latest: 1.5.2
+[  script:jim-parking] You are running the latest version. (1.5.2)
+[script:prompt_sandy_] +-------------------------------------------------------------------------------+
+[script:prompt_sandy_] | ⚠️  UPDATE AVAILABLE for [prompt_sandy_illegal_garage]: 1.0.5 → 1.1.1   |
+[script:prompt_sandy_] |                                                                               |
+[script:prompt_sandy_] |  CHANGELOGS:                                                                  |
+[script:prompt_sandy_] |  -  - Sandy Illegal Garage & Gas Station                                      |
+[script:prompt_sandy_] |                                                                               |
+[script:prompt_sandy_] |  Please update to the latest version for the best experience.                 |
+[script:prompt_sandy_] +-------------------------------------------------------------------------------+
+[script:prompt_sandy_] +----------------------------------------------------------------+
+[script:prompt_sandy_] | ⚠️  UPDATE AVAILABLE: 1.1.1 → 1.2.1                      |
+[script:prompt_sandy_] |                                                                |
+[script:prompt_sandy_] |  CHANGELOGS:                                                   |
+[script:prompt_sandy_] |  -  - Sandy Mechanic                                           |
+[script:prompt_sandy_] |                                                                |
+[script:prompt_sandy_] |  Please update to the latest version for the best experience   |
+[script:prompt_sandy_] +----------------------------------------------------------------+
+[   script:sonorancad] [12:16:54][SonoranCAD:WARNING] [bodycam-recording] [signalr] Timeout from HTTP request.
+[   script:sonorancad] [12:16:54][SonoranCAD:ERROR] [bodycam-recording] [signalr] Failed to complete negotiation with the server: Error: A timeout occurred.
+[   script:sonorancad] [12:16:54][SonoranCAD:ERROR] [bodycam-recording] [signalr] Failed to start the connection: Error: Failed to complete negotiation with the server: Error: A timeout occurred.
+[   script:sonorancad] Error: [apiws] Unable to connect to API WS hub: Failed to complete negotiation with the server: Error: A timeout occurred.
+[ script:sonoranradio] [SonoranRadio:ERROR] Radio API ERROR (from https://api.sonoranradio.com/radio/set-server-ip): -1 []
+[ script:sonoranradio] [SonoranRadio:WARNING] Failed to set server IP for radio service, but using existing roomId (1). Retrying in background...
+[ script:sonoranradio] [SonoranRadio:ERROR] Radio API ERROR (from https://api.sonoranradio.com/api/set-zones): -1 []
+[ script:sonoranradio] [SonoranRadio:WARNING] Failed to set geo and degrade zones for radio service.
+[ script:sonoranradio] [SonoranRadio:ERROR] Radio API ERROR (from https://api.sonoranradio.com/api/set-server-speakers): -1 []
+[ script:sonoranradio] [SonoranRadio:ERROR] Failed to set server speakers for radio service. Please check your configuration.
+[script:flrp_reputati] [flrp_reputation] [INFO] flrp_reputation: Database tables verified
+[script:flrp_rpg_skil] [flrp_rpg_skills] Framework detected: QBX (qbx_core)
+[script:flrp_rpg_skil] [flrp_rpg_skills] ═══════════════════════════════════════════════════
+[script:flrp_rpg_skil] [flrp_rpg_skills]     FLRP RPG Skills v2.0 - Action-Based Progression
+[script:flrp_rpg_skil] [flrp_rpg_skills] ═══════════════════════════════════════════════════
+[script:flrp_rpg_skil] [flrp_rpg_skills] Initializing database tables...
+[script:flrp_rpg_skil] [flrp_rpg_skills] Built weapon hash lookup: 127 entries
+[script:flrp_timesync] [flrp_timesync] [INFO] [flrp_timesync] Loaded settings: %02d:%02d, weather=%s, freeze=%s, dynamic=%s	12	21	EXTRASUNNY	true	false
+[script:flrp_timesync] [flrp_timesync] [INFO] [flrp_timesync] Time tick thread started (cycleSpeed=%d, %dms per game-second)	15	250
+[ script:flrp_medical] [flrp_medical] Database tables initialized
+[script:sonoran_updat] sonoran_updatehelper is for internal use and should not be started as a resource.
+[   script:sonorancad] [12:16:54][SonoranCAD:INFO] Starting SonoranCAD from E:/Full Life Roleplay 2.0/server/resources//[sonorancad]/sonorancad
+[   script:sonorancms] Starting SonoranCMS from E:/Full Life Roleplay 2.0/server/resources//[sonorancms]/sonorancms
+[   script:sonorancms] [12:16:54][SonoranCMS:WARNING] addonupdates folder exists but permission was denied when checking. Please verify permissions.
+[   script:sonorancms] [12:16:54][SonoranCMS:WARNING] config.NEW.lua exists but permission was denied when checking. Please verify permissions. See https://sonoran.link/cmsconfig for more information.
+[   script:sonorancms] [12:16:54][SonoranCMS:WARNING] qb-garages, qs-advancedgarages, jg-advancedgarages, ak47_qb_garage and cd_garage are not started. The garage data will be sent as empty. If you do not use the SonoranCMS Game Panel you can ignore this.
+[script:sonoranradio_] sonoranradio_updatehelper is for internal use and should not be started as a resource.
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Dynamic rate adjustment is DISABLED
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Processing loan resolver thread started (cycle: 60s)
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Pre-approval expiry thread started (cycle: 5min)
+[script:an_badgeSyste] OX inventory detected
+[script:fxs_mcp_agent] [fxs_mcp_agent] ready — POST /fxs_mcp_agent/<action> with Bearer auth
+[   script:jim_bridge] FrameWorkCache: ox_inventory InventoryWeight: 30000 (30.0kg) (0.01s)
+[   script:jim_bridge] FrameWorkCache: ox_inventory InventorySlots: 40 (0.01s)
+[   script:jim_bridge] FrameworkCache: ox_inventory Loaded 940 Items (0.004s)
+[   script:jim_bridge] FrameworkCache: qbx_core Loaded 892 Vehicles (0.01s)
+[   script:jim_bridge] FrameworkCache: qbx_core Loaded 23 Jobs (0.01s)
+[   script:jim_bridge] FrameworkCache: qbx_core Loaded 7 Gangs (0.01s)
+[   script:jim_bridge] FrameworkCache: Cache Ready (133.527s)
+[  script:turbo_admin] [TurboAdmin Pro] v1.0.0 loaded successfully
+[  script:turbo_admin] [TurboAdmin] Loaded 6 locale(s)
+[script:flrp_towtruck] [flrp_towtruck] [INFO] flrp_towtruck: Database table verified
+[script:tstudio_zmapd] [ TStudio Patch Loader] 🔎 Checking which patches to apply...
+[script:tstudio_zmapd] [ TStudio Patch Loader] ✅ Loaded all supported map compatibility patches.
+[script:tstudio_zmapd] [ TStudio Patch Loader] 💡 If you experience compatibility issues, please report them at: https://discord.gg/tstudio
+[script:pablito_lames] Resource initialized
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Starting gym stats degradation thread
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] [MEMBERSHIP] Registered commands /gymmembership and /gymrevoke
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] [MEMBERSHIP] Membership system loaded (0 active members, enabled: false)
+[   script:prompt_gym] [prompt_gym] Found anim core resource: prompt_anim_core_2_new
+[script:prompt_sandy_] [IPL MANAGER] Server initialized with 9 IPLs
+[                 cmd] Access denied for command stop.
+[ citizen-server-impl] server thread hitch warning: timer interval of 384 milliseconds
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: plant_news
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: welcome_prospect
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: place_bounty
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: nudge_toward_job
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: offer_service
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: get_recent_activity
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: get_conversation_history
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: trigger_surprise
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: send_message
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: get_online_players
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: adjust_reputation
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: generate_response
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: offer_mission
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: record_fact
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: schedule_action
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: get_my_status
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: get_player_context
+[    script:flrp_mr_x] [MR_X:TOOLS] Registered handler: offer_loan
+[    script:flrp_mr_x] [MR_X:TOOLS] All tool handlers registered
+[      script:oxmysql] [10.11.16-MariaDB] Database server connection established!
+[  script:flrp_police] [flrp_police] [INFO] [flrp_police] Bill analysis tables initialized
+[script:jim-closedsho] Jim-Closedshops v2.1.02 - Closed Shop Script by Jimathy
+[script:cfx_gn_collec] ・[G&N's Studio] v4.4.1 is available for cfx_gn_collection (current version: 4.4.0)
+[script:cfx_gn_collec] ・Download it here: https://keymaster.fivem.net/
+[ script:flrp_trading] [flrp_trading] [INFO] [terminals] Loaded 0 active terminals from database
+[    script:xt-prison] [xt-prison] [INFO] Initializing Table: xt_prison
+[    script:xt-prison] [xt-prison] [INFO] Initializing Table: xt_prison_items
+[   script:flrp_phone] [flrp_phone] [INFO] [flrp_phone:world] Loaded 0 active world phones
+[script:dps-Emergency] INFO: No custom liveries found in database.
+[    script:xt-prison] [xt-prison] [INFO] Initializing Table: xt_prison_bookings
+[script:flrp_campaign] [flrp_campaigns] [INFO] [campaigns] Database tables verified.
+[script:flrp_campaign] [flrp_campaigns] [INFO] [campaigns] Template[merryweather_job] Node[4d_double_cross] (phase 4): trigger-only node (not an error)
+[script:flrp_campaign] [flrp_campaigns] [INFO] [flrp_campaigns] Template validation: merryweather_job OK
+[script:flrp_campaign] [flrp_campaigns] [INFO] [flrp_campaigns] Templates: 1 loaded, 1 valid, 0 with errors
+[    script:flrp_mr_x] [MR_X] Snitch Network initialized
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Tickets table verified
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Transfer table verified
+[   script:boii-drugs] [boii-drugs] Loaded 0 equipment entries
+[script:sv_panel_plac] [sv_panel_placer] Database table initialized
+[script:flrp_campaign] [flrp_campaigns] [INFO] ══════════════════════════════════════════════
+[script:flrp_campaign] [flrp_campaigns] [INFO]   flrp_campaigns v1.0.0 — Campaign System
+[script:flrp_campaign] [flrp_campaigns] [INFO] ══════════════════════════════════════════════
+[script:flrp_campaign] [flrp_campaigns] [INFO] [campaigns] Templates loaded : 1
+[script:flrp_campaign] [flrp_campaigns] [INFO] [campaigns] Active campaigns : 0
+[script:flrp_campaign] [flrp_campaigns] [INFO] ══════════════════════════════════════════════
+[   script:qs-housing] [DEBUG 5.2.29]	Initialized house objects	[]
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Resource started — all modules loaded
+[   script:flrp_taxes] [flrp_taxes] [INFO] [flrp_taxes] Initial supply sample: $2844044 | pressure: 0.7844
+[   script:qs-housing] [DEBUG 5.2.29]	Initialized houses	0
+[    script:flrp_fuel] [flrp_fuel] [INFO] [flrp_fuel] Loaded 0 custom station(s) and 0 custom pump(s)
+[   script:Audio_Pack]       _/_/_/    _/_/_/ ║              Hey there! Yeah you, thanks for using my Audio Pack!
+[   script:Audio_Pack]    _/        _/        ║
+[   script:Audio_Pack]     _/_/    _/         ║
+[   script:Audio_Pack]        _/  _/          ║
+[   script:Audio_Pack] _/_/_/      _/_/_/     ║               It looks like Audio Pack is up to date, have fun!
+[ script:flrp_rentals] [flrp_rentals] [INFO] flrp_rentals: loaded 2 lots into cache
+[    script:flrp_mr_x] [MR_X:BANK] Treasury initialized: Cold(SAN)=OK | Cold(MIR)=OK | Hot=OK | Shells=6/8
+[ script:flrp_rentals] [flrp_rentals] [INFO] [Rentals:Ownership] Loaded 0 lot ownership records
+[    script:flrp_mr_x] [MR_X:BANK]   SAN cold storage: $45,398
+[  script:cd_doorlock] [cd_doorlock] All SQL tables and columns already exist.
+[    script:flrp_mr_x] [MR_X:BANK]   MIR cold storage: $1,171
+[    script:flrp_mr_x] [MR_X:BANK]   Shell balances: $0 (fiat)
+[script:flrp_dealersh] [flrp_dealerships] [INFO] [flrp_dealerships] Database tables initialized
+[ script:flrp_rentals] [flrp_rentals] [INFO] flrp_rentals: Cleared 53 rental vehicles from impound/depot records
+[script:AdvancedParki] [INFO] Found 22 saved vehicles in database.
+[script:AdvancedParki] [INFO] Cleanup complete. Removed 0 saved vehicles. Removed 0 other vehicles.
+[script:flrp_rpg_skil] [flrp_rpg_skills] Base schema (v1) verified
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Initialized %d stores	21
+[   script:sonorancms] [12:16:54][SonoranCMS:INFO] Loaded community ID 7e3qiyok with API URL: https://api.sonorancms.com/
+[     script:qbx_core] [qbx_core] [INFO] Removed invalid groups from player_groups table
+[script:flrp_dealersh] [flrp_dealerships] [INFO] [flrp_dealerships] Phase 2 migration complete
+[ script:sonoranradio] my: 2.25.6 remote: 2.25.6
+[script:flrp_dealersh] [flrp_dealerships] [INFO] [flrp_dealerships] Loaded 1 lots
+[script:flrp_sentenci] [flrp_sentencing] [INFO] flrp_sentencing v1.0.0 started — 29 penal codes loaded
+[         script:duff] `duff` is running latest version.
+[script:flrp_rpg_skil] [flrp_rpg_skills] Additive schema (v2) verified
+[script:flrp_rpg_skil] [flrp_rpg_skills] Additive schema (v3 — trades/crafting) verified
+[script:flrp_rpg_skil] [flrp_rpg_skills] Database tables verified
+[script:flrp_rpg_skil] [flrp_rpg_skills WARN] TEST MODE ENABLED - XP Multiplier: 10.0x
+[script:flrp_rpg_skil] [flrp_rpg_skills WARN] Admin-only mode: Only admins can gain XP
+[script:flrp_rpg_skil] [flrp_rpg_skills] RPG System initialized successfully
+[script:flrp_rpg_skil] [flrp_rpg_skills] Skills: 36 | Categories: 7
+[script:flrp_rpg_skil] [flrp_rpg_skills] ═══════════════════════════════════════════════════
+[ citizen-server-impl]         fff                          
+[ citizen-server-impl]   cccc ff   xx  xx     rr rr    eee  
+[ citizen-server-impl] cc     ffff   xx       rrr  r ee   e 
+[ citizen-server-impl] cc     ff     xx   ... rr     eeeee  
+[ citizen-server-impl]  ccccc ff   xx  xx ... rr      eeeee 
+[ citizen-server-impl]                                      
+[ citizen-server-impl] Authenticated with cfx.re Nucleus: https://flashwing-7q453b.users.cfx.re/
+[   script:sonorancms] ready to initialize
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Society accounts loaded: 42 accounts cached
+[   script:sonorancad] [12:16:55][SonoranCAD:INFO] Loaded community ID S5B9H4F with API URL: https://api.sonorancad.com/
+[   script:sonorancms] [12:16:55][SonoranCMS:INFO] Set server type to qbox
+[      script:oxmysql] [10.11.16-MariaDB] persistent_garages took 289.5473ms to execute a query!
+[      script:oxmysql] ALTER TABLE `persistent_garage_zones` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci []
+[ citizen-server-impl] server thread hitch warning: timer interval of 290 milliseconds
+[     script:qbx_core] 
+[     script:qbx_core] Welcome to Qbox!
+[     script:qbx_core] To learn more, please check out the documentation at https://docs.qbox.re/.
+[     script:qbx_core] To turn this message off, set the qbx:acknowledge convar to true in your server.cfg file.
+[     script:qbx_core] 
+[    script:lation_ui] An update is available for lation_ui
+[    script:lation_ui] Your Version: 1.3.0 | Latest Version: 1.4.0
+[    script:lation_ui] Download the latest release from https://portal.cfx.re/assets/granted-assets
+[    script:lation_ui] For more information about this update visit our Discord: https://discord.gg/9EbY4nM5uu
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Zone cache reloaded (6 parking, 2 impound)
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Server initialized, loaded 83 parking spots
+[   script:sonorancms] Found 1 servers
+[script:flrp_nexus_to] [flrp_nexus_tools]	Loaded	10	archetype response sets
+[    script:flrp_mr_x] [MR_X:AI] Cleared stale GPU lock on startup
+[script:flrp_rpg_skil] [flrp_rpg_skills DEBUG] Loaded profile for pistols
+[script:flrp_ballisti] [flrp_ballistics] [INFO] [flrp_ballistics] flrp_rpg_skills detected — RPG integration enabled
+[script:dps-Emergency] INFO: QBox framework initialized on server
+[script:dps-Emergency] [JOB-CACHE]: QBox job change listeners registered
+[script:dps-Emergency] [JOB-CACHE]: Event-driven job cache invalidation active
+[script:dps-Emergency] INFO: Vehicle Modification System initialized successfully.
+[     script:lc_utils] [lc_utils] Loaded! Support discord: https://discord.gg/U5YDgbh [v1.2.5]
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Created new gym location 'groove' at vec3(-175.029999, -1733.550049, 35.000000) (by prompt_gym)
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Location 'groove' initialized with 23 equipment pieces
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Created new gym location 'chumash' at vec3(-3150.260010, 1179.930054, 22.559999) (by prompt_gym)
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Location 'chumash' initialized with 25 equipment pieces
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Created new gym location 'vinewood' at vec3(-473.720001, 282.589996, 83.339996) (by prompt_gym)
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Location 'vinewood' initialized with 25 equipment pieces
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Created new gym location 'sandy' at vec3(1754.250000, 3696.360107, 36.020000) (by prompt_gym)
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Location 'sandy' initialized with 25 equipment pieces
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Created new gym location 'paleto' at vec3(-94.629997, 6402.270020, 30.520000) (by prompt_gym)
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Location 'paleto' initialized with 25 equipment pieces
+[script:prompt_prison] [prison_gym]	GlobalState.prisonGymEntitySets initialized
+[script:dps-Emergency] INFO: custom_liveries table created or already exists.
+[script:dps-Emergency] INFO: vehicle_mods table created or already exists.
+[script:dps-Emergency] INFO: vehicle_presets table created or already exists.
+[script:dps-Emergency] INFO: player_livery_memory table created or already exists.
+[script:dps-Emergency] INFO: No custom liveries found in database.
+[   script:flrp_phone] [flrp_phone] [INFO] [flrp_phone] Loaded 0 active routers
+[   script:qs-housing] HOUSING INFO: Furniture Creator initialized:	0	custom items loaded	
+[script:scully_emotem] [scully_emotemenu] You are currently running the latest version.
+[     script:lc_utils] [lc_utils] An update is available, download it in https://github.com/LeonardoSoares98/lc_utils/releases/latest/download/lc_utils.zip [v1.3.0]
+[     script:mk_utils] [MANKIND] [INFO] [UsedVehicles] [SERVER FRAMEWORK LOADED] [QBOX]
+[script:17mov_Garbage]  _ _____                         ___           _                        ___      _ _           _
+[script:17mov_Garbage] / |___  | __ ___   _____   __   / _ \__ _ _ __| |__   __ _  __ _  ___  / __\___ | | | ___  ___| |_ ___  _ __
+[script:17mov_Garbage] | |  / / '_ ` _ \ / _ \ \ / /  / /_\/ _` | '__| '_ \ / _` |/ _` |/ _ \/ /  / _ \| | |/ _ \/ __| __/ _ \| '__|
+[script:17mov_Garbage] | | / /| | | | | | (_) \ V /  / /_\\ (_| | |  | |_) | (_| | (_| |  __/ /__| (_) | | |  __/ (__| || (_) | |
+[script:17mov_Garbage] |_|/_/ |_| |_| |_|\___/ \_/___\____/\__,_|_|  |_.__/ \__,_|\__, |\___\____/\___/|_|_|\___|\___|\__\___/|_|
+[script:17mov_Garbage]                          |_____|                           |___/
+[script:17mov_Garbage] 
+[script:17mov_Garbage] You are using the latest version (4.0.13) of 17mov_GarbageCollector.
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	chair	kawaiispace_gamingchair
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	chair	kawaiispace_gamingstation
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	laptop	kawaiispace_keyboard
+[script:KawaiixQuasar] The dlc [KillstorexQuasar_props] was completely imported, these furniture are a reality thanks to the collaboration with https://killstore.net
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	wardrobe	ks_anime_shelf01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	chair	ks_gaming_chair01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	table	ks_gaming_desk01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	pc-table	ks_gaming_desk01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	couchtable	ks_gaming_desk01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	painting	ks_gaming_panels01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	hangingcaninets	ks_modern_bar01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	kitchenetteleft	ks_modern_bar01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	kitchenetteright	ks_modern_bar01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	bedsidetable	ks_modern_bar01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	table	ks_modern_dresser01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	cooker	ks_modern_fireplace01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	oven	ks_modern_fireplace01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	chair	ks_modern_puf01
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	wardrobe	ks_modern_wardrobe00
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	mirror	ks_wave_mirror01
+[script:KillstorexQua] The dlc [KillstorexQuasar_props] was completely imported, these furniture are a reality thanks to the collaboration with https://killstore.net
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	bed	ls_quasar_bed1_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	bed	ls_quasar_bed2_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	bedsidetable	ls_quasar_book1_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	table	ls_quasar_ctal1_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	pc-table	ls_quasar_ctal1_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	couchtable	ls_quasar_ctal1_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	table	ls_quasar_endt1_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	pc-table	ls_quasar_endt1_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	couchtable	ls_quasar_endt1_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	sofa	ls_quasar_lsea1_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	couch	ls_quasar_lsea1_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	sofa	ls_quasar_lsea2_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	couch	ls_quasar_lsea2_a
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	laptop	ls_quasar_ster1_a
+[script:lunaticstudio] The dlc [lunaticstudio_promo001] was completely imported, these furniture are a reality thanks to the collaboration with https://lunaticstudio.tebex.io
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	hangingcaninets	gcom_dec_pack_cabinet
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	kitchenetteleft	gcom_dec_pack_cabinet
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	kitchenetteright	gcom_dec_pack_cabinet
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	bedsidetable	gcom_dec_pack_cabinet
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	bedsidetable	gcom_dec_pack_cabinet_2
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	bedsidetable	gcom_dec_pack_bathcab
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	table	gcom_dec_pack_table_1
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	pc-table	gcom_dec_pack_table_1
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	couchtable	gcom_dec_pack_table_1
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	table	gcom_dec_pack_table_2
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	pc-table	gcom_dec_pack_table_2
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	couchtable	gcom_dec_pack_table_2
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	wardrobe	gcom_dec_pack_wall
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	wardrobe	gcom_dec_pack_wardrobe_1
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	wardrobe	murm_dec_pack_cabinet
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	chair	murm_dec_pack_chair_1
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	bedsidetable	murm_dec_pack_dresser
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	sofa	murm_dec_pack_sofa
+[   script:qs-housing] [DEBUG 5.2.29]	AddFurniture: added item to	couch	murm_dec_pack_sofa
+[script:murm_dec_pack] The dlc [murm_dec_pack] was completely imported, these furniture are a reality thanks to the collaboration with https://es.gta5-mods.com/users/DaMax_xY
+[          script:ulc] [ULC] Checking for external vehicle resources.
+[          script:ulc] [ULC] Loaded external configuration for "23camslick"
+[          script:ulc] [ULC] Loaded external configuration for "24mustslick"
+[          script:ulc] [ULC WARNING] A config in "25tahoedvidb" has a button with label: "Response PTN" which is not valid and will result in a poor user experience. Please make sure there are no more than 3 words and each word is a maximum of 5 characters. Use abbreviations where possible. Ex. "Takedowns" -> "TKD".
+[          script:ulc] [ULC WARNING] A config in "25tahoedvidb" has a button with label: "Steady" which is not valid and will result in a poor user experience. Please make sure there are no more than 3 words and each word is a maximum of 5 characters. Use abbreviations where possible. Ex. "Takedowns" -> "TKD".
+[          script:ulc] [ULC] Loaded external configuration for "25tahoedvidb"
+[          script:ulc] [ULC WARNING] A config in "25tahoedvivisordb" has a button with label: "Response PTN" which is not valid and will result in a poor user experience. Please make sure there are no more than 3 words and each word is a maximum of 5 characters. Use abbreviations where possible. Ex. "Takedowns" -> "TKD".
+[          script:ulc] [ULC WARNING] A config in "25tahoedvivisordb" has a button with label: "Steady" which is not valid and will result in a poor user experience. Please make sure there are no more than 3 words and each word is a maximum of 5 characters. Use abbreviations where possible. Ex. "Takedowns" -> "TKD".
+[          script:ulc] [ULC] Loaded external configuration for "25tahoedvivisordb"
+[          script:ulc] [ULC] Loaded external configuration for "c3outlaw"
+[          script:ulc] [ULC] Loaded external configuration for "dbjd25f150stx"
+[          script:ulc] [ULC] Loaded external configuration for "dbjdhard23tahoe"
+[          script:ulc] [ULC] Loaded external configuration for "jddbepd15fpiu"
+[          script:ulc] [ULC] Loaded external configuration for "jddbhard23tahoebb"
+[          script:ulc] [ULC] Loaded external configuration for "jw_pursuitdemon"
+[          script:ulc] [ULC] Loaded external configuration for "jw_pursuitdemonslick"
+[          script:ulc] [ULC] Loaded external configuration for "jw_supersnakeslick"
+[          script:ulc] [ULC] Loaded external configuration for "nypd22mach"
+[          script:ulc] [ULC] Loaded external configuration for "ucdura"
+[          script:ulc] [ULC] Loaded external configuration for "c325ambo"
+[          script:ulc] [ULC] Loaded external configuration for "ems20fpiu"
+[          script:ulc] [ULC] Loaded external configuration for "m2ccmed"
+[          script:ulc] [ULC] Loaded external configuration for "ram3500hrr"
+[          script:ulc] [ULC] Loaded external configuration for "dbfdsub"
+[          script:ulc] [ULC] Loaded external configuration for "dbfdsubt"
+[          script:ulc] [ULC] Loaded external configuration for "uc23suburban"
+[          script:ulc] [ULC] Loading complete: 21 external vehicle configurations loaded. State check: true
+[          script:ulc] [ULC] Loaded: 23camslick
+[          script:ulc] [ULC] Loaded: 24mustslick
+[          script:ulc] [ULC] Loaded: 25tahoedvidb
+[          script:ulc] [ULC] Loaded: 25tahoedvivisordb
+[          script:ulc] [ULC] Loaded: c3outlaw
+[          script:ulc] [ULC] Loaded: dbjd25f150stx
+[          script:ulc] [ULC] Loaded: dbjdhard23tahoe
+[          script:ulc] [ULC] Loaded: jddbepd15fpiu
+[          script:ulc] [ULC] Loaded: jddbhard23tahoebb
+[          script:ulc] [ULC] Loaded: jw_pursuitdemon
+[          script:ulc] [ULC] Loaded: jw_pursuitdemonslick
+[          script:ulc] [ULC] Loaded: jw_supersnakeslick
+[          script:ulc] [ULC] Loaded: nypd22mach
+[          script:ulc] [ULC] Loaded: ucdura
+[          script:ulc] [ULC] Loaded: c325ambo
+[          script:ulc] [ULC] Loaded: ems20fpiu
+[          script:ulc] [ULC] Loaded: m2ccmed
+[          script:ulc] [ULC] Loaded: ram3500hrr
+[          script:ulc] [ULC] Loaded: dbfdsub
+[          script:ulc] [ULC] Loaded: dbfdsubt
+[          script:ulc] [ULC] Loaded: uc23suburban
+[ script:qs-inventory] [qs-inventory] Registered 10 ammo items + 0 magazine items (ballistics)
+[script:flrp_ballisti] [flrp_ballistics] [INFO] [flrp_ballistics] Registered 16 magazine useable items
+[   script:flrp_taxes] [flrp_taxes] [INFO] [flrp_taxes] Treasury account "city_hall" found — balance: $9926
+[    script:wk_wars2x] [Wraith ARS 2X] v1.3.1 loaded (FLRP optimized)
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Starting vehicle data enrichment backfill...
+[script:lc_truck_logi] [lc_truck_logistics] Authenticated! Support discord: https://discord.gg/U5YDgbh [v4.8.1] 
+[script:lc_dealership] [lc_dealership] Authenticated! Support discord: https://discord.gg/U5YDgbh [v3.1.0] 
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] Hydrated LastBradshawDate from DB: 1776495600
+[  script:flrp_crypto] [flrp_crypto] [INFO] [flrp_crypto] Resource initialized successfully
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Found 3 vehicles needing enrichment
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Loaded 892 vehicle definitions via export
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Heat system loaded with %d districts	8
+[ script:flrp_medical] [flrp_medical] [INFO] [flrp_medical] Loaded 0 hospital beds
+[script:flrp_drugmark] [flrp_drugmarket] [INFO] [flrp_drugmarket] Market system loaded with %d districts	8
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Backfill complete: 2/3 vehicles enriched
+[  script:flrp_police] [flrp_police] [INFO] [flrp_police] Loaded 34 station points across 4 departments
+[    script:flrp_fuel] [flrp_fuel] [INFO] [flrp_fuel] Loaded 27 stations
+[script:lc_truck_logi] [lc_truck_logistics] An update is available, download it in your keymaster [v4.8.2]
+[script:lc_truck_logi] [lc_truck_logistics] For the complete changelog, visit our Discord: https://discord.gg/U5YDgbh
+[    script:flrp_fuel] [flrp_fuel] [INFO] [flrp_fuel] charging schema present (3/3 tables)
+[    script:flrp_fuel] [flrp_fuel] [INFO] [flrp_fuel] chargers table already populated (12 rows) — skipping auto-seed
+[ script:flrp_medical] [flrp_medical] [INFO] [flrp_medical] Loaded 0 hospital station points
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Restored truck %s as virtual at midpoint (%s)	1776538762-4841	en_route
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Restored truck %s as virtual at midpoint (%s)	1776538762-route-6957	en_route
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Loaded %d trucks, cleaned up %d stale trucks	2	0
+[  script:flrp_police] [flrp_police] [INFO] [flrp_police] Found 1 evidence stashes (opened on-demand)
+[    script:flrp_mr_x] [MR_X:AI] Ollama available with model huihui_ai/qwen3.5-abliterated:27b
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] [GROUP MANAGER] Auto-loading group 'vespucci' (6 props)
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Created new gym location 'group_vespucci' at vec3(-1201.824097, -1564.485107, 3.689509) (by prompt_anim_core_2_new)
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Location 'group_vespucci' initialized with 6 equipment pieces
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] [GROUP MANAGER] Sent despawn request for group 'vespucci' (7 entities)
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] [GROUP MANAGER] Loaded group 'vespucci' as location 'group_vespucci' (6 props, 7 despawned)
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] [GROUP MANAGER] Auto-loaded 1/1 groups (total saved: 1)
+[script:prompt_prison] [prison_gym]	Found anim core resource: prompt_anim_core_2_new (type: new)
+[   script:jim_bridge] 'jim_bridge' - You are running the latest version. (2.1.09)
+[script:jim-closedsho] 'jim-closedshops' - You are running the latest version. (2.1.02)
+[script:kyros-weapon-] [INFO] kyros-weapon-pack-v6 is up to date! (6.0.0)
+[script:kyros-weapon-] █▄▀ █▄█ █▀█ █▀█ █▀   █ █ █ █▀▀ ▄▀█ █▀█ █▀█ █▄ █ █▀
+[script:kyros-weapon-] █ █  █  █▀▄ █▄█ ▄█   ▀▄▀▄▀ ██▄ █▀█ █▀▀ █▄█ █ ▀█ ▄█
+[script:flrp_clienttr] [flrp_clienttriage] Diff detected: 22 new, 0 removed resources since last scan
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: flrpeup (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: pNotify (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: fivem_gn_mz_hopital (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: flrp_prison_release (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: harleysound (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: flrp_dealerships (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: harleysound2 (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: 25tahoedvidb (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: r35sound (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: fedsig16fpiuS (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: qb-menu (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: xbr_camaro (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: fedsig16fpiu (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: int_yachtclub (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: flrp_stresstest (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: 25tahoedvivisordb (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: fedsig21durangoSbb (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: fedsig11cvpi (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: fedsig18charSbb (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: fxs_mcp_agent (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: fedsig13taurusSbb (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage]   + NEW: speedc8bb (run triage_scan full to include)
+[script:flrp_clienttr] [flrp_clienttriage] Manifest saved to triage_manifest.json (87945 bytes)
+[script:flrp_campaign] [flrp_campaigns] [INFO] [campaigns:evidence] Decay thread started — interval=3600000ms decay_per_hour=0.2083%
+[script:flrp_campaign] [flrp_campaigns] [INFO] [campaigns:hooks] Subscribed to flrp_nexus_tools mission events.
+[script:flrp_campaign] [flrp_campaigns] [WARN] [campaigns:hooks] flrp_sentencing:RegisterHook failed (non-fatal) — @flrp_campaigns/server/hooks.lua:450: No such export RegisterHook in resource flrp_sentencing
+[script:flrp_dispatch] [flrp_dispatch_missions] [INFO] [dispatch] Dispatch loop started
+[    script:flrp_mr_x] [MR_X:ACTIVITY] External hooks registered
+[    script:flrp_mr_x] [MR_X:CAMERA] Loaded 1405 cameras from rcore_cam
+[    script:flrp_mr_x] [MR_X:COMMS] Phone identity ensured for No Caller ID
+[    script:flrp_mr_x] [MR_X] Chaos engine NOT auto-started (TestMode=false, Enabled=false)
+[    script:flrp_mr_x] [MR_X:HOOKS] External hooks module loaded
+[    script:flrp_mr_x] [MR_X:HOOKS] Registered death, MDT, economy, and activity hooks
+[    script:flrp_mr_x] [MR_X:HOOKS] ✓ Detected resource: sonorancad
+[    script:flrp_mr_x] [MR_X:HOOKS] ✓ Detected resource: flrp_medical
+[    script:flrp_mr_x] [MR_X:HOOKS] ✓ Detected resource: flrp_storerobs
+[    script:flrp_mr_x] [MR_X:HOOKS] ✓ Detected resource: flrp_heists
+[    script:flrp_mr_x] [MR_X:HOOKS] ✓ Detected resource: flrp_sentencing
+[    script:flrp_mr_x] [MR_X:HOOKS] ✓ Detected resource: flrp_rpg_skills
+[    script:flrp_mr_x] [MR_X:HOOKS] ✓ Detected resource: flrp_perception
+[    script:flrp_mr_x] [MR_X:HOOKS] ✓ Detected resource: rcore_cam
+[    script:flrp_mr_x] [MR_X:HOOKS] ✓ Detected resource: flrp_banking
+[    script:flrp_mr_x] [MR_X:HOOKS] ✓ flrp_medical detected - using qbx_medical events for death detection
+[    script:flrp_mr_x] [MR_X:HOOKS] ✓ sonorancad detected - hooking dispatch for shots/vehicle theft/carjacking
+[    script:flrp_mr_x] [MR_X:HOOKS] flrp_storerobs hook initialized
+[    script:flrp_mr_x] [MR_X:HOOKS] flrp_rpg_skills hook initialized
+[    script:flrp_mr_x] [MR_X:HOOKS] flrp_perception hook initialized
+[    script:flrp_mr_x] [MR_X:HOOKS] flrp_heists hook initialized
+[    script:flrp_mr_x] [MR_X:HOOKS] flrp_sentencing hook initialized
+[    script:flrp_mr_x] [MR_X:HOOKS] flrp_medical hook initialized
+[    script:flrp_mr_x] [MR_X:HOOKS] drug hook initialized (both)
+[    script:flrp_mr_x] [MR_X:HOOKS] flrp_banking hook initialized (threshold: $50000)
+[    script:flrp_mr_x] [MR_X:MEMORY] Memory service integration enabled, checking health...
+[   script:sonorancad] [12:16:59][SonoranCAD:INFO] Available Submodules: civintegration, sonrad, dispatchnotify, recordPrinter, postals, kick, caddisplay, lookups, calltemplates, fivepd, bodycam, ts3integration, wraithv2, locations, unitstatus, frameworksupport, vehreg, ersintegration, callcommands, localcallers, forcereg
+[   script:sonorancad] [12:16:59][SonoranCAD:INFO] Loaded Submodules: sonrad, dispatchnotify, recordPrinter, postals, kick, caddisplay, lookups, calltemplates, locations, unitstatus, frameworksupport, vehreg, callcommands, localcallers, forcereg
+[   script:sonorancad] [12:16:59][SonoranCAD:INFO] Disabled Submodules: ersintegration (Disabled), civintegration (Disabled), bodycam (Disabled), ts3integration (Disabled), fivepd (Disabled), wraithv2 (Disabled)
+[ script:flrp_trading] [TRADING:NPC] Registered NPC trader: NPC_MRX_HOT (accountId=2, tier=3)
+[  script:flrp_crypto] [flrp_crypto] [INFO] [flrp_crypto] Market initialized with 4 coins
+[    script:flrp_mr_x] [MR_X:MEMORY] Memory service is READY
+[    script:flrp_mr_x] [MR_X:AI] AI Router ready — OpenAI + Ollama (GPU lock + queue enabled)
+[    script:flrp_mr_x] [MR_X:AI] Loaded persona: Fixer
+[    script:flrp_mr_x] [MR_X:AI] Loaded persona: Analyst
+[    script:flrp_mr_x] [MR_X:AI] Loaded persona: Architect
+[  script:turbo_admin] [TurboAdmin] Detected integrations: flrpTimesync, screenshotBasic, flrpMedical, cdDoorlock, qbxVehicles, qsInventory
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] Market initialized with 13 securities
+[    script:flrp_mr_x] [MR_X:HOOK_STOREROBS] Starting log poll from 1776539819000.0
+[    script:flrp_mr_x] [MR_X:HOOK_HEISTS] Starting heist log poll from ID 0
+[script:flrp_storerob] [flrp_storerobs] [INFO] [flrp_storerobs] Restored %d active chains	0
+[script:flrp_insuranc] [flrp_insurance] [INFO] [flrp_insurance] No dealership prices found, using default vehicle price
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Found 53 orphaned state=2 vehicles, creating migration records
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Union Depository initialized: $2,785,710.00
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Vaults initialized (finite reserves mode — 7 vaults loaded)
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RORD5969
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RXHH1474
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RCXL1765
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RQUE7617
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RDNK0160
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RFSL7116
+[    script:flrp_mr_x] [MR_X:MEMORY] System identity resolved: 1eac778b-e35f-44a1-b94c-6b24ea25a407
+[    script:cd_bridge] ===================================================================
+[    script:cd_bridge] [cd_bridge] - New Update Available!
+[    script:cd_bridge] Current Version: 1.0.23.
+[    script:cd_bridge] New Version: 1.0.26.
+[    script:cd_bridge] Released: 5 days ago.
+[    script:cd_bridge] Notes: Another Major Update - Please Update.
+[    script:cd_bridge] Download: https://portal.cfx.re/assets/granted-assets?search=cd_bridge.
+[    script:cd_bridge] Changelog: https://docs.codesign.pro/paid-scripts/bridge/changelog.
+[    script:cd_bridge] ===================================================================
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RHIS1558
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RMIU2274
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RFHB3558
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for REYG4247
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RQYE5979
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RTPM6752
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RURC9567
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RCBB6790
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RJLT5994
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RBQV7249
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RVTE6356
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RCEQ4101
+[  script:cd_doorlock] ======================================================================
+[  script:cd_doorlock] [cd_doorlock] - New Update Available!
+[  script:cd_doorlock] Current Version: 2.1.15.
+[  script:cd_doorlock] New Version: 2.1.16.
+[  script:cd_doorlock] Released: 29 days ago.
+[  script:cd_doorlock] Notes: Minor fixs and improvements.
+[  script:cd_doorlock] Download: https://portal.cfx.re/assets/granted-assets?search=cd_doorlock.
+[  script:cd_doorlock] Changelog: https://docs.codesign.pro/paid-scripts/door-lock/changelog.
+[  script:cd_doorlock] ======================================================================
+[  script:cd_dispatch] =====================================================================
+[  script:cd_dispatch] [cd_dispatch] - New Update Available!
+[  script:cd_dispatch] Current Version: 4.3.7.
+[  script:cd_dispatch] New Version: 4.3.11.
+[  script:cd_dispatch] Released: 31 days ago.
+[  script:cd_dispatch] Notes: Anti cheta addons.
+[  script:cd_dispatch] Download: https://keymaster.fivem.net/asset-grants.
+[  script:cd_dispatch] Changelog: https://docs.codesign.pro/paid-scripts/dispatch#changelog.
+[  script:cd_dispatch] =====================================================================
+[script:prompt_prison] [prison_gym]	Creating location "prison" with coords type: vector3
+[script:prompt_prison] [prison_gym]	Coords: vec3(1735.736572, 2644.480713, 52.769657)
+[script:prompt_prison] [prison_gym]	locationData type: table
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Created new gym location 'prison' at vec3(1735.736572, 2644.480713, 52.769657) (by prompt_prison_study)
+[script:prompt_anim_c] [prompt_anim_core_2_new] [INFO] Location 'prison' initialized with 29 equipment pieces
+[script:prompt_prison] [prison_gym]	Created gym location: prison with new anim core
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RWSI2919
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for REVN7086
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RVRN5275
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RYER1256
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RBCU9886
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RUMZ9703
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RRGA6040
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RXAS3810
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RNPN7300
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RCSX1466
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for REXT3702
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RECO7606
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RHSK7966
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RXBS2914
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for REAG4207
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RKIO2008
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RKVG6489
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RQOC4225
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RWAS9613
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RFQH3736
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RYHL2140
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RGPE4497
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for ROEJ6127
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for REYT8028
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RZFA3056
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RFFR8571
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RIFA6969
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for REYL3165
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RDFC2838
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RRHY7710
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RUQS8642
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RIWV1356
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RTEV7118
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RGZG7529
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Migrated legacy impound for RQUJ2209
+[script:flrp_timesync] [flrp_timesync] [INFO] [flrp_timesync] Registered with turbo_admin
+[script:flrp_dispatch] [flrp_dispatch_missions] [INFO] [dispatch] Cleanup timeout monitor started
+[    script:flrp_mr_x] [MR_X:CAMPAIGN] Campaign Manager starting...
+[    script:flrp_mr_x] [MR_X:CAMPAIGN] Tick complete: 0 players, 0 actions queued, 0s
+[    script:flrp_mr_x] [MR_X:CAMPAIGN] Hourly maintenance: lessons expired, promotions checked
+[ script:flrp_banking] [flrp_banking] [WARN] [flrp_banking] Treasury API returned status 0, using fallback rates
+[   script:prompt_gym] +-----------------------------------------------------+
+[   script:prompt_gym] | ✅ [Sandy] Mapdata is the same as maps installed   |
+[   script:prompt_gym] +-----------------------------------------------------+
+[   script:prompt_gym] +------------------------------------------------------+
+[   script:prompt_gym] | ✅ [Paleto] Mapdata is the same as maps installed   |
+[   script:prompt_gym] +------------------------------------------------------+
+[script:flrp_timesync] [flrp_timesync] [INFO] [flrp_timesync] Weather API: %s (code %d) → %s, temp %.0f°F	overcast clouds	804	OVERCAST	66.94
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] BTC price updated: $75771.00
+[    script:flrp_mr_x] [MR_X:AI] npc_trading → ollama (huihui_ai/qwen3.5-abliterated:27b, max 600 tokens, tier Worker, priority 4)
+[    script:flrp_mr_x] [MR_X:WEBHOOK] Failed (0): HEARTBEAT
+[ script:sonoranradio] [SonoranRadio] - Attempting to set server IP for radio service...
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Savings interest thread started (cycle: 60 min)
+[script:persistent_ga] [persistent_garages] [INFO] persistent_garages: Lost vehicle recovery thread started (interval: 600s)
+[script:flrp_insuranc] [flrp_insurance] [INFO] [flrp_insurance] Premium collection thread started (cycle: 30 min)
+[      script:oxmysql] [10.11.16-MariaDB] flrp_trading took 196.9786ms to execute a query!
+[      script:oxmysql] DELETE FROM flrp_trading_price_history WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY) [90]
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] Purged 36 expired price history rows (>90 days)
+[   script:sonorancad] [12:17:25][SonoranCAD:INFO] [bodycam-recording] Connected to API WS hub (https://api.sonorancad.com/apiWsHub).
+[   script:sonorancad] [12:17:25][SonoranCAD:INFO] [bodycam-recording] Authenticated with API WS hub.
+[    script:flrp_mr_x] [MR_X:LANGFUSE] Sending trace: npc_trading (ollama)
+[    script:flrp_mr_x] [MR_X:LANGFUSE] POST http://localhost:3100/api/public/ingestion (5278 bytes)
+[    script:flrp_mr_x] [MR_X:TRADING] Cannot fund for XRG buy
+[    script:flrp_mr_x] [MR_X:TRADING] Cannot fund for ECL buy
+[    script:flrp_mr_x] [MR_X:TRADING] Daily review complete: 0 entries executed
+[    script:flrp_mr_x] [MR_X:LANGFUSE] Trace accepted (HTTP 207)
+[    script:flrp_mr_x] [MR_X:FEEDBACK] Campaign velocity analyzed: 3 archetype/stage combos
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] Requesting AI analyst report from Ollama...
+[    script:flrp_mr_x] [MR_X:HOOK_DRUGS] flrp_drugmarket_sales table not found — DB sale polling disabled (event-based tracking only)
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Loan payment processor thread started (cycle: 10 min)
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] Bradshaw: attempt 1/12 for 2026-04-18
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] Generating Buck Bradshaw column...
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] CD maturity checker thread started (cycle: 60 min)
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Invoice overdue processing thread started (cycle: 10 min)
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] AI analyst report stored successfully
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Credit card billing thread started (cycle: 60 min)
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] News published [bradshaw]: Buck Bradshaw's Market Call — April 18
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] Bradshaw column published successfully
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] Daily limit reset thread started
+[    script:flrp_mr_x] [MR_X:WEBHOOK] Dropped after max retries: HEARTBEAT
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles
+[   script:flrp_taxes] [flrp_taxes] [INFO] [flrp_taxes] Supply sample: $2844044 | pressure: 0.7844
+[ script:flrp_trading] [flrp_trading] [INFO] [flrp_trading] Macro cycle transition for FLCA: sideways -> sideways (duration: 30 days)
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles
+[    script:flrp_mr_x] [MR_X:CAMPAIGN] Tick complete: 0 players, 0 actions queued, 0s
+[    script:flrp_mr_x] [MR_X:FEEDBACK] Campaign velocity analyzed: 3 archetype/stage combos
+[    script:flrp_mr_x] [MR_X:WEBHOOK] Failed (0): HEARTBEAT
+[    script:flrp_mr_x] [MR_X:PROSPECT] Scan found 0 prospects
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles
+[    script:flrp_mr_x] [MR_X:WEBHOOK] Retry succeeded: HEARTBEAT
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles
+[   script:flrp_taxes] [flrp_taxes] [INFO] [flrp_taxes] Supply sample: $2844044 | pressure: 0.7844
+[ script:flrp_banking] [flrp_banking] [INFO] [flrp_banking] BTC price updated: $75649.00
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles
+[    script:flrp_mr_x] [MR_X:CAMPAIGN] Tick complete: 0 players, 0 actions queued, 0s
+[    script:flrp_mr_x] [MR_X:FEEDBACK] Campaign velocity analyzed: 3 archetype/stage combos
+[    script:flrp_mr_x] [MR_X:WEBHOOK] Failed (0): HEARTBEAT
+[    script:flrp_mr_x] [MR_X:PROSPECT] Scan found 0 prospects
+[    script:flrp_mr_x] [MR_X:WEBHOOK] Retry succeeded: HEARTBEAT
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles
+[ script:qbx_vehicles] [qbx_vehicles] [INFO] [qbx_vehicles:enrich] Periodic enrichment: updated 2 vehicles

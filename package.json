@@ -1,6 +1,6 @@
 {
   "name": "cfx-sync-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Open-source MCP server that syncs Cfx.re Portal granted assets into a local FiveM/RedM server. Read-only toward the portal; never transfers, gifts, or modifies grants.",
   "type": "module",
   "bin": {
@@ -21,7 +21,9 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
+    "@types/semver": "7.7.1",
     "playwright": "1.59.1",
+    "semver": "7.7.4",
     "undici": "6.25.0",
     "yauzl-promise": "4.0.0",
     "zod": "3.23.8"

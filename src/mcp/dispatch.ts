@@ -3,6 +3,7 @@ import { cfx_logout } from "./tools/logout.js";
 import { cfx_status } from "./tools/status.js";
 import { cfx_list_grants } from "./tools/list_grants.js";
 import { cfx_check_updates } from "./tools/check_updates.js";
+import { cfx_scan_updates } from "./tools/scan_updates.js";
 import { cfx_discover } from "./tools/discover.js";
 import { cfx_approve_mapping } from "./tools/approve_mapping.js";
 import { cfx_download_asset } from "./tools/download_asset.js";
@@ -11,6 +12,7 @@ import { cfx_sync_all } from "./tools/sync_all.js";
 import { cfx_rollback } from "./tools/rollback.js";
 import { cfx_scan_configs } from "./tools/scan_configs.js";
 import { cfx_reset_pristine } from "./tools/reset_pristine.js";
+import { cfx_set_fork_mode } from "./tools/set_fork_mode.js";
 
 // Each handler accepts its own validated input type. The dispatch boundary
 // receives `unknown` from the MCP transport and passes it through — validation
@@ -28,6 +30,7 @@ const HANDLERS: Record<string, Handler> = {
   cfx_status:          wrap(cfx_status),
   cfx_list_grants:     wrap(cfx_list_grants),
   cfx_check_updates:   wrap(cfx_check_updates),
+  cfx_scan_updates:    wrap(cfx_scan_updates),
   cfx_discover:        wrap(cfx_discover),
   cfx_approve_mapping: wrap(cfx_approve_mapping),
   cfx_download_asset:  wrap(cfx_download_asset),
@@ -36,6 +39,7 @@ const HANDLERS: Record<string, Handler> = {
   cfx_rollback:        wrap(cfx_rollback),
   cfx_scan_configs:    wrap(cfx_scan_configs),
   cfx_reset_pristine:  wrap(cfx_reset_pristine),
+  cfx_set_fork_mode:   wrap(cfx_set_fork_mode),
 };
 
 export async function dispatch(name: string, args: unknown): Promise<unknown> {
