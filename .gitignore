@@ -10,4 +10,5 @@ dist/
 /.playwright-profile/
 coverage/
 *.log
+!tests/fixtures/log-snippets/*.log
 .DS_Store
