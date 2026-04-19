@@ -169,7 +169,10 @@ describe("cfx_reset_pristine", () => {
     expect(onDisk.assets["100"]!.pristineHashes).toBeNull();
   });
 
-  it("grantId: clears pristine-history for that grant only", async () => {
+  it("grantId: preserves pristine-history so older backups stay rollback-able", async () => {
+    // Spec: reset only drops the CURRENT pristine baseline. pristine-history
+    // entries are referenced by backup manifests (pristineVersionIdAtBackupTime)
+    // and must survive so cfx_rollback can restore an older baseline.
     writeState(stateDir, [
       makeAssetState({ grantId: 100, pristineVersionId: 10, pristineHashes: { a: "b" } }),
       makeAssetState({ grantId: 200, pristineVersionId: 20, pristineHashes: { c: "d" } }),
@@ -182,7 +185,11 @@ describe("cfx_reset_pristine", () => {
 
     await cfx_reset_pristine({ grantId: 100 });
 
-    expect(existsSync(path.join(pristineHistoryDir, "100"))).toBe(false);
+    // Current pristine dropped…
+    expect(existsSync(path.join(pristineDir, "100"))).toBe(false);
+    // …but history is untouched — for both the reset grant AND siblings.
+    expect(existsSync(path.join(pristineHistoryDir, "100", "9"))).toBe(true);
+    expect(existsSync(path.join(pristineHistoryDir, "100", "10"))).toBe(true);
     expect(existsSync(path.join(pristineHistoryDir, "200", "19"))).toBe(true);
   });
 
@@ -249,7 +256,9 @@ describe("cfx_reset_pristine", () => {
     expect(existsSync(path.join(pristineDir, "888"))).toBe(false);
   });
 
-  it("all: true — GCs orphan pristine-history dirs too", async () => {
+  it("all: true — leaves pristine-history intact (incl. orphan history dirs)", async () => {
+    // Spec: reset does not touch pristine-history. Even orphaned history
+    // snapshots stay — they're tied to a backup manifest, not to state.
     writeState(stateDir, [
       makeAssetState({ grantId: 100, pristineVersionId: 10, pristineHashes: { a: "b" } }),
     ]);
@@ -258,10 +267,13 @@ describe("cfx_reset_pristine", () => {
     // Orphan pristine-history — no state entry, no pristine dir either.
     seedPristineHistory(pristineHistoryDir, 555, 1);
 
-    await cfx_reset_pristine({ all: true });
+    const result = await cfx_reset_pristine({ all: true });
 
-    expect(existsSync(path.join(pristineHistoryDir, "100"))).toBe(false);
-    expect(existsSync(path.join(pristineHistoryDir, "555"))).toBe(false);
+    // orphansGced only reports pristine/ orphans, not pristine-history/.
+    expect(result.orphansGced).toEqual([]);
+    // Both history dirs survived the reset.
+    expect(existsSync(path.join(pristineHistoryDir, "100", "9"))).toBe(true);
+    expect(existsSync(path.join(pristineHistoryDir, "555", "1"))).toBe(true);
   });
 
   it("all: true — succeeds on fresh install with no pristine dir present", async () => {
