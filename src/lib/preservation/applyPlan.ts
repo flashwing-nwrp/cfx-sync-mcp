@@ -3,25 +3,45 @@
  *
  * Given a resolved {@link DeployPlan} (all conflicts have a resolution and no
  * blockers), mutate the `stagingRoot` tree so it represents the final
- * to-be-deployed state. The deployer calls this AFTER overlaying the new
- * pack's contents onto a copy of live (or a pristine scaffold) so that:
+ * to-be-deployed state.
  *
- *   - `preserve-live`  → copy live's bytes into staging (user's edit wins)
- *   - `take-newPack`   → staging already has pack content; no-op
- *                        EXCEPT when `packSha` is undefined (pack dropped
- *                        the file) — then delete it from staging.
- *   - `take-newPack-rename` → staging has newPath from pack; remove stale
- *                             oldPath so both don't coexist in live.
- *   - `drop`           → remove from staging if present (usually already absent).
+ * Model — what's in `stagingRoot` when this function runs:
+ *   The caller (cfx_deploy_asset) hands us a `stagingRoot` that contains
+ *   PACK-ONLY content — the raw extract of the incoming zip, freshly unzipped.
+ *   Live is NOT pre-overlaid. This function is what USES the DeployPlan to
+ *   merge pack bytes with live bytes, producing the final staging tree that
+ *   the deployer will then atomically swap into place.
+ *
+ * Per-row behavior (staging starts with pack-only content; `liveRoot` is read-only):
+ *
+ *   - `preserve-live`  → copy live's bytes into staging at this path. Covers
+ *                        row 3 (user edit, pack unchanged) and row 5 (live-only
+ *                        orphan file pack doesn't know about). User's version
+ *                        wins — their edits survive the deploy.
+ *   - `take-newPack`   → no-op when `packSha` is defined (staging already has
+ *                        the pack's content for this path from unzip).
+ *                        When `packSha` is undefined (pack DROPPED the file;
+ *                        see types.ts PlanRow JSDoc), delete the path from
+ *                        staging. This is the row-2 "pack dropped unchanged
+ *                        file" branch — we honor vendor removal.
+ *   - `take-newPack-rename` (row 7) → staging already has the pack's newPath;
+ *                        nothing to do for that side. If the plan's renamed
+ *                        oldPath was also shipped by pack (shouldn't happen
+ *                        under rename semantics, but defensive), drop it so
+ *                        both copies don't land in live.
+ *   - `drop` (row 6)   → remove from staging if somehow present (usually a
+ *                        no-op: if pristine dropped it and pack dropped it,
+ *                        staging never had it from the unzip).
  *   - `conflict` with resolution:
  *       - `staged-for-merge` → write `.live` + `.pack` sidecars under
  *         `<conflictDir>/<grantId>/<path>.{live,pack}` and DELETE the path
- *         from staging so the deployer's rsync skips it (operator resolves
- *         manually by rewriting live and re-running).
- *       - `take-live-at-new-path` (row 8) → write live's oldPath bytes to
- *         newPath in staging; remove oldPath from staging.
- *       - `take-live-at-old-path` (row 8) → write live's oldPath bytes to
- *         oldPath in staging; remove newPath from staging (reject rename).
+ *         from staging so the final swap leaves live's version in place.
+ *         The operator resolves by rewriting live and re-running deploy.
+ *       - `take-live-at-new-path` (row 8) → copy live's oldPath bytes to
+ *         newPath in staging (overwriting the pack's newPath content); then
+ *         delete oldPath from staging.
+ *       - `take-live-at-old-path` (row 8) → copy live's oldPath bytes to
+ *         oldPath in staging; delete newPath from staging (reject pack's rename).
  *       - `merge-diff3` → NOT IMPLEMENTED yet. Throws with a hint pointing
  *         operators at `staged-for-merge`. Reserved so adding a proper 3-way
  *         merger later doesn't require a migration.
@@ -29,6 +49,14 @@
  *                 {@link EncryptedTamperDetectedError} BEFORE any mutation.
  *   - `conflict` without resolution → throws {@link ConflictsUnresolvedError}
  *     BEFORE any mutation, listing all offending paths.
+ *
+ * Why this shape: the plan rows are canonical — the diff engine already
+ * figured out what each path needs to become. Staging being pack-only on
+ * entry means `take-newPack` is the cheap default (no copy), and all the
+ * live-side work (preserve-live, take-live-at-*-path) is explicit. The
+ * alternative (pre-overlay live onto staging, then apply the plan) would
+ * make `take-newPack` the expensive path and do unnecessary I/O for every
+ * unchanged file.
  *
  * Contract: this function is "atomic at the row level" — each row's filesystem
  * transitions are applied one at a time with no rollback if a later row fails.
@@ -130,8 +158,9 @@ async function applyRow(
       if (row.packSha === undefined) {
         await removeFromStaging(row.path, stagingRoot);
       }
-      // packSha defined → no-op (staging already has pack content from the
-      // deployer's pack overlay step).
+      // packSha defined → no-op (staging already has the pack's content at
+      // this path from the unzip — staging is pack-only on entry; see the
+      // module JSDoc "Model" section).
       return;
 
     case "take-newPack-rename": {
@@ -184,10 +213,11 @@ async function applyConflictRow(
 
     case "take-live-at-new-path": {
       // Row 8: pack renamed oldPath→newPath; user edited oldPath. Operator
-      // chose to put their edits at newPath. Staging currently holds pack's
-      // newPath content AND (from the deployer's live pre-overlay) the user's
-      // oldPath content. Rewrite newPath with live's old-path bytes; delete
-      // oldPath from staging.
+      // chose to put their edits at newPath. Staging holds pack's newPath
+      // content (from the unzip). Copy live's oldPath bytes OVER staging's
+      // newPath (overriding the pack), then ensure oldPath is absent from
+      // staging (usually already is — pack moved it, so the unzip never put
+      // it there — but be defensive).
       const oldPath = row.rename?.oldPath;
       const newPath = row.rename?.newPath ?? row.path;
       if (oldPath === undefined) {

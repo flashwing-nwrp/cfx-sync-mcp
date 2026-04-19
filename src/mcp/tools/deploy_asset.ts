@@ -337,10 +337,20 @@ async function runLayer2(
   }
 
   // -- Real apply: surface blockers + unresolved conflicts early ---------
-  // applyPlan also checks these, but we throw here with plan context so the
-  // caller can pass conflictResolutions on the next call without re-running
-  // the full pipeline first. Order matters: blockers before conflicts so a
-  // case-collision with also-unresolved-conflicts throws the blocker (worse).
+  // Pre-throw blockers before staging mutation so the operator sees the
+  // typed error without a half-applied plan. applyPlan also re-throws
+  // blockers (iterating plan.rows, which is canonical) — this pre-check
+  // is UX, not correctness. If diffEngine ever emits a blocker into
+  // plan.rows but forgets to mirror it into plan.blockers, applyPlan still
+  // catches it.
+  //
+  // Same reasoning for unresolved conflicts: applyPlan throws
+  // ConflictsUnresolvedError over plan.rows; we throw the same thing over
+  // plan.conflicts here so the caller can add conflictResolutions on the
+  // next call without watching applyPlan start mutating first.
+  //
+  // Order: blockers before conflicts so a case-collision that also has
+  // unresolved conflicts throws the blocker (the worse error wins).
   for (const row of plan.blockers) {
     if (row.blockerCode === "CASE_COLLISION_DETECTED") {
       const other = row.collision?.paths.find((p) => p !== row.path) ?? "";
