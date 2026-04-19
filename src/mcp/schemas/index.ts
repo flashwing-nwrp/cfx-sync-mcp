@@ -232,4 +232,11 @@ export const RollbackOutput = z.object({
   fromBackup: z.string(),
   newRollingBackup: z.string(),
   suggestedRestartCommand: z.string(),
+  /**
+   * Pristine versionId restored from pristine-history, or null if the backup
+   * predated Phase 1.5 (no manifest / manifest with null pristine fields). In
+   * the null case, state.pristine* is cleared so the next deploy runs as a
+   * first-deploy.
+   */
+  pristineRotatedTo: z.number().nullable(),
 });
