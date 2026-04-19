@@ -118,6 +118,27 @@ export const SyncAllOutput = z.object({
   suggestedRestarts: z.array(z.string()),
 });
 
+export const ScanConfigsInput = z.object({
+  grantId: z.number().int().positive().optional(),
+  all: z.boolean().optional(),
+}).strict().refine(
+  (v) => !(v.grantId !== undefined && v.all === true),
+  { message: "Pass grantId OR all, not both" }
+);
+export const ScanConfigsOutput = z.object({
+  scanned: z.array(z.object({
+    grantId: z.number(),
+    slug: z.string(),
+    preservePaths: z.array(z.string()),
+    count: z.number(),
+  })),
+  totalPreservePaths: z.number(),
+  skipped: z.array(z.object({
+    grantId: z.number(),
+    reason: z.string(),
+  })).optional(),
+}).strict();
+
 export const RollbackInput = z.object({
   grantId: z.number().optional(),
   slug: z.string().optional(),

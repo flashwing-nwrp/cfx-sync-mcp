@@ -18,6 +18,7 @@ export const TOOLS: ToolDef[] = [
   { name: "cfx_check_updates", description: "Diff portal grants vs local state; returns changed grants.", inputSchema: S.CheckUpdatesInput, outputSchema: S.CheckUpdatesOutput, destructive: false },
   { name: "cfx_discover", description: "Scan local resources + portal grants, propose cfx-sync-map.json.", inputSchema: S.DiscoverInput, outputSchema: S.DiscoverOutput, destructive: false },
   { name: "cfx_approve_mapping", description: "Commit a proposed mapping to cfx-sync-map.json.", inputSchema: S.ApproveMappingInput, outputSchema: S.ApproveMappingOutput, destructive: true },
+  { name: "cfx_scan_configs", description: "Layer 1 preservation scan: write advisory preservePaths into cfx-sync-map.json for one or all mapped grants.", inputSchema: S.ScanConfigsInput, outputSchema: S.ScanConfigsOutput, destructive: true },
   { name: "cfx_download_asset", description: "Stream a pack zip to cache. Does NOT deploy.", inputSchema: S.DownloadAssetInput, outputSchema: S.DownloadAssetOutput, destructive: true },
   { name: "cfx_deploy_asset", description: "Unzip + stage + swap with backup.", inputSchema: S.DeployAssetInput, outputSchema: S.DeployAssetOutput, destructive: true },
   { name: "cfx_sync_all", description: "check → download(changed) → deploy(downloaded).", inputSchema: S.SyncAllInput, outputSchema: S.SyncAllOutput, destructive: true },
