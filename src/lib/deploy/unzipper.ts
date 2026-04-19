@@ -3,15 +3,24 @@ import fsP from "node:fs/promises";
 import path from "node:path";
 import { open as yauzlOpen } from "yauzl-promise";
 import { ValidationFailedError } from "../errors.js";
+import type { ValidationFailure } from "../preservation/types.js";
 
 export interface UnzipResult {
   root: string;
+  /**
+   * Pack-level validation failures surfaced (not thrown) during extraction.
+   * Currently only symlinks — skipped entries are recorded so the dry-run /
+   * deploy-plan layer can display them to operators alongside other pack
+   * problems. Zip-slip and absolute-path entries are NOT surfaced here; those
+   * are hard refuses and still throw ValidationFailedError.
+   */
+  validationFailures: ValidationFailure[];
 }
 
 // Extracts a zip into <stagingRoot>/<basename>-<counter>/ with these guarantees:
-//   - No entry resolves outside the staging root (zip-slip)
-//   - Symlink entries are refused
-//   - Absolute paths are refused
+//   - No entry resolves outside the staging root (zip-slip) — THROWS
+//   - Absolute paths are refused — THROWS
+//   - Symlink entries are SKIPPED and surfaced in validationFailures[]
 //   - If the zip wraps everything in a single top-level dir, contents are
 //     flattened (hoisted one level) so the staging root holds fxmanifest.lua directly.
 export async function unzipToStaging(
@@ -27,6 +36,7 @@ export async function unzipToStaging(
   // during entry iteration. We catch those and rethrow as ValidationFailedError below.
   const zip = await yauzlOpen(zipFile);
   let hadFiles = false;
+  const validationFailures: ValidationFailure[] = [];
 
   try {
     try {
@@ -50,11 +60,14 @@ export async function unzipToStaging(
           continue;
         }
 
-        // Reject symlinks (yauzl exposes external file attrs — upper 16 bits are Unix mode)
+        // Skip symlinks but surface them in validationFailures so callers (dry-run,
+        // DeployPlan.packValidationFailures) can show operators which files were
+        // dropped. yauzl exposes external file attrs — upper 16 bits are Unix mode.
         const externalAttrs = entry.externalFileAttributes >>> 16;
         const isSymlink = (externalAttrs & 0o170000) === 0o120000;
         if (isSymlink) {
-          throw new ValidationFailedError(`Zip entry is a symlink: ${rawName}`);
+          validationFailures.push({ path: rawName, reason: "symlink-refused" });
+          continue;
         }
 
         hadFiles = true;
@@ -116,7 +129,7 @@ export async function unzipToStaging(
         `No fxmanifest.lua at root or inside single-top-dir wrapper.${hint}`
       );
     }
-    return { root };
+    return { root, validationFailures };
   } catch (e) {
     // Cleanup partial extraction on any failure — prevents stagingRoot from
     // filling with orphaned extract-* dirs on repeated failures.
