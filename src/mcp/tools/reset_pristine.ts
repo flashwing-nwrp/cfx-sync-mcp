@@ -5,7 +5,7 @@ import type {
   ResetPristineInput,
   ResetPristineOutput,
 } from "../schemas/index.js";
-import { loadConfig } from "../../lib/config.js";
+import { loadConfig, getPristinePaths } from "../../lib/config.js";
 import { State } from "../../lib/state/state.js";
 import { StateLock } from "../../lib/state/lock.js";
 import { detectOrphans } from "../../lib/pristine/gc.js";
@@ -36,7 +36,7 @@ type Output = z.infer<typeof ResetPristineOutput>;
  */
 export async function cfx_reset_pristine(input: Input): Promise<Output> {
   const cfg = loadConfig();
-  const pristineDir = path.join(cfg.stateDir, "pristine");
+  const { pristineDir } = getPristinePaths(cfg);
 
   const lock = new StateLock(cfg.stateDir);
   await lock.acquire();
