@@ -113,3 +113,111 @@ export interface LogNoticeMatch {
  * updates-module types sit in one file.
  */
 export type BlockState = "IDLE" | "IN_BLOCK" | "COMPLETE";
+
+// ---------------------------------------------------------------------------
+// Task 9 — scanner output types.
+//
+// The scanner produces 4 buckets (available / suppressed / unknownSource /
+// unmapped). Three of them share a `ResourceSignal` base plus a `source` tag;
+// `unmapped` is shaped slightly differently because it has no grantId / no
+// portal context by definition.
+//
+// Task 4 seeded `NoticePattern` / `LogNoticeMatch` / `BlockState` above; Task 9
+// adds the merged-output shapes here so the whole updates subsystem shares one
+// type module.
+// ---------------------------------------------------------------------------
+
+/**
+ * Canonical shape for both portal-signal and log-signal rows once merged.
+ * Three of the four output buckets wrap this with a `source` tag plus an
+ * optional `reason`. The `unmapped` bucket uses `UnmappedRow` instead (no
+ * `grantId`, no `updatedAt`).
+ */
+export interface ResourceSignal {
+  /** Canonical resource slug (exact match with mapping entry's `slug`). */
+  slug: string;
+  /** Portal grant ID when the entry is mapped; absent for unmapped rows. */
+  grantId?: number;
+  /**
+   * Locally-installed version. `null` when no reliable current version is
+   * available (portal-only signal where state.versionId is a numeric pack-id,
+   * not a semver string — see spec review R3).
+   */
+  current: string | null;
+  /** Upstream announced version (semver string, or stringified portal field). */
+  announced: string;
+  /** Vendor release-notes URL, only set if the pattern's URL allowlist passed. */
+  releaseNotesUrl?: string;
+  /** Plain-text operator hint (vendor commentary + untrusted-URL fallback). */
+  severityNote?: string;
+  /** Portal `updatedAt` (ISO8601) when portal signal participated. */
+  updatedAt?: string;
+  /** True iff the log input contained a `Started resource <slug>` boundary. */
+  boundaryKnown: boolean;
+}
+
+/** Origin of the merged signal. */
+export type SignalSource = "portal" | "log" | "portal+log";
+
+/** Mapped signal in the `available` bucket. */
+export type AvailableRow = ResourceSignal & { source: SignalSource };
+
+/** Why a mapped signal was suppressed. */
+export type SuppressedReason =
+  | "local-ahead"              // local semver > announced
+  | "local-equal"              // local semver == announced (heartbeat)
+  | "ignore-upstream-updates"; // operator flagged as a fork
+
+/** Mapped signal in the `suppressed` bucket. */
+export type SuppressedRow = ResourceSignal & {
+  source: SignalSource;
+  reason: SuppressedReason;
+};
+
+/** Why a mapped signal couldn't be semver-compared. */
+export type UnknownSourceReason =
+  | "no-semver"        // both sides present but one/both non-semver
+  | "missing-current"  // current was empty / null
+  | "missing-announced"; // announced was empty
+
+/** Mapped signal in the `unknownSource` bucket. */
+export type UnknownSourceRow = ResourceSignal & {
+  source: SignalSource;
+  reason: UnknownSourceReason;
+};
+
+/**
+ * Unmapped signal — a log notice whose canonical slug doesn't match any
+ * mapping entry. These have no `grantId` and no portal context, so the shape
+ * is narrower than `ResourceSignal`.
+ */
+export interface UnmappedRow {
+  slug: string;
+  current: string | null;
+  announced: string;
+  /** Only log signal can produce unmapped rows. */
+  source: "log";
+  releaseNotesUrl?: string;
+  severityNote?: string;
+  boundaryKnown: boolean;
+}
+
+/**
+ * Return shape of `scanUpdates`. Mirrors the spec's tool API output shape
+ * 1:1 — Task 10 (cfx_scan_updates MCP tool) maps this to the public zod
+ * schema unchanged.
+ */
+export interface ScanUpdatesResult {
+  available: AvailableRow[];
+  suppressed: SuppressedRow[];
+  unknownSource: UnknownSourceRow[];
+  unmapped: UnmappedRow[];
+  /** Exact pass-through of `parseNotices` result (0 when no logLines). */
+  scannedLogLines: number;
+  /** True iff `Started resource <slug>` boundary was observed in the log. */
+  logHasStartupBoundary: boolean;
+  /** True iff `cfx_check_updates` actually hit the portal this run. */
+  portalPolled: boolean;
+  /** True iff the portal result came from the 1h rate-limit cache. */
+  portalFromCache: boolean;
+}
