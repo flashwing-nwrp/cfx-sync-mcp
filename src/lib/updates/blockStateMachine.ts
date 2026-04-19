@@ -22,22 +22,25 @@
  * pattern can carry its own in-progress fields (version strings, URLs, …).
  */
 
-/** Spec-defined maximum lines between opener and completion before timeout. */
+/**
+ * Spec-defined maximum lines between opener and completion before timeout.
+ * See spec § Signal source 2 — Log scraper, state machine transitions line 118.
+ */
 export const MAX_BLOCK_LINES = 20;
 
 /**
  * Caller-supplied line-handler contract.  Receives the current accumulator
  * and the input line; returns one of:
  *
- *  - `"ignore"`          line didn't match anything; continue accumulating
- *  - `"match"`           line updated the accumulator; continue
- *  - `"complete"`        line was the closing sentinel; emit now
- *  - `"reset"`           line was a sentinel that cancels the block (e.g.
- *                        a new "Started resource" for the same token)
- *
- * The handler mutates `accumulator` in place for the "match" case.
+ *  - `"continue"`  line either updated or did not affect the accumulator;
+ *                  keep walking (most lines fall here).  The handler mutates
+ *                  `accumulator` in place when it extracts a field.
+ *  - `"complete"`  line was the closing sentinel; emit now.
+ *  - `"reset"`     sentinel line cancels the walk entirely (walkBlock returns
+ *                  null).  Multi-block stream scanning is the scraper's job
+ *                  (Task 8), not this primitive's.
  */
-export type LineOutcome = "ignore" | "match" | "complete" | "reset";
+export type LineOutcome = "continue" | "complete" | "reset";
 
 export interface BlockMachineHooks<TAccumulator> {
   /**
@@ -110,8 +113,7 @@ export function walkBlock<TAccumulator>(
     if (outcome === "complete") {
       return { accumulator, linesConsumed: lineCount };
     }
-    // "ignore" and "match" both continue the walk; the difference is purely
-    // semantic for the caller (whether it updated its accumulator).
+    // "continue" — keep walking until complete / reset / timeout / EOF.
   }
 
   // End-of-input while still IN_BLOCK: the spec says discard partial.

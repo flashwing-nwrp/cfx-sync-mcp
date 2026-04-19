@@ -108,5 +108,8 @@ export interface LogNoticeMatch {
  *  - `COMPLETE` All required fields captured; parser emits and resets.
  *
  * See `blockStateMachine.ts` for the transition rules.
+ *
+ * Consumed by Task 8 logScraper correlation layer. Kept here so all
+ * updates-module types sit in one file.
  */
 export type BlockState = "IDLE" | "IN_BLOCK" | "COMPLETE";

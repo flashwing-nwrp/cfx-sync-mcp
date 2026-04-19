@@ -63,9 +63,6 @@ const NOTES_RE = /^Notes:\s*(.+?)\.?$/;
 const CHANGELOG_RE = /^Changelog:\s*(\S+?)\.?$/;
 const CLOSING_BANNER_RE = /^={5,}$/;
 
-/** Regex-valid canonical-slug shape (no `script:` prefix, no whitespace). */
-const CANONICAL_SLUG_RE = /^[a-z0-9_]+$/;
-
 /**
  * Strip the leading `[ script:<token>]` FiveM log prefix off a raw log line
  * to get at the author-emitted content.  Codesign lines arrive looking like
@@ -102,6 +99,11 @@ interface CodesignAccumulator {
  *  - Input contains `script:` (caller fed raw `[script:...]` prefix — the
  *    logScraper in Task 8 is responsible for stripping that first)
  *  - Input contains characters outside `[a-z0-9_-]` (whitespace, `$`, …)
+ *
+ * Policy note:
+ *  - Inputs without the Codesign "cd_" prefix are normalized through without
+ *    rejection. Pattern-level discrimination happens via OPENER_RE in
+ *    blockMatch, not here. Keeps future Codesign subbrands frictionless.
  */
 function canonicalSlug(logToken: string): string | null {
   if (!logToken) return null;
@@ -120,13 +122,15 @@ function canonicalSlug(logToken: string): string | null {
   if (!/^[a-z0-9_-]+$/i.test(inner)) return null;
 
   // Normalize: lowercase, dashes → underscores, trim trailing underscores.
+  // The pre-normalization class check above (line with `/^[a-z0-9_-]+$/i`) plus
+  // this empty-string guard fully validate the result — no post-normalize
+  // regex needed (dash→underscore cannot introduce out-of-class characters).
   const normalized = inner
     .toLowerCase()
     .replace(/-/g, "_")
     .replace(/_+$/, "");
 
   if (normalized.length === 0) return null;
-  if (!CANONICAL_SLUG_RE.test(normalized)) return null;
 
   return normalized;
 }
@@ -134,6 +138,15 @@ function canonicalSlug(logToken: string): string | null {
 /**
  * Attempt to match a Codesign notice block starting at `lines[startIdx]`.
  * See module JSDoc for the expected block shape.
+ *
+ * Input lines may be either raw FiveM log lines (with `[script:<token>]`
+ * prefix) or pre-stripped content lines. Both are accepted; the pattern
+ * internally strips the prefix if present.
+ *
+ * When multiple severity fragments (Notes text + a demoted untrusted URL)
+ * land on the same match, they are joined with a literal newline so that
+ * operators reading the output in Discord embeds can see one fragment per
+ * line and vendor-supplied semicolons inside Notes text remain unambiguous.
  */
 function blockMatch(lines: string[], startIdx: number): LogNoticeMatch | null {
   const trusted = codesignPattern.trustedDomains;
@@ -158,30 +171,30 @@ function blockMatch(lines: string[], startIdx: number): LogNoticeMatch | null {
       const currentM = stripped.match(CURRENT_VERSION_RE);
       if (currentM) {
         acc.current = currentM[1];
-        return "match";
+        return "continue";
       }
 
       const newM = stripped.match(NEW_VERSION_RE);
       if (newM) {
         acc.announced = newM[1];
-        return "match";
+        return "continue";
       }
 
       const notesM = stripped.match(NOTES_RE);
       if (notesM) {
         acc.notesText = notesM[1];
-        return "match";
+        return "continue";
       }
 
       const changelogM = stripped.match(CHANGELOG_RE);
       if (changelogM) {
         acc.changelogUrl = changelogM[1];
-        return "match";
+        return "continue";
       }
 
       // Unknown intermediate line (e.g. "Released:" or "Download:") — tolerate
       // within the 20-line budget.  walkBlock enforces the timeout.
-      return "ignore";
+      return "continue";
     },
   });
 
@@ -210,7 +223,9 @@ function blockMatch(lines: string[], startIdx: number): LogNoticeMatch | null {
     }
   }
 
-  const severityNote = severityParts.length > 0 ? severityParts.join("; ") : undefined;
+  // Newline-join (not "; ") — vendor Notes text can legitimately contain
+  // semicolons (e.g. "Fix; break; run.") which would collide with "; ".
+  const severityNote = severityParts.length > 0 ? severityParts.join("\n") : undefined;
 
   return {
     canonicalSlug: acc.canonicalSlug,
