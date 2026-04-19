@@ -3,7 +3,7 @@ import path from "node:path";
 import { StateSchemaTooNewError } from "../errors.js";
 
 const MAPPING_CODE_VERSION = 3;
-const MAPPING_REQUIRED_BINARY = "cfx-sync-mcp >=0.2.0";
+const MAPPING_REQUIRED_BINARY = "cfx-sync-mcp >=0.3.0";
 
 export type PreservePathsSource = "scan-v1" | "kb-v1" | "user";
 

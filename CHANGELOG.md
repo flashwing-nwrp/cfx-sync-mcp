@@ -6,6 +6,53 @@ Format roughly follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## v0.3.0 — 2026-04-19
+
+Phase 1.6: update scanner. Merges portal signal with in-game server-log update notices, detects non-portal resources, and handles the fork case (local ahead of upstream) without hand-editing the mapping file.
+
+### Breaking
+
+- **Mapping schema v2 → v3.** Additive but one-way: new per-entry optional fields `ignoreUpstreamUpdates`, `ignoreUpstreamUpdatesReason`, `ignoreUpstreamUpdatesSetAt`. Older v0.2.x binaries reading a v3 mapping file throw `STATE_SCHEMA_TOO_NEW` with a hint to upgrade. No data loss — fields are absent on entries that don't use fork mode.
+
+### Added
+
+- **`cfx_scan_updates` tool** (non-destructive) — merges Cfx portal signal + in-game log notices into a 4-bucket output: `available` (behind, deployable), `suppressed` (local-ahead / local-equal / ignore-flag), `unknownSource` (non-semver versions), `unmapped` (log signal for resources with no mapping). Inputs: optional `{slug?, grantId?, logLines?, forcePortal?}`. Mutually exclusive `{slug, grantId}`.
+- **`cfx_set_fork_mode` tool** (destructive) — flips the `ignoreUpstreamUpdates` triad on a mapping entry so operators don't hand-edit `cfx-sync-map.json` for the common fork case (e.g. ULC local-ahead). Operates under `StateLock`, atomic save.
+- **Tool count: 13 → 15.**
+- **Pattern registry** (`src/lib/updates/patterns/`) — table-driven per-author log-notice parsers. Ships 4 patterns: Codesign (`cd_bridge`, `cd_doorlock`, `cd_dispatch`), ULC/Dawnstar, Prompt (boxed-table format), quasarstore (qs-* family). New vendors = one PR adding one pattern file + a fixture + a test.
+- **Per-pattern URL allowlist** (`src/lib/updates/urlAllowlist.ts`) — exact-host-equality check with IDN (Punycode) / IPv4-literal / IPv6-literal rejection. Defense-in-depth against forged notices that embed attacker URLs to bait operators into visiting hostile sites.
+- **Loose semver helper** (`src/lib/updates/semverCompare.ts`) — wrapper over `node-semver` with documented deviations: v-prefix stripping, pre-release tags treated as equivalent-to-release (beta operators should set `ignoreUpstreamUpdates`), 4-part versions return `incomparable`.
+- **`node-semver` dependency** — zero transitive deps, battle-tested.
+
+### Changed
+
+- **Log line inputs are caller-provided.** The scanner does NOT call another MCP server for logs; callers pass `logLines: string[]` explicitly (typically from `mcp__fxs__server_log_tail` or a file read). This keeps cfx-sync-mcp standalone and open-source-friendly. Phase 1.7+ may add a self-contained log reader backend.
+- **Structured logger `ALLOWED_FIELDS`** extended with scanner-specific keys: `scannedLogLines`, `logHasStartupBoundary`, `portalFromCache`, `bucket`, `pattern`, `forkMode`.
+
+### Fixed
+
+None — Task 13 is pure-additive release-prep.
+
+### Migration
+
+If running `cfx-sync-mcp` v0.3.0 against a mapping file that was last written by v0.2.x, the migration happens on first mutation (e.g. `cfx_approve_mapping`, `cfx_scan_configs`, `cfx_set_fork_mode`). The in-memory shape is v3; the on-disk file is upgraded on next save. v0.2.x binaries reading a v3 file throw `STATE_SCHEMA_TOO_NEW` — intentional upgrade-only boundary.
+
+To flag a resource as a local fork (e.g. you maintain internal patches ahead of upstream):
+
+```
+cfx_set_fork_mode { slug: "ulc", enabled: true, reason: "local 1.9.0 tracks our internal patches; upstream v1.8.0 is tagged" }
+```
+
+Subsequent `cfx_scan_updates` routes the resource to `suppressed:ignore-upstream-updates`, regardless of which signal fires. Reverse with `{slug: "ulc", enabled: false}`.
+
+### Known limitations
+
+- **Pre-release tags** treated as equivalent to release (e.g. `1.0.0-beta` = `1.0.0`). Beta-channel operators should set the fork flag per-resource.
+- **Non-portal resources** (GitHub/Tebex) have no `grantId`, so `unmapped` bucket rows cannot be deployed via `cfx_deploy_asset`. Detection only; deployment is Phase 1.7+ territory.
+- **Log window sensitivity.** Scanner sees only the lines you pass in. `logHasStartupBoundary` output flag tells you whether the input spans a recent boot cycle (best signal) or only tail fragments.
+
+---
+
 ## v0.2.0 — 2026-04-18
 
 Phase 1.5: customization preservation. Portal packs no longer clobber operator edits on redeploy.
