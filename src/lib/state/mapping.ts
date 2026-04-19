@@ -124,6 +124,26 @@ export class Mapping {
 
   entries(): Record<string, MappingEntry> { return this.data?.entries ?? {}; }
 
+  /**
+   * Return the full MappingFile object. Callers that need to pass the
+   * mapping into pure functions (e.g. scanner.scanUpdates in Phase 1.6) use
+   * this to get a typed MappingFile without reaching into `this.data`.
+   *
+   * When the file is not present on disk yet, returns a synthesized empty
+   * v3 MappingFile (unapproved-shaped but still typed) so the scanner can
+   * run with zero entries.
+   */
+  getFile(): MappingFile {
+    if (this.data !== null) return this.data;
+    return {
+      version: 3,
+      approvedAt: "1970-01-01T00:00:00.000Z",
+      entries: {},
+      newInstalls: [],
+      orphaned: [],
+    };
+  }
+
   get(grantId: number): MappingEntry | undefined { return this.data?.entries[String(grantId)]; }
 
   isDisabled(grantId: number): boolean {

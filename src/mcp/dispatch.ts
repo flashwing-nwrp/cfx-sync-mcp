@@ -3,6 +3,7 @@ import { cfx_logout } from "./tools/logout.js";
 import { cfx_status } from "./tools/status.js";
 import { cfx_list_grants } from "./tools/list_grants.js";
 import { cfx_check_updates } from "./tools/check_updates.js";
+import { cfx_scan_updates } from "./tools/scan_updates.js";
 import { cfx_discover } from "./tools/discover.js";
 import { cfx_approve_mapping } from "./tools/approve_mapping.js";
 import { cfx_download_asset } from "./tools/download_asset.js";
@@ -28,6 +29,7 @@ const HANDLERS: Record<string, Handler> = {
   cfx_status:          wrap(cfx_status),
   cfx_list_grants:     wrap(cfx_list_grants),
   cfx_check_updates:   wrap(cfx_check_updates),
+  cfx_scan_updates:    wrap(cfx_scan_updates),
   cfx_discover:        wrap(cfx_discover),
   cfx_approve_mapping: wrap(cfx_approve_mapping),
   cfx_download_asset:  wrap(cfx_download_asset),
