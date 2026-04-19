@@ -12,8 +12,8 @@ describe("detectCaseCollisions", () => {
     const result = detectCaseCollisions(paths);
 
     expect(result).toHaveLength(1);
-    expect(result[0].lowerPath).toBe("configs/server.lua");
-    expect([...result[0].paths].sort()).toEqual([
+    expect(result[0]!.lowerPath).toBe("configs/server.lua");
+    expect([...result[0]!.paths].sort()).toEqual([
       "Configs/server.lua",
       "configs/server.lua",
     ]);
@@ -28,8 +28,8 @@ describe("detectCaseCollisions", () => {
     const result = detectCaseCollisions(paths);
 
     expect(result).toHaveLength(1);
-    expect(result[0].lowerPath).toBe("configs/config.lua");
-    expect([...result[0].paths].sort()).toEqual([
+    expect(result[0]!.lowerPath).toBe("configs/config.lua");
+    expect([...result[0]!.paths].sort()).toEqual([
       "Configs/Config.lua",
       "configs/config.lua",
     ]);
@@ -77,8 +77,8 @@ describe("detectCaseCollisions", () => {
     const result = detectCaseCollisions(paths);
 
     expect(result).toHaveLength(1);
-    expect(result[0].lowerPath).toBe("config/server.lua");
-    expect([...result[0].paths].sort()).toEqual([
+    expect(result[0]!.lowerPath).toBe("config/server.lua");
+    expect([...result[0]!.paths].sort()).toEqual([
       "CONFIG/SERVER.LUA",
       "Config/Server.lua",
       "config/server.lua",
