@@ -675,6 +675,125 @@ describe("integration: Task 17 — 8 named deploy scenarios", () => {
     expect(onDisk.assets[String(grantId)]!.pristineHashes).not.toBeNull();
   });
 
+  // ---- Scenario 1b: First-deploy overlay preserves live-only files -------
+  // Phase 1.5.1 improvement. Before the first-deploy swap, any files present
+  // in live but NOT in the pack (operator-injected overlays like triage
+  // hooks) must be copied into staging so they survive the swap. Files
+  // present in BOTH live and pack get the pack's version.
+  it("Scenario 1b: first-deploy overlay preserves live-only files (triage hook overlay)", async () => {
+    setupEnv(f);
+    // Live has: pack-overlap (will be overwritten), an operator overlay
+    // (triage hook), a nested overlay, AND a file the pack DOES ship
+    // (should be overwritten).
+    const liveFiles = {
+      "fxmanifest.lua": "v0-live-overwritten-by-pack",
+      "_triage_hook.lua": "-- triage overlay",
+      "_triage_fxmanifest_backup.lua": "-- backup overlay",
+      "config/custom_overlay.lua": "-- nested overlay",
+      "server.lua": "v0-live-overwritten-by-pack",
+    };
+    seedLive(f.target, liveFiles);
+
+    // Pack ships a subset (no overlays).
+    const packFiles = {
+      "fxmanifest.lua": "v1",
+      "server.lua": "print('v1')",
+    };
+    const zipPath = await makePackZip(f.cacheDir, "my_asset", packFiles);
+
+    const entry: MappingEntry = {
+      ...makeEntry(f.target),
+      preservePaths: ["config/custom_overlay.lua"],
+    };
+    writeMapping(f.stateDir, { [String(grantId)]: entry });
+    writeState(f.stateDir, [makeAssetState(grantId, zipPath, f.target)]);
+
+    const out = await cfx_deploy_asset({ grantId, dryRun: false });
+
+    expect(out.preservationMode).toBe("first-deploy");
+    expect(out.pristineCaptured).toBe(true);
+
+    // firstDeployOverlay surfaces exactly the live-only files.
+    expect(out.firstDeployOverlay).toBeDefined();
+    const overlay = out.firstDeployOverlay!.slice().sort();
+    expect(overlay).toEqual(
+      ["_triage_fxmanifest_backup.lua", "_triage_hook.lua", "config/custom_overlay.lua"].sort()
+    );
+
+    // Pack files OVERWROTE live — operator uses backup diff to recover edits.
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v1");
+    expect(readFileSync(path.join(f.target, "server.lua"), "utf8")).toBe("print('v1')");
+
+    // Live-only files SURVIVED the swap with original contents.
+    expect(readFileSync(path.join(f.target, "_triage_hook.lua"), "utf8")).toBe(
+      "-- triage overlay"
+    );
+    expect(readFileSync(path.join(f.target, "_triage_fxmanifest_backup.lua"), "utf8")).toBe(
+      "-- backup overlay"
+    );
+    expect(readFileSync(path.join(f.target, "config/custom_overlay.lua"), "utf8")).toBe(
+      "-- nested overlay"
+    );
+
+    // Layer 1 hint still surfaces (unchanged behavior).
+    expect(out.preservePathsHints).toEqual(["config/custom_overlay.lua"]);
+
+    // Pristine captured — includes overlays (since they're now in live).
+    const pristineFiles = readFileSync(
+      path.join(f.pristineDir, String(grantId), "_triage_hook.lua"),
+      "utf8"
+    );
+    expect(pristineFiles).toBe("-- triage overlay");
+  });
+
+  // ---- Scenario 1c: Overlay no-op when live is empty/missing --------------
+  // Fresh install into empty target dir → hashTreeIfExists returns empty map
+  // → overlay loop is a no-op → no throw. Guards the "empty live" edge case.
+  it("Scenario 1c: first-deploy overlay is a safe no-op on empty live dir", async () => {
+    setupEnv(f);
+    // No seedLive — target doesn't exist yet.
+    const packFiles = { "fxmanifest.lua": "v1", "server.lua": "print('v1')" };
+    const zipPath = await makePackZip(f.cacheDir, "my_asset", packFiles);
+
+    writeMapping(f.stateDir, { [String(grantId)]: makeEntry(f.target) });
+    writeState(f.stateDir, [makeAssetState(grantId, zipPath, f.target)]);
+
+    const out = await cfx_deploy_asset({ grantId, dryRun: false });
+
+    expect(out.preservationMode).toBe("first-deploy");
+    expect(out.firstDeployOverlay).toEqual([]);
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v1");
+  });
+
+  // ---- Scenario 1d: Legacy mode still clobbers live-only files ------------
+  // CFX_SYNC_PRESERVE=0 opts out of Phase 1.5 entirely — including the
+  // overlay. Keep modes cleanly distinct: legacy = v0.1.0 verbatim, Phase
+  // 1.5 first-deploy = overlay + pristine capture.
+  it("Scenario 1d: legacy mode (CFX_SYNC_PRESERVE=0) still clobbers live-only files", async () => {
+    setupEnv(f, { preserve: false });
+    const liveFiles = {
+      "fxmanifest.lua": "v0",
+      "_triage_hook.lua": "-- will be lost in legacy",
+    };
+    seedLive(f.target, liveFiles);
+
+    const packFiles = { "fxmanifest.lua": "v1", "server.lua": "print('v1')" };
+    const zipPath = await makePackZip(f.cacheDir, "my_asset", packFiles);
+
+    writeMapping(f.stateDir, { [String(grantId)]: makeEntry(f.target) });
+    writeState(f.stateDir, [makeAssetState(grantId, zipPath, f.target)]);
+
+    const out = await cfx_deploy_asset({ grantId, dryRun: false });
+
+    expect(out.preservationMode).toBe("legacy");
+    // No overlay field on legacy mode output.
+    expect(out.firstDeployOverlay).toBeUndefined();
+    // Pack file present.
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v1");
+    // Live-only triage hook GONE (recoverable via backup only).
+    expect(existsSync(path.join(f.target, "_triage_hook.lua"))).toBe(false);
+  });
+
   // ---- Scenario 2: Clean upgrade (no user mods) ---------------------------
   // Live == pristine. Pack changes server.lua, leaves manifest alone. Expect
   // all rows row 1 (unchanged/unchanged) or row 2 (unchanged/changed), no

@@ -366,6 +366,35 @@ async function runFirstDeploy(ctx: PathCtx): Promise<Output> {
     ? path.join(cfg.backupDir, entry.slug, iso)
     : null;
 
+  // -- First-deploy overlay (Phase 1.5.1) --------------------------------
+  // Before the swap, copy any files that live in `entry.target` but NOT in
+  // the pack into staging. Without this step, the rename-swap in deploy()
+  // would wipe operator-injected overlays (triage hooks, custom additions)
+  // on first deploy — Layer 2 handles this on deploy #2+ via row-5, but
+  // deploy #1 has no pristine to diff against.
+  //
+  // Live-only files are identified by set-difference on path keys (hash
+  // content is irrelevant — we're just preserving the file). Files present
+  // in BOTH live and pack keep the pack's version (operator uses Layer 1
+  // hints + backup diff to recover edited configs).
+  //
+  // Runs BEFORE the marker write so a crash here leaves only the zip
+  // staging orphan (cleaned up by the outer catch). Safe even if live is
+  // empty/missing — hashTreeIfExists returns Map() → no-op.
+  const firstDeployOverlay: string[] = [];
+  const liveHashes = await hashTreeIfExists(entry.target);
+  if (liveHashes.size > 0) {
+    const packHashes = await hashTree(unzip.root);
+    for (const relPath of liveHashes.keys()) {
+      if (packHashes.has(relPath)) continue;
+      const src = path.join(entry.target, relPath);
+      const dst = path.join(unzip.root, relPath);
+      await fsP.mkdir(path.dirname(dst), { recursive: true });
+      await fsP.copyFile(src, dst);
+      firstDeployOverlay.push(relPath);
+    }
+  }
+
   // Marker covers: deploy() + capturePristine() + state.save() — the entire
   // first-deploy critical section. A crash in capturePristine (e.g. disk full)
   // leaves the marker so the next entry trips DeployInterruptedError instead
@@ -430,6 +459,7 @@ async function runFirstDeploy(ctx: PathCtx): Promise<Output> {
     packValidationFailures: unzip.validationFailures,
     preservationMode: "first-deploy",
     pristineCaptured: true,
+    firstDeployOverlay,
   };
 }
 

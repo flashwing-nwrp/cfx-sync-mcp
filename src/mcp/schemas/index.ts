@@ -161,6 +161,14 @@ export const DeployAssetOutput = z.object({
   preservationMode: z.enum(["first-deploy", "layer-2", "legacy"]).optional(),
   /** True iff a pristine baseline was captured or rotated in this run. */
   pristineCaptured: z.boolean().optional(),
+  /**
+   * First-deploy overlay: files that existed in live but NOT in the new pack
+   * and were preserved by copying into staging before the swap. Typical
+   * contents: operator-injected overlays like triage hooks, custom additions,
+   * orphaned files from an older pack version. Only populated on the
+   * first-deploy path (real, not dryRun). Undefined/omitted otherwise.
+   */
+  firstDeployOverlay: z.array(z.string()).optional(),
 });
 
 export const SyncAllInput = z.object({
