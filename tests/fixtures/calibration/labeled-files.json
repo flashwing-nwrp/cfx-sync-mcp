@@ -1,0 +1,402 @@
+[
+  {
+    "path": "server/resources/[phone]/flrp_phone_tests/config.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Global TestConfig table with nested subtables — classic QB/boii config shape."
+  },
+  {
+    "path": "server/resources/[activities]/boii-farming/shared/config.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Config = {} + Config.Foo assignments; 700+ lines of pure config."
+  },
+  {
+    "path": "server/resources/[maps]/[prompt]/prompt_sandy_hospital2/config.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "ElevatorConfig global with Floors list — map-pack config."
+  },
+  {
+    "path": "server/resources/[jg]/jg-handling/locales/sv.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Locale file — Locales['sv'] = { key = 'value' } pattern. Config by spec definition (locales/** is in path list)."
+  },
+  {
+    "path": "server/resources/[advancedinventory]/qs-advancedshops/locales/tr.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Turkish locale, Locales['tr'] = { ... } only."
+  },
+  {
+    "path": "server/resources/[advancedinventory]/qs-inventory/config/config.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "QS-Inventory primary config — dense Config table, well-commented."
+  },
+  {
+    "path": "server/resources/[motorhome]/qs-motorhome/locales/ja.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Japanese locale."
+  },
+  {
+    "path": "server/resources/[vehicles]/flrp_carjack_defense/config.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "FLRP custom resource — Config = { ... } with Discord webhook URL."
+  },
+  {
+    "path": "server/resources/ulc/config.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Ultimate Lighting Controller config. Large commented Config table."
+  },
+  {
+    "path": "server/resources/[flrp]/flrp_crypto/config/client.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Seven-line client config — table-assignment style, return ClientCryptoConfig."
+  },
+  {
+    "path": "server/resources/[qbx]/qbx_scrapyard/config/client.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "QBX modern style — return { ... } with vec3/vec4 coord literals."
+  },
+  {
+    "path": "server/resources/[housing]/qs-housing/config/webhooks.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Two-line config: DiscordWebhook = 'url'; WebhookColor = n. Tiny but canonical."
+  },
+  {
+    "path": "server/resources/[motorhome]/qs-motorhome/locales/hi.lua",
+    "is-config": true,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Hindi locale."
+  },
+  {
+    "path": "server/resources/[housing]/qs-housing/server/custom/garages/ak47_garage.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Adapter shim — 3 function stubs + Config.Garage guard. Primary intent is logic glue, not config."
+  },
+  {
+    "path": "server/resources/[flrp]/flrp_arrival/server/callbacks.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "lib.callback.register blocks with MySQL.query.await — classic server logic."
+  },
+  {
+    "path": "server/resources/[police]/flrp_perception/server/main.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Perception system server main — lots of functions and logic."
+  },
+  {
+    "path": "server/resources/[qbx]/qbx_customs/client/dragcam.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Camera rig — local state + functions + FiveM native calls."
+  },
+  {
+    "path": "server/resources/[qbx]/qbx_adminmenu/client/admin.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Admin menu client main — functions, CreateThread, RegisterCommand, etc."
+  },
+  {
+    "path": "server/resources/[qbx]/qbx_spawn/client/main.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Character-select spawn logic, camera management, scaleform UI."
+  },
+  {
+    "path": "server/resources/[ox]/flrp_fuel/client/charging/consumption.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "EV drain loop — require + functions + CreateThread."
+  },
+  {
+    "path": "server/resources/[jg]/jg-mechanic/client/cl-tuning.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": "FXAP-encrypted despite .lua extension (paid resource). Should score null."
+  },
+  {
+    "path": "server/resources/[standalone]/xt-prison/modules/server/utils.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Utils module with require + functions + loops. Logic."
+  },
+  {
+    "path": "server/resources/[advancedinventory]/qs-inventory/client/custom/provider/qb-inventory.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Tiny 7-line export wiring — AddEventHandler + exportHandler. Logic glue."
+  },
+  {
+    "path": "server/resources/[maps]/[prompt]/prompt_anim_core_2_new/server/boxing_ring.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "Boxing-ring match manager — require, state, many functions. Logic."
+  },
+  {
+    "path": "server/resources/[sonorancms]/sonorancms/server/modules/ace-permissions/ace-permissions_sv.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "ACE permissions logic — JSON parsing, principal lookups, cache."
+  },
+  {
+    "path": "server/resources/[activities]/boii-pizzathis/client/mixer_cl.lua",
+    "is-config": false,
+    "is-logic": true,
+    "is-data": false,
+    "is-encrypted": false,
+    "notes": "boii pizzathis mixer — exports[TargetName]:AddBoxZone loop + event handlers."
+  },
+  {
+    "path": "server/resources/[standalone]/scully_emotemenu/shared/data/emotes/general_emotes.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": true,
+    "is-encrypted": false,
+    "notes": "Pure emote catalog — return { name, icon, options = [...] }. Data, not config."
+  },
+  {
+    "path": "server/resources/[standalone]/scully_emotemenu/shared/data/emotes/animal_emotes.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": true,
+    "is-encrypted": false,
+    "notes": "Animal emote catalog — same shape as general_emotes."
+  },
+  {
+    "path": "server/resources/[standalone]/fast-multicharacterv2/data/defaultcoords.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": true,
+    "is-encrypted": false,
+    "notes": "Static coord list — vector4 array."
+  },
+  {
+    "path": "server/resources/[standalone]/fast-multicharacterv2/data/deletetable.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": true,
+    "is-encrypted": false,
+    "notes": "Character-delete table/column mapping. Pure data."
+  },
+  {
+    "path": "server/resources/[appearance]/rcore_clothing/client/module/data/arms.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": "FXAP-encrypted despite path ending in /data/. Byte-0 is 'F' 'X' 'A' 'P'."
+  },
+  {
+    "path": "server/resources/[flrp]/flrp_mr_x/data/mission_archetypes.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": true,
+    "is-encrypted": false,
+    "notes": "Mr. X mission-type catalog. MissionArchetypes global populated with many tables."
+  },
+  {
+    "path": "server/resources/[standalone]/scully_emotemenu/shared/data/expressions.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": true,
+    "is-encrypted": false,
+    "notes": "Expression catalog — return { [...] } of facial expressions."
+  },
+  {
+    "path": "server/resources/[advancedinventory]/qs-inventory/data/weapons.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": true,
+    "is-encrypted": false,
+    "notes": "Weapon definitions by WEAPON_ hash — return { Weapons = { ... } }. Data catalog."
+  },
+  {
+    "path": "server/resources/[flrp]/flrp_ballistics/data/magazine_items.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": true,
+    "is-encrypted": false,
+    "notes": "Magazine item definitions with a for-loop builder. Primary intent is data despite build code."
+  },
+  {
+    "path": "server/resources/[flrp]/flrp_ballistics/data/ammo_items.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": true,
+    "is-encrypted": false,
+    "notes": "Ammo item definitions. Same shape as magazine_items — small builder + data."
+  },
+  {
+    "path": "server/resources/[flrp]/flrp_nexus_tools/data/vehicle_catalog.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": true,
+    "is-encrypted": false,
+    "notes": "Vehicle catalog keyed by class — VehicleCatalog.Categories = { ... }. Large static data."
+  },
+  {
+    "path": "server/resources/[standalone]/scully_emotemenu/client/data/scenario_models.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": true,
+    "is-encrypted": false,
+    "notes": "Scenario model allowlist — return { `prop_name`, ... } bare string list."
+  },
+  {
+    "path": "server/resources/[maps]/apollo_pd_impound/.fxap",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": ".fxap marker file — non-Lua, encrypted pack sentinel."
+  },
+  {
+    "path": "server/resources/[maps]/brofx_villa_02/.fxap",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": ".fxap marker."
+  },
+  {
+    "path": "server/resources/[maps]/molo_lux/.fxap",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": ".fxap marker."
+  },
+  {
+    "path": "server/resources/[maps]/[props]/housing-addons/.fxap",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": ".fxap marker."
+  },
+  {
+    "path": "server/resources/[vehicles]/VehicleTransport/encrypted/server/log.lua",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": "FXAP-encrypted — inside /encrypted/ dir."
+  },
+  {
+    "path": "server/resources/[standalone]/mk_utils/.fxap",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": ".fxap marker."
+  },
+  {
+    "path": "server/resources/[maps]/brofx_villa_01/.fxap",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": ".fxap marker."
+  },
+  {
+    "path": "server/resources/[standalone]/jim-closedshops/.fxap",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": ".fxap marker."
+  },
+  {
+    "path": "server/resources/[maps]/[tstudio_maps]/tstudio_mrpd/.fxap",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": ".fxap marker."
+  },
+  {
+    "path": "server/resources/[parking]/jim-parking/.fxap",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": ".fxap marker."
+  },
+  {
+    "path": "server/resources/[maps]/[tstudio_maps]/tstudio_scenarios/.fxap",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": ".fxap marker."
+  },
+  {
+    "path": "server/resources/[weapons]/kyros-weapon-pack-v6/.fxap",
+    "is-config": false,
+    "is-logic": false,
+    "is-data": false,
+    "is-encrypted": true,
+    "notes": ".fxap marker."
+  }
+]

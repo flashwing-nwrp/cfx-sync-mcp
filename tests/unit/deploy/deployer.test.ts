@@ -3,6 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, existsSync, rmSync, readFileSync
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { deploy } from "../../../src/lib/deploy/deployer.js";
+import type { BackupManifest } from "../../../src/lib/deploy/deployer.js";
 import { TargetParentMissingError, ValidationFailedError } from "../../../src/lib/errors.js";
 
 describe("deploy", () => {
@@ -27,16 +28,181 @@ describe("deploy", () => {
     const r = await deploy({ stagingRoot: staging, targetPath: target, backupDir: backups, slug: "qs_inventory", dryRun: false, backupRetain: 5 });
     expect(existsSync(path.join(target, "fxmanifest.lua"))).toBe(true);
     expect(r.backupPath).toBeNull();
+    expect(r.pristineSnapshotPath).toBeNull();
   });
 
-  it("backs up existing + swaps new", async () => {
+  it("backs up existing + swaps new (resource in <iso>/resource/, manifest sibling)", async () => {
     const target = path.join(srv, "qs-inventory");
     mkdirSync(target);
     writeFileSync(path.join(target, "fxmanifest.lua"), "old manifest");
     const r = await deploy({ stagingRoot: staging, targetPath: target, backupDir: backups, slug: "qs_inventory", dryRun: false, backupRetain: 5 });
     expect(readFileSync(path.join(target, "fxmanifest.lua"), "utf8")).toBe("name 'qs-inventory'");
     expect(r.backupPath).not.toBeNull();
-    expect(readFileSync(path.join(r.backupPath!, "fxmanifest.lua"), "utf8")).toBe("old manifest");
+    // New layout: backup root dir contains resource/ + manifest.json.
+    expect(readFileSync(path.join(r.backupPath!, "resource", "fxmanifest.lua"), "utf8")).toBe("old manifest");
+    expect(existsSync(path.join(r.backupPath!, "manifest.json"))).toBe(true);
+  });
+
+  it("writes a manifest.json with null pristine fields when no pristine opts passed", async () => {
+    const target = path.join(srv, "qs-inventory");
+    mkdirSync(target);
+    writeFileSync(path.join(target, "fxmanifest.lua"), "old");
+    const r = await deploy({ stagingRoot: staging, targetPath: target, backupDir: backups, slug: "qs_inventory", dryRun: false, backupRetain: 5 });
+    const man = JSON.parse(readFileSync(path.join(r.backupPath!, "manifest.json"), "utf8")) as BackupManifest;
+    expect(man.slug).toBe("qs_inventory");
+    expect(man.grantId).toBeNull();
+    expect(man.pristineVersionIdAtBackupTime).toBeNull();
+    expect(man.pristineSnapshotPath).toBeNull();
+    expect(man.pristineHashesAtBackupTime).toBeNull();
+    expect(man.pristineCapturedAtAtBackupTime).toBeNull();
+    expect(typeof man.backedUpAt).toBe("string");
+  });
+
+  it("snapshots pristine into pristine-history when opts supplied + prior pristine exists", async () => {
+    const target = path.join(srv, "qs-inventory");
+    mkdirSync(target);
+    writeFileSync(path.join(target, "fxmanifest.lua"), "old");
+    // Seed a prior pristine for grantId=42, versionId=100.
+    const pristineDir = path.join(tmp, "pristine");
+    const pristineHistoryDir = path.join(tmp, "pristine-history");
+    mkdirSync(path.join(pristineDir, "42"), { recursive: true });
+    writeFileSync(path.join(pristineDir, "42", "fxmanifest.lua"), "pristine-v100");
+    writeFileSync(path.join(pristineDir, "42", "client.lua"), "pristine-client-v100");
+
+    const r = await deploy({
+      stagingRoot: staging,
+      targetPath: target,
+      backupDir: backups,
+      slug: "qs_inventory",
+      dryRun: false,
+      backupRetain: 5,
+      pristine: {
+        grantId: 42,
+        currentPristineVersionId: 100,
+        pristineDir,
+        pristineHistoryDir,
+        currentPristineHashes: { "fxmanifest.lua": "abc", "client.lua": "def" },
+        currentPristineCapturedAt: "2026-04-01T00:00:00.000Z",
+      },
+    });
+
+    // Snapshot should exist at <history>/42/100/ with bit-exact content.
+    const expectedSnap = path.join(pristineHistoryDir, "42", "100");
+    expect(r.pristineSnapshotPath).toBe(expectedSnap);
+    expect(readFileSync(path.join(expectedSnap, "fxmanifest.lua"), "utf8")).toBe("pristine-v100");
+    expect(readFileSync(path.join(expectedSnap, "client.lua"), "utf8")).toBe("pristine-client-v100");
+
+    // Current pristine dir should be unchanged (we copy, not move).
+    expect(readFileSync(path.join(pristineDir, "42", "fxmanifest.lua"), "utf8")).toBe("pristine-v100");
+
+    // Manifest should reflect the snapshot.
+    const man = JSON.parse(readFileSync(path.join(r.backupPath!, "manifest.json"), "utf8")) as BackupManifest;
+    expect(man.pristineVersionIdAtBackupTime).toBe(100);
+    expect(man.pristineSnapshotPath).toBe(expectedSnap);
+    expect(man.pristineHashesAtBackupTime).toEqual({ "fxmanifest.lua": "abc", "client.lua": "def" });
+    expect(man.pristineCapturedAtAtBackupTime).toBe("2026-04-01T00:00:00.000Z");
+    expect(man.grantId).toBe(42);
+  });
+
+  it("skips pristine snapshot when currentPristineVersionId is null", async () => {
+    const target = path.join(srv, "qs-inventory");
+    mkdirSync(target);
+    writeFileSync(path.join(target, "fxmanifest.lua"), "old");
+    const pristineDir = path.join(tmp, "pristine");
+    const pristineHistoryDir = path.join(tmp, "pristine-history");
+
+    const r = await deploy({
+      stagingRoot: staging, targetPath: target, backupDir: backups,
+      slug: "qs_inventory", dryRun: false, backupRetain: 5,
+      pristine: {
+        grantId: 7,
+        currentPristineVersionId: null,
+        pristineDir,
+        pristineHistoryDir,
+        currentPristineHashes: null,
+        currentPristineCapturedAt: null,
+      },
+    });
+    expect(r.pristineSnapshotPath).toBeNull();
+    expect(existsSync(pristineHistoryDir)).toBe(false);
+  });
+
+  it("skips pristine snapshot when pristine source dir missing (state/disk mismatch)", async () => {
+    const target = path.join(srv, "qs-inventory");
+    mkdirSync(target);
+    writeFileSync(path.join(target, "fxmanifest.lua"), "old");
+    const pristineDir = path.join(tmp, "pristine");
+    const pristineHistoryDir = path.join(tmp, "pristine-history");
+    // State claims version 50, but no pristine dir on disk.
+    const r = await deploy({
+      stagingRoot: staging, targetPath: target, backupDir: backups,
+      slug: "qs_inventory", dryRun: false, backupRetain: 5,
+      pristine: {
+        grantId: 99,
+        currentPristineVersionId: 50,
+        pristineDir,
+        pristineHistoryDir,
+        currentPristineHashes: { "a.lua": "x" },
+        currentPristineCapturedAt: "2026-04-01T00:00:00.000Z",
+      },
+    });
+    expect(r.pristineSnapshotPath).toBeNull();
+    const man = JSON.parse(readFileSync(path.join(r.backupPath!, "manifest.json"), "utf8")) as BackupManifest;
+    expect(man.pristineSnapshotPath).toBeNull();
+    // Version stamp still written (callers can use it to detect the drift).
+    expect(man.pristineVersionIdAtBackupTime).toBe(50);
+  });
+
+  it("prunes pristine-history when matching backup is pruned (retain=1)", async () => {
+    const target = path.join(srv, "qs-inventory");
+    mkdirSync(target);
+    writeFileSync(path.join(target, "fxmanifest.lua"), "v0");
+
+    const pristineDir = path.join(tmp, "pristine");
+    const pristineHistoryDir = path.join(tmp, "pristine-history");
+    mkdirSync(path.join(pristineDir, "42"), { recursive: true });
+    writeFileSync(path.join(pristineDir, "42", "p.lua"), "v100");
+
+    // Deploy 1 — snapshots pristine v100.
+    const r1 = await deploy({
+      stagingRoot: staging, targetPath: target, backupDir: backups,
+      slug: "qs_inventory", dryRun: false, backupRetain: 1,
+      pristine: {
+        grantId: 42, currentPristineVersionId: 100,
+        pristineDir, pristineHistoryDir,
+        currentPristineHashes: { "p.lua": "h1" },
+        currentPristineCapturedAt: "2026-04-01T00:00:00.000Z",
+      },
+    });
+    expect(existsSync(r1.pristineSnapshotPath!)).toBe(true);
+
+    // Simulate rotation bumping pristine to v200 before next deploy.
+    writeFileSync(path.join(pristineDir, "42", "p.lua"), "v200");
+
+    // Second staging for deploy 2.
+    const s2 = path.join(tmp, "staging2", "pkg");
+    mkdirSync(s2, { recursive: true });
+    writeFileSync(path.join(s2, "fxmanifest.lua"), "new");
+    // Target needs to exist again for backup.
+    mkdirSync(target, { recursive: true });
+    writeFileSync(path.join(target, "fxmanifest.lua"), "v1");
+
+    const r2 = await deploy({
+      stagingRoot: s2, targetPath: target, backupDir: backups,
+      slug: "qs_inventory", dryRun: false, backupRetain: 1,
+      pristine: {
+        grantId: 42, currentPristineVersionId: 200,
+        pristineDir, pristineHistoryDir,
+        currentPristineHashes: { "p.lua": "h2" },
+        currentPristineCapturedAt: "2026-04-02T00:00:00.000Z",
+      },
+    });
+    expect(existsSync(r2.pristineSnapshotPath!)).toBe(true);
+    // retain=1 → first backup + its history snapshot should be gone.
+    expect(existsSync(r1.backupPath!)).toBe(false);
+    expect(existsSync(r1.pristineSnapshotPath!)).toBe(false);
+    // History snapshot for v200 should still be there.
+    expect(existsSync(r2.pristineSnapshotPath!)).toBe(true);
   });
 
   it("throws TARGET_PARENT_MISSING when category dir is gone", async () => {

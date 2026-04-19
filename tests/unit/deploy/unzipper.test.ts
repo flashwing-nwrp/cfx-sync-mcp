@@ -15,6 +15,21 @@ async function buildZip(entries: Record<string, string>): Promise<Buffer> {
   return zip.generateAsync({ type: "nodebuffer" });
 }
 
+// Build a zip that includes symlink entries. Setting unixPermissions with the
+// S_IFLNK bits (0o120000) + platform: 'UNIX' causes yauzl to report this entry
+// as a symlink via its external file attributes.
+async function buildZipWithSymlinks(
+  files: Record<string, string>,
+  symlinks: Record<string, string>
+): Promise<Buffer> {
+  const zip = new JSZip();
+  for (const [name, content] of Object.entries(files)) zip.file(name, content);
+  for (const [name, target] of Object.entries(symlinks)) {
+    zip.file(name, target, { unixPermissions: 0o120777 });
+  }
+  return zip.generateAsync({ type: "nodebuffer", platform: "UNIX" });
+}
+
 describe("unzipToStaging", () => {
   let tmp: string;
   let cache: string;
@@ -31,6 +46,8 @@ describe("unzipToStaging", () => {
     const out = await unzipToStaging(cache, stagingRoot);
     expect(existsSync(path.join(out.root, "fxmanifest.lua"))).toBe(true);
     expect(existsSync(path.join(out.root, "client.lua"))).toBe(true);
+    // Valid packs should report an empty validationFailures array.
+    expect(out.validationFailures).toEqual([]);
   });
 
   it("flattens single-top-level-dir wrapper", async () => {
@@ -51,6 +68,30 @@ describe("unzipToStaging", () => {
     await expect(
       unzipToStaging(cache, path.join(tmp, "staging"))
     ).rejects.toBeInstanceOf(ValidationFailedError);
+  });
+
+  it("surfaces symlinks in validationFailures; does not extract them", async () => {
+    // Pack contains one valid file + fxmanifest AND one symlink entry.
+    // Expectation: extraction completes, symlink is skipped (not written to
+    // disk), and is reported in validationFailures as `symlink-refused`.
+    const buf = await buildZipWithSymlinks(
+      { "fxmanifest.lua": "name 'foo'", "client.lua": "x" },
+      { "evil-link.lua": "/etc/passwd" }
+    );
+    writeFileSync(cache, buf);
+    const stagingRoot = path.join(tmp, "staging");
+
+    const out = await unzipToStaging(cache, stagingRoot);
+
+    // Valid files extracted.
+    expect(existsSync(path.join(out.root, "fxmanifest.lua"))).toBe(true);
+    expect(existsSync(path.join(out.root, "client.lua"))).toBe(true);
+    // Symlink NOT extracted.
+    expect(existsSync(path.join(out.root, "evil-link.lua"))).toBe(false);
+    // Surfaced as a structured failure.
+    expect(out.validationFailures).toEqual([
+      { path: "evil-link.lua", reason: "symlink-refused" },
+    ]);
   });
 
   it("rejects absolute-path entries", async () => {

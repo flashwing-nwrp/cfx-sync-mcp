@@ -1,5 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { StateSchemaTooNewError } from "../errors.js";
+
+const MAPPING_CODE_VERSION = 2;
+const MAPPING_REQUIRED_BINARY = "cfx-sync-mcp >=0.2.0";
+
+export type PreservePathsSource = "scan-v1" | "kb-v1" | "user";
 
 export interface MappingEntry {
   slug: string;
@@ -9,14 +15,50 @@ export interface MappingEntry {
   discoveredTier: number;
   discoveredConfidence: number;
   notes?: string;
+  // v2: per-entry preservation list. Null means "not yet scanned / no rule"
+  // (distinct from empty array which means "scanned, nothing to preserve").
+  preservePaths?: string[] | null;
+  preservePathsSource?: PreservePathsSource | null;
 }
 
+// v1 MappingEntry shape — identical minus preservePaths* fields.
+type MappingEntryV1 = Omit<MappingEntry, "preservePaths" | "preservePathsSource">;
+
 export interface MappingFile {
-  version: 1;
+  version: 2;
   approvedAt: string;
   entries: Record<string /* grantId */, MappingEntry>;
   newInstalls: number[];
   orphaned: string[];
+}
+
+interface MappingFileV1 {
+  version: 1;
+  approvedAt: string;
+  entries: Record<string, MappingEntryV1>;
+  newInstalls: number[];
+  orphaned: string[];
+}
+
+function isV1(obj: unknown): obj is MappingFileV1 { return obj != null && (obj as MappingFileV1).version === 1; }
+function isV2(obj: unknown): obj is MappingFile { return obj != null && (obj as MappingFile).version === 2; }
+
+function migrateV1ToV2(v1: MappingFileV1): MappingFile {
+  const migratedEntries: Record<string, MappingEntry> = {};
+  for (const [k, v] of Object.entries(v1.entries)) {
+    migratedEntries[k] = {
+      ...v,
+      preservePaths: null,
+      preservePathsSource: null,
+    };
+  }
+  return {
+    version: 2,
+    approvedAt: v1.approvedAt,
+    entries: migratedEntries,
+    newInstalls: v1.newInstalls,
+    orphaned: v1.orphaned,
+  };
 }
 
 export class Mapping {
@@ -30,7 +72,14 @@ export class Mapping {
   async load(): Promise<void> {
     try {
       const raw = await fs.readFile(this.file, "utf8");
-      this.data = JSON.parse(raw) as MappingFile;
+      const parsed: unknown = JSON.parse(raw);
+      const onDiskVersion = (parsed as Record<string, unknown>)?.["version"];
+      if (typeof onDiskVersion === "number" && onDiskVersion > MAPPING_CODE_VERSION) {
+        throw new StateSchemaTooNewError(onDiskVersion, MAPPING_CODE_VERSION, MAPPING_REQUIRED_BINARY);
+      }
+      if (isV2(parsed)) this.data = parsed;
+      else if (isV1(parsed)) this.data = migrateV1ToV2(parsed);
+      else throw new Error(`Unknown cfx-sync-map.json version: ${String(onDiskVersion)} (file: ${this.file})`);
     } catch (e) {
       if ((e as NodeJS.ErrnoException)?.code === "ENOENT") {
         this.data = null;
@@ -57,7 +106,7 @@ export class Mapping {
    */
   approveFromProposed(entries: Record<string, MappingEntry>): void {
     this.data = {
-      version: 1,
+      version: 2,
       approvedAt: new Date().toISOString(),
       entries,
       newInstalls: [],

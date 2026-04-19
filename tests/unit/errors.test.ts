@@ -23,6 +23,13 @@ import {
   ForbiddenError,
   PortalRateLimitError,
   ConfigError,
+  StateSchemaTooNewError,
+  CaseCollisionDetectedError,
+  EncryptedTamperDetectedError,
+  PristineCorruptedError,
+  ConflictsUnresolvedError,
+  DeployInterruptedError,
+  PathTooLongError,
 } from "../../src/lib/errors.js";
 
 describe("CfxError base class", () => {
@@ -47,7 +54,7 @@ describe("CfxError base class", () => {
   });
 });
 
-describe("All 22 error classes exist and have unique codes", () => {
+describe("All 29 error classes exist and have unique codes", () => {
   const classes = [
     AuthExpiredError, AuthMissingError, InvalidTargetError, ForbiddenEndpointError,
     MappingUnapprovedError, NotFoundError, AmbiguousSlugError, ValidationFailedError,
@@ -55,6 +62,9 @@ describe("All 22 error classes exist and have unique codes", () => {
     StallTimeoutError, UnknownLayoutError, PlaywrightNotInstalledError,
     PortalDisabledError, NetworkError, IoError, LockHeldError, RateLimitedError,
     ForbiddenError, PortalRateLimitError, ConfigError,
+    StateSchemaTooNewError, CaseCollisionDetectedError, EncryptedTamperDetectedError,
+    PristineCorruptedError, ConflictsUnresolvedError, DeployInterruptedError,
+    PathTooLongError,
   ];
   it("all instantiate without args (except dynamic-message ones)", () => {
     const codes = new Set<string>();
@@ -64,5 +74,22 @@ describe("All 22 error classes exist and have unique codes", () => {
       codes.add(instance.code);
     }
     expect(codes.size).toBe(classes.length);
+  });
+});
+
+describe("PathTooLongError", () => {
+  it("exposes code, path, length, limit + hint", () => {
+    const longPath = "C:\\" + "x".repeat(300);
+    const e = new PathTooLongError(longPath, longPath.length, 260);
+    expect(e).toBeInstanceOf(CfxError);
+    expect(e.code).toBe("PATH_TOO_LONG");
+    expect(e.name).toBe("PathTooLongError");
+    expect(e.path).toBe(longPath);
+    expect(e.length).toBe(longPath.length);
+    expect(e.limit).toBe(260);
+    expect(e.message).toContain(`${longPath.length} > 260`);
+    expect(e.message).toContain(longPath);
+    expect(e.hint).toMatch(/long-path|CFX_STATE_DIR/i);
+    expect(e.retryable).toBe(false);
   });
 });

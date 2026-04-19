@@ -39,6 +39,7 @@ describe("cfx_list_grants (stale-cache path)", () => {
       versionId: 1, packId: 1,
       updatedAt: "2026-02-01T00:00:00Z", sha256: "",
       cachedZipPath: "", deployedPath: "", deployedAt: "", backups: [],
+      pristineVersionId: null, pristineCapturedAt: null, pristineHashes: null,
     });
     state.setLastPolledAt("local", new Date().toISOString());
     await state.save();

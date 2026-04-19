@@ -2,6 +2,46 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { TargetParentMissingError, IoError, ValidationFailedError } from "../errors.js";
 
+/**
+ * Pristine snapshot parameters threaded through a deploy. When supplied, the
+ * deploy will also snapshot the CURRENT pristine (the one about to be replaced
+ * by the next rotation) into `pristine-history/<grantId>/<versionId>/` and
+ * record it in the backup manifest so rollback can restore it atomically
+ * alongside the resource.
+ *
+ * All three must be present to enable pristine snapshotting; any missing
+ * field disables it (first-deploy with no prior pristine is the main case).
+ */
+export interface PristineSnapshotOpts {
+  /** Grant id the pristine belongs to. */
+  grantId: number;
+  /**
+   * The CURRENT pristineVersionId (the version about to be replaced). Written
+   * into the backup manifest as `pristineVersionIdAtBackupTime`. Null → state
+   * has no pristine yet → skip snapshot.
+   */
+  currentPristineVersionId: number | null;
+  /**
+   * Path to `state/pristine/` (the root pristine dir). The source dir for the
+   * snapshot is `<pristineDir>/<grantId>/`.
+   */
+  pristineDir: string;
+  /** Path to `state/pristine-history/`. Snapshot goes under `<grantId>/<versionId>/`. */
+  pristineHistoryDir: string;
+  /**
+   * Snapshot of current `pristineHashes` captured at backup time. Stored in
+   * the manifest so rollback can restore state.pristineHashes without
+   * re-hashing the pristine dir. Null → state has no pristine yet.
+   */
+  currentPristineHashes: Record<string, string> | null;
+  /**
+   * Snapshot of current `pristineCapturedAt` captured at backup time. Stored
+   * in the manifest so rollback can restore state.pristineCapturedAt. Null →
+   * state has no pristine yet.
+   */
+  currentPristineCapturedAt: string | null;
+}
+
 export interface DeployOpts {
   stagingRoot: string;       // path from unzipper.root
   targetPath: string;        // final resource dir
@@ -9,14 +49,55 @@ export interface DeployOpts {
   slug: string;
   dryRun: boolean;
   backupRetain: number;
+  /** Optional — enables pristine snapshotting into pristine-history. */
+  pristine?: PristineSnapshotOpts;
+  /**
+   * Optional — caller-supplied ISO8601 timestamp (with `:`/`.` replaced by `-`)
+   * used for the backup dir name. When absent, deploy() generates its own.
+   * Callers (the MCP tool layer) supply this so they can write the in-flight
+   * marker with the SAME backup path deploy() will use, before deploy() runs.
+   */
+  backupIsoOverride?: string;
 }
 
 export interface DeployResult {
   deployedPath: string;
+  /** Path to the backup root dir (`<slug>/<iso>/`) — caller-visible. Backed-up resource lives at `<backupPath>/resource/`. */
   backupPath: string | null;
+  /** Path to the pristine snapshot under pristine-history, if one was captured. */
+  pristineSnapshotPath: string | null;
   willMoveFrom?: string;
   willMoveTo?: string;
   willBackupTo?: string | null;
+}
+
+/**
+ * Format of the `manifest.json` written inside each backup's root dir.
+ *
+ * On rollback we read this to (a) find the resource payload, and (b) restore
+ * pristine to the version that matched at backup time. Storing hashes in the
+ * manifest (vs. re-hashing after restore) keeps rollback cheap and avoids a
+ * hashTree call that would otherwise be needed solely to populate
+ * state.pristineHashes.
+ */
+export interface BackupManifest {
+  slug: string;
+  grantId: number | null;
+  backedUpAt: string;
+  /** The pristineVersionId that was current when this backup was created. Null = no pristine baseline yet. */
+  pristineVersionIdAtBackupTime: number | null;
+  /**
+   * Path (absolute) to the snapshotted pristine dir under pristine-history.
+   * Null when no prior pristine existed (first deploy).
+   */
+  pristineSnapshotPath: string | null;
+  /**
+   * Pristine hashes captured at backup time — used by rollback to restore
+   * state.pristineHashes without re-hashing.
+   */
+  pristineHashesAtBackupTime: Record<string, string> | null;
+  /** Pristine captured-at ISO captured at backup time. */
+  pristineCapturedAtAtBackupTime: string | null;
 }
 
 async function pathExists(p: string): Promise<boolean> {
@@ -50,18 +131,44 @@ async function copyRecursive(src: string, dst: string): Promise<void> {
   }
 }
 
+/**
+ * Prune backup dirs down to `retain`, deleting the matching pristine-history
+ * snapshots for each pruned backup (GC pairing — spec).
+ *
+ * Reads each pruned backup's `manifest.json` to find `pristineSnapshotPath`
+ * and deletes it too. If the manifest is unreadable (legacy backup dir from
+ * a pre-Task-9 install) we skip the history step silently — the worst case
+ * is a pristine-history turd that detectOrphans will eventually sweep.
+ */
 async function pruneBackups(slugDir: string, retain: number): Promise<void> {
   if (!(await pathExists(slugDir))) return;
   const entries = (await fs.readdir(slugDir)).sort(); // ISO timestamps sort lexicographically
   while (entries.length > retain) {
     const oldest = entries.shift();
     if (!oldest) break;
-    await fs.rm(path.join(slugDir, oldest), { recursive: true, force: true });
+    const bkPath = path.join(slugDir, oldest);
+
+    // Read the manifest (if any) to also prune its pristine-history snapshot.
+    try {
+      const manRaw = await fs.readFile(path.join(bkPath, "manifest.json"), "utf8");
+      const man = JSON.parse(manRaw) as Partial<BackupManifest>;
+      if (typeof man.pristineSnapshotPath === "string" && man.pristineSnapshotPath.length > 0) {
+        await fs.rm(man.pristineSnapshotPath, { recursive: true, force: true }).catch(() => {
+          // Intentionally silent — pristine-history dir may already be gone
+          // (concurrent reset, manual cleanup). detectOrphans will sweep later.
+        });
+      }
+    } catch {
+      // Manifest missing or unparseable → legacy/corrupt backup. Skip history
+      // cleanup; proceed with backup dir removal.
+    }
+
+    await fs.rm(bkPath, { recursive: true, force: true });
   }
 }
 
 export async function deploy(opts: DeployOpts): Promise<DeployResult> {
-  const { stagingRoot, targetPath, backupDir, slug, dryRun, backupRetain } = opts;
+  const { stagingRoot, targetPath, backupDir, slug, dryRun, backupRetain, pristine, backupIsoOverride } = opts;
 
   if (!(await pathExists(path.join(stagingRoot, "fxmanifest.lua")))) {
     throw new ValidationFailedError(`Staging has no fxmanifest.lua at root: ${stagingRoot}`);
@@ -73,9 +180,13 @@ export async function deploy(opts: DeployOpts): Promise<DeployResult> {
     throw new TargetParentMissingError(parent);
   }
 
-  const iso = new Date().toISOString().replace(/[:.]/g, "-");
+  const iso = backupIsoOverride ?? new Date().toISOString().replace(/[:.]/g, "-");
   const slugBackupDir = path.join(backupDir, slug);
+  // The backup "root" dir — contains manifest.json + resource/ subdir.
   const backupPath = path.join(slugBackupDir, iso);
+  // The actual backed-up resource content lives here. Wrapping it lets the
+  // manifest live as a sibling inside the same ISO dir.
+  const backupResourcePath = path.join(backupPath, "resource");
 
   const destinationExists = await pathExists(targetPath);
 
@@ -83,6 +194,7 @@ export async function deploy(opts: DeployOpts): Promise<DeployResult> {
     return {
       deployedPath: targetPath,
       backupPath: destinationExists ? backupPath : null,
+      pristineSnapshotPath: null,
       willMoveFrom: stagingRoot,
       willMoveTo: targetPath,
       willBackupTo: destinationExists ? backupPath : null,
@@ -93,13 +205,68 @@ export async function deploy(opts: DeployOpts): Promise<DeployResult> {
   // Prune to retain-1 so the new backup still fits under the limit
   await pruneBackups(slugBackupDir, Math.max(0, backupRetain - 1));
 
+  let pristineSnapshotPath: string | null = null;
+
   if (destinationExists) {
-    await moveAtomic(targetPath, backupPath);
+    // Create the backup root dir, then move the resource into `resource/`.
+    await fs.mkdir(backupPath, { recursive: true });
+    await moveAtomic(targetPath, backupResourcePath);
+
+    // If pristine snapshotting is enabled AND there's a prior pristine to
+    // capture, copy it into pristine-history BEFORE writing the manifest.
+    // Copy (not move) so the current pristine stays intact for the caller's
+    // subsequent rotatePristine() call.
+    if (pristine && pristine.currentPristineVersionId !== null) {
+      const src = path.join(pristine.pristineDir, String(pristine.grantId));
+      // Only snapshot if the source actually exists. If state says there's a
+      // pristine but the dir is gone, skip silently (caller's integrity check
+      // will catch the corruption separately).
+      if (await pathExists(src)) {
+        const dst = path.join(
+          pristine.pristineHistoryDir,
+          String(pristine.grantId),
+          String(pristine.currentPristineVersionId)
+        );
+        await fs.mkdir(path.dirname(dst), { recursive: true });
+        // If a snapshot for this (grantId, versionId) already exists (e.g. a
+        // prior aborted deploy or duplicate rotate-to-same-version), wipe it
+        // before copy. cp with force: true overwrites files but doesn't
+        // remove files that disappeared from source, so an explicit rm keeps
+        // the snapshot bit-exact.
+        await fs.rm(dst, { recursive: true, force: true });
+        await fs.cp(src, dst, {
+          recursive: true,
+          errorOnExist: false,
+          force: true,
+          dereference: false,
+        });
+        pristineSnapshotPath = dst;
+      }
+    }
+
+    // Write the manifest AFTER both the resource move and the pristine
+    // snapshot copy succeed. Order matters: a manifest pointing at a missing
+    // snapshot path would poison rollback.
+    const manifest: BackupManifest = {
+      slug,
+      grantId: pristine?.grantId ?? null,
+      backedUpAt: new Date().toISOString(),
+      pristineVersionIdAtBackupTime: pristine?.currentPristineVersionId ?? null,
+      pristineSnapshotPath,
+      pristineHashesAtBackupTime: pristine?.currentPristineHashes ?? null,
+      pristineCapturedAtAtBackupTime: pristine?.currentPristineCapturedAt ?? null,
+    };
+    await fs.writeFile(
+      path.join(backupPath, "manifest.json"),
+      JSON.stringify(manifest, null, 2),
+      { mode: 0o600 }
+    );
   }
   await moveAtomic(stagingRoot, targetPath);
 
   return {
     deployedPath: targetPath,
     backupPath: destinationExists ? backupPath : null,
+    pristineSnapshotPath,
   };
 }

@@ -9,6 +9,8 @@ import { cfx_download_asset } from "./tools/download_asset.js";
 import { cfx_deploy_asset } from "./tools/deploy_asset.js";
 import { cfx_sync_all } from "./tools/sync_all.js";
 import { cfx_rollback } from "./tools/rollback.js";
+import { cfx_scan_configs } from "./tools/scan_configs.js";
+import { cfx_reset_pristine } from "./tools/reset_pristine.js";
 
 // Each handler accepts its own validated input type. The dispatch boundary
 // receives `unknown` from the MCP transport and passes it through — validation
@@ -32,6 +34,8 @@ const HANDLERS: Record<string, Handler> = {
   cfx_deploy_asset:    wrap(cfx_deploy_asset),
   cfx_sync_all:        wrap(cfx_sync_all),
   cfx_rollback:        wrap(cfx_rollback),
+  cfx_scan_configs:    wrap(cfx_scan_configs),
+  cfx_reset_pristine:  wrap(cfx_reset_pristine),
 };
 
 export async function dispatch(name: string, args: unknown): Promise<unknown> {

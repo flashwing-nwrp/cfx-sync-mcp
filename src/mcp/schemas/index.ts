@@ -80,10 +80,65 @@ export const DownloadAssetOutput = z.object({
   packId: z.number(),
 });
 
+/**
+ * Conflict resolution choice (mirrors `ResolutionChoice` in preservation/types.ts
+ * but declared here so the MCP schema has no import cycle with lib/preservation).
+ */
+export const ResolutionChoiceSchema = z.enum([
+  "take-live",
+  "take-pack",
+  "merge-diff3",
+  "staged-for-merge",
+  "take-live-at-new-path",
+  "take-live-at-old-path",
+]);
+
+/** Shape of a PlanRow surfaced in the dry-run plan output. */
+export const PlanRowSchema = z.object({
+  path: z.string(),
+  decision: z.enum([
+    "take-newPack",
+    "preserve-live",
+    "take-newPack-rename",
+    "drop",
+    "conflict",
+    "blocker",
+  ]),
+  rowNumber: z.number(),
+  rename: z.object({ oldPath: z.string(), newPath: z.string() }).optional(),
+  conflictOptions: z.array(ResolutionChoiceSchema).optional(),
+  resolution: ResolutionChoiceSchema.optional(),
+  blockerCode: z.enum(["CASE_COLLISION_DETECTED", "ENCRYPTED_TAMPER_DETECTED"]).optional(),
+  blockerDetail: z.string().optional(),
+  collision: z.object({ lowerPath: z.string(), paths: z.array(z.string()) }).optional(),
+  liveSha: z.string().optional(),
+  pristineSha: z.string().optional(),
+  packSha: z.string().optional(),
+});
+
+export const ValidationFailureSchema = z.object({
+  path: z.string(),
+  reason: z.string(),
+});
+
+export const DeployPlanSchema = z.object({
+  rows: z.array(PlanRowSchema),
+  blockers: z.array(PlanRowSchema),
+  conflicts: z.array(PlanRowSchema),
+  packValidationFailures: z.array(ValidationFailureSchema),
+});
+
 export const DeployAssetInput = z.object({
   grantId: z.number(),
   dryRun: z.boolean().optional(),
   packIndex: z.number().int().nonnegative().optional(),
+  /**
+   * Optional per-path conflict resolutions. Keys are repo-relative forward-slash
+   * paths (as emitted by hashTree); values are a ResolutionChoice. When a
+   * conflict row is missing from this map AND `dryRun` is false, deploy throws
+   * `ConflictsUnresolvedError`.
+   */
+  conflictResolutions: z.record(ResolutionChoiceSchema).optional(),
 });
 export const DeployAssetOutput = z.object({
   slug: z.string(),
@@ -92,6 +147,28 @@ export const DeployAssetOutput = z.object({
   suggestedServerCfg: z.string().nullable(),
   suggestedRestartCommand: z.string(),
   dryRun: z.boolean(),
+  /**
+   * Full deploy plan. Populated on dryRun OR when `preservationMode !== "legacy"`.
+   * Null on the legacy plain-swap path (Phase 1 behavior / `CFX_SYNC_PRESERVE=0`)
+   * where no diff is computed.
+   */
+  plan: DeployPlanSchema.nullable().optional(),
+  /** Layer 1 hints from mapping's `preservePaths`; informational only. */
+  preservePathsHints: z.array(z.string()).optional(),
+  /** Pack-extraction failures surfaced by unzipper (symlinks refused, etc). */
+  packValidationFailures: z.array(ValidationFailureSchema).optional(),
+  /** Which code path ran. "first-deploy" seeds pristine; "layer-2" runs the full diff. */
+  preservationMode: z.enum(["first-deploy", "layer-2", "legacy"]).optional(),
+  /** True iff a pristine baseline was captured or rotated in this run. */
+  pristineCaptured: z.boolean().optional(),
+  /**
+   * First-deploy overlay: files that existed in live but NOT in the new pack
+   * and were preserved by copying into staging before the swap. Typical
+   * contents: operator-injected overlays like triage hooks, custom additions,
+   * orphaned files from an older pack version. Only populated on the
+   * first-deploy path (real, not dryRun). Undefined/omitted otherwise.
+   */
+  firstDeployOverlay: z.array(z.string()).optional(),
 });
 
 export const SyncAllInput = z.object({
@@ -118,6 +195,39 @@ export const SyncAllOutput = z.object({
   suggestedRestarts: z.array(z.string()),
 });
 
+export const ScanConfigsInput = z.object({
+  grantId: z.number().int().positive().optional(),
+  all: z.boolean().optional(),
+}).strict().refine(
+  (v) => !(v.grantId !== undefined && v.all === true),
+  { message: "Pass grantId OR all, not both" }
+);
+export const ScanConfigsOutput = z.object({
+  scanned: z.array(z.object({
+    grantId: z.number(),
+    slug: z.string(),
+    preservePaths: z.array(z.string()),
+    count: z.number(),
+  })),
+  totalPreservePaths: z.number(),
+  skipped: z.array(z.object({
+    grantId: z.number(),
+    reason: z.string(),
+  })).optional(),
+}).strict();
+
+export const ResetPristineInput = z.object({
+  grantId: z.number().int().positive().optional(),
+  all: z.boolean().optional(),
+}).strict().refine(
+  (v) => !(v.grantId !== undefined && v.all === true),
+  { message: "Pass grantId OR all, not both" }
+);
+export const ResetPristineOutput = z.object({
+  removed: z.array(z.number()),
+  orphansGced: z.array(z.number()),
+}).strict();
+
 export const RollbackInput = z.object({
   grantId: z.number().optional(),
   slug: z.string().optional(),
@@ -130,4 +240,11 @@ export const RollbackOutput = z.object({
   fromBackup: z.string(),
   newRollingBackup: z.string(),
   suggestedRestartCommand: z.string(),
+  /**
+   * Pristine versionId restored from pristine-history, or null if the backup
+   * predated Phase 1.5 (no manifest / manifest with null pristine fields). In
+   * the null case, state.pristine* is cleared so the next deploy runs as a
+   * first-deploy.
+   */
+  pristineRotatedTo: z.number().nullable(),
 });
