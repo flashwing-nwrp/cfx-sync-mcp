@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { TargetParentMissingError, IoError, ValidationFailedError } from "../errors.js";
-import { writeInFlightMarker, clearInFlightMarker } from "./inFlight.js";
 
 /**
  * Pristine snapshot parameters threaded through a deploy. When supplied, the
@@ -53,18 +52,12 @@ export interface DeployOpts {
   /** Optional — enables pristine snapshotting into pristine-history. */
   pristine?: PristineSnapshotOpts;
   /**
-   * Optional — enables the in-flight deploy marker. When both `stateDir` and
-   * `grantId` are provided, deploy() writes `<stateDir>/in-flight/<grantId>.json`
-   * immediately before the first filesystem mutation (live→backup rename, or
-   * staging→live for first-deploy) and deletes it after the final
-   * staging→live rename succeeds. A surviving marker on the next deploy entry
-   * is the signal that the prior run was killed mid-swap.
-   *
-   * Both fields must be present; absence of either disables marker writes
-   * (used in tests that want deploy-in-isolation semantics).
+   * Optional — caller-supplied ISO8601 timestamp (with `:`/`.` replaced by `-`)
+   * used for the backup dir name. When absent, deploy() generates its own.
+   * Callers (the MCP tool layer) supply this so they can write the in-flight
+   * marker with the SAME backup path deploy() will use, before deploy() runs.
    */
-  stateDir?: string;
-  grantId?: number;
+  backupIsoOverride?: string;
 }
 
 export interface DeployResult {
@@ -175,7 +168,7 @@ async function pruneBackups(slugDir: string, retain: number): Promise<void> {
 }
 
 export async function deploy(opts: DeployOpts): Promise<DeployResult> {
-  const { stagingRoot, targetPath, backupDir, slug, dryRun, backupRetain, pristine, stateDir, grantId } = opts;
+  const { stagingRoot, targetPath, backupDir, slug, dryRun, backupRetain, pristine, backupIsoOverride } = opts;
 
   if (!(await pathExists(path.join(stagingRoot, "fxmanifest.lua")))) {
     throw new ValidationFailedError(`Staging has no fxmanifest.lua at root: ${stagingRoot}`);
@@ -187,7 +180,7 @@ export async function deploy(opts: DeployOpts): Promise<DeployResult> {
     throw new TargetParentMissingError(parent);
   }
 
-  const iso = new Date().toISOString().replace(/[:.]/g, "-");
+  const iso = backupIsoOverride ?? new Date().toISOString().replace(/[:.]/g, "-");
   const slugBackupDir = path.join(backupDir, slug);
   // The backup "root" dir — contains manifest.json + resource/ subdir.
   const backupPath = path.join(slugBackupDir, iso);
@@ -211,21 +204,6 @@ export async function deploy(opts: DeployOpts): Promise<DeployResult> {
   await fs.mkdir(slugBackupDir, { recursive: true });
   // Prune to retain-1 so the new backup still fits under the limit
   await pruneBackups(slugBackupDir, Math.max(0, backupRetain - 1));
-
-  // In-flight marker: write IMMEDIATELY before the first mutation so a crash
-  // anywhere in the swap window leaves the marker on disk. Cleared after the
-  // final staging→live rename. `stateDir` + `grantId` must both be supplied;
-  // otherwise marker writes are disabled (test-only path — production calls
-  // from deploy_asset.ts always supply them).
-  const markerEnabled = stateDir !== undefined && grantId !== undefined;
-  if (markerEnabled) {
-    await writeInFlightMarker(stateDir!, {
-      grantId: grantId!,
-      stagingPath: stagingRoot,
-      backupPath: destinationExists ? backupPath : null,
-      startedAt: new Date().toISOString(),
-    });
-  }
 
   let pristineSnapshotPath: string | null = null;
 
@@ -285,13 +263,6 @@ export async function deploy(opts: DeployOpts): Promise<DeployResult> {
     );
   }
   await moveAtomic(stagingRoot, targetPath);
-
-  // Final rename succeeded — clear the in-flight marker. A failure to unlink
-  // the marker here would be a cosmetic leak (the NEXT deploy would false-
-  // positive as interrupted), so we bubble the error instead of swallowing.
-  if (markerEnabled) {
-    await clearInFlightMarker(stateDir!, grantId!);
-  }
 
   return {
     deployedPath: targetPath,

@@ -348,7 +348,7 @@ describe("integration: Task 18 — failure-recovery scenarios", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Scenario 2: Mid-rotation pristine corruption.
+  // Scenario 2: Mid-rotation pristine corruption (Gap #2 FIX).
   //
   // During rotatePristine the critical sequence is:
   //   1. cp(staging → pristineDir/<id>.tmp.<...>)
@@ -357,30 +357,33 @@ describe("integration: Task 18 — failure-recovery scenarios", () => {
   //   4. rm(pristineDir/<id>.old.<iso>)
   //
   // We inject failure on rename #3 (step 3). Post-crash:
-  //   - <id>/ is missing (moved to .old.<iso>)
-  //   - <id>.old.<iso>/ has the previous pristine
-  //   - <id>.tmp.<...>/ has the new pristine ready
+  //   - deploy() has already completed (live swapped to v2)
+  //   - pristine final dir rolled back to v1 by rotate's catch
+  //   - state.pristine* still = v1 (state.save never ran)
   //
-  // The recovery path lives in resumeOrRollbackRotation which rotatePristine
-  // calls at the start of every invocation.
+  // BEFORE Gap #2 FIX: the in-flight marker was cleared inside deploy() at the
+  // end of the staging→live rename, so a crash in rotate or state.save left
+  // NO marker. On retry the diff engine saw live=v2 vs pristine=v1 vs pack=v2
+  // → row 4 for every differing file → ConflictsUnresolvedError. The operator
+  // had to either pass conflictResolutions or run cfx_reset_pristine.
   //
-  // GAP FOUND: In the deploy_asset pipeline, deploy() runs BEFORE
-  // rotatePristine(). If rotate fails after deploy succeeds, live is already
-  // swapped (v2) but pristine + state still reflect v1. On retry, the diff
-  // engine sees live=v2 vs pristine=v1 vs pack=v2 → row 4 (both changed from
-  // pristine), which throws ConflictsUnresolvedError. The rotation-level
-  // self-heal (resumeOrRollbackRotation) never runs because diff gates
-  // control flow upstream.
+  // AFTER Gap #2 FIX: marker lifecycle moved to the MCP tool layer and now
+  // wraps the ENTIRE critical section (applyPlan + deploy + rotate +
+  // state.save). A crash mid-rotate leaves the marker on disk. On retry the
+  // entry throws DeployInterruptedError BEFORE the diff engine runs, so the
+  // operator sees a typed error with an unambiguous recovery path.
   //
-  // Manual recovery: operator either (a) passes conflictResolutions mapping
-  // every path to take-pack, OR (b) runs cfx_reset_pristine <grantId> to
-  // wipe the baseline and re-capture via first-deploy mode. Neither is
-  // automatic.
+  // Two recovery paths:
+  //   (a) cfx_rollback — restores pre-crash live (v1), clears marker,
+  //       rebuilds pristine from backup manifest.
+  //   (b) cfx_reset_pristine {grantId} — clears marker AND nulls pristine
+  //       fields. Live remains at v2 (the crash landed it there); next
+  //       deploy is a clean first-deploy that re-captures pristine from v2
+  //       live. This is the "live is fine, just re-baseline" path.
   //
-  // See report for recommended fix (e.g. add a post-deploy "pristine stale"
-  // detector that re-rotates in-line before returning to the caller).
+  // This test asserts path (b) — the new reset_pristine marker-clear behavior.
   // -------------------------------------------------------------------------
-  it("Scenario 2: mid-rotation pristine corruption — surfaces ConflictsUnresolvedError on retry (recovery gap)", async () => {
+  it("Scenario 2: mid-rotation pristine corruption — marker + DeployInterruptedError + reset_pristine recovery (Gap #2)", async () => {
     setupEnv(f);
 
     // Seed a complete v1 world: live + pristine both = v1.
@@ -435,47 +438,58 @@ describe("integration: Task 18 — failure-recovery scenarios", () => {
     );
 
     // Post-crash ground truth: deploy() completed (live swapped to v2). Rotate
-    // failed on rename #2. Either:
-    //   - finalDir missing + .old.<iso> trash present + .tmp.<...> left behind
-    //   - OR the rollback in rotate's catch moved trash back to finalDir
-    //     (rotate has a best-effort cleanup that rolls trash back when
-    //     finalDir is empty — see rotate.ts lines 100-125)
-    // The catch in rotate rolled `.old.<iso>` back to finalDir, so we expect
-    // finalDir to hold v1 content again.
+    // failed on rename #2. The catch in rotate rolled `.old.<iso>` back to
+    // finalDir, so finalDir holds v1 content again. state.save never ran.
     expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v2");
-    // state.save never ran, so stored hashes still reflect v1.
     const stateAfterCrash = readState(f.stateDir).assets[String(grantId)]!;
     expect(stateAfterCrash.pristineVersionId).toBe(10);
+
+    // NEW (Gap #2 fix): the in-flight marker MUST be on disk — the
+    // marker-clear moved out of deploy() to AFTER state.save(), so any
+    // rotate/save failure now preserves the marker.
+    const expectedMarkerPath = markerPath(f.stateDir, grantId);
+    expect(existsSync(expectedMarkerPath)).toBe(true);
+    const marker = await readInFlightMarker(f.stateDir, grantId);
+    expect(marker).not.toBeNull();
+    expect(marker!.grantId).toBe(grantId);
 
     // Drop patch; retry deploy.
     renameSpy.mockRestore();
 
-    // RECOVERY GAP: diff engine sees live=v2 vs pristine=v1 vs pack=v2 → row 4
-    // for every differing file (both live and pack changed from pristine).
-    // Deploy throws ConflictsUnresolvedError. Operator must either pass
-    // conflictResolutions or run cfx_reset_pristine <grantId>.
-    //
-    // This asserts the CURRENT behavior so a future fix (e.g. "if pristine is
-    // stale relative to live, re-run rotation inline") will surface as a red
-    // test — flipping the assertion is the intended signal.
-    await expect(cfx_deploy_asset({ grantId, dryRun: false })).rejects.toMatchObject({
-      code: "CONFLICTS_UNRESOLVED",
-    });
+    // NEW (Gap #2 fix): retry throws DeployInterruptedError (NOT
+    // ConflictsUnresolvedError) — the marker-check at the top of
+    // cfx_deploy_asset runs BEFORE the diff engine, so operators see a
+    // typed "your prior deploy crashed" error instead of a sea of row-4
+    // conflicts.
+    await expect(cfx_deploy_asset({ grantId, dryRun: false })).rejects.toBeInstanceOf(
+      DeployInterruptedError
+    );
 
-    // Manual recovery path #1: operator resolves every row to take-pack.
-    // (Bytes are identical anyway since live==pack==v2.)
-    const recoverResult = await cfx_deploy_asset({
-      grantId,
-      dryRun: false,
-      conflictResolutions: {
-        "fxmanifest.lua": "take-pack",
-        "server.lua": "take-pack",
-      },
-    });
-    expect(recoverResult.preservationMode).toBe("layer-2");
-    // After successful recovery, rotate self-heals (resumeOrRollbackRotation
-    // at top of rotatePristine cleans any leftover .old/.tmp; rotate then
-    // builds new pristine from the deployed live).
+    // Recovery path (b): operator has verified live is correct (v2) and
+    // wants to accept current state as the new pristine baseline. Running
+    // cfx_reset_pristine {grantId} clears the marker AND nulls pristine
+    // fields; the next deploy is a clean first-deploy.
+    const { cfx_reset_pristine } = await import("../../src/mcp/tools/reset_pristine.js");
+    const resetResult = await cfx_reset_pristine({ grantId });
+    expect(resetResult.removed).toEqual([grantId]);
+
+    // Marker cleared by reset_pristine.
+    expect(existsSync(expectedMarkerPath)).toBe(false);
+    expect(await readInFlightMarker(f.stateDir, grantId)).toBeNull();
+
+    // Pristine fields nulled on state.
+    const stateAfterReset = readState(f.stateDir).assets[String(grantId)]!;
+    expect(stateAfterReset.pristineVersionId).toBeNull();
+    expect(stateAfterReset.pristineHashes).toBeNull();
+
+    // Next deploy is first-deploy (no pristineHashes → mode = first-deploy).
+    // No false conflicts; pack matches live so deploy is a no-op swap that
+    // re-captures pristine from the deployed live dir.
+    const recoverResult = await cfx_deploy_asset({ grantId, dryRun: false });
+    expect(recoverResult.preservationMode).toBe("first-deploy");
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v2");
+
+    // Pristine re-captured, no turds left over from the crashed rotate.
     const pristineSiblings = readdirSync(f.pristineDir).filter(
       (n) => n.startsWith(`${grantId}.tmp.`) || n.startsWith(`${grantId}.old.`)
     );
@@ -483,6 +497,160 @@ describe("integration: Task 18 — failure-recovery scenarios", () => {
     expect(readFileSync(path.join(finalPristinePath, "fxmanifest.lua"), "utf8")).toBe("v2");
     const stateAfter = readState(f.stateDir).assets[String(grantId)]!;
     expect(stateAfter.pristineVersionId).toBe(11);
+    expect(existsSync(expectedMarkerPath)).toBe(false);
+  });
+
+  // -------------------------------------------------------------------------
+  // Scenario 2b: alternate recovery — cfx_rollback also clears marker.
+  //
+  // Same mid-rotation crash as 2a, but operator chooses cfx_rollback (restore
+  // pre-crash live) instead of cfx_reset_pristine (accept current live).
+  // -------------------------------------------------------------------------
+  it("Scenario 2b: mid-rotation crash — cfx_rollback clears marker and restores pre-crash live", async () => {
+    setupEnv(f);
+
+    const v1Files = { "fxmanifest.lua": "v1", "server.lua": "print('v1')" };
+    seedLive(f.target, v1Files);
+    mkdirSync(path.join(f.pristineDir, String(grantId)), { recursive: true });
+    for (const [rel, body] of Object.entries(v1Files)) {
+      writeFileSync(path.join(f.pristineDir, String(grantId), rel), body);
+    }
+
+    const v2Files = { "fxmanifest.lua": "v2", "server.lua": "print('v2')" };
+    const zipPath = await makePackZip(f.cacheDir, "my_asset", v2Files);
+
+    writeMapping(f.stateDir, { [String(grantId)]: makeEntry(f.target) });
+    writeState(f.stateDir, [
+      makeAssetState(grantId, zipPath, f.target, {
+        versionId: 11,
+        deployedAt: "2026-04-17T00:00:00.000Z",
+        pristineVersionId: 10,
+        pristineCapturedAt: "2026-04-17T00:00:00.000Z",
+        pristineHashes: hashesFrom(v1Files),
+      }),
+    ]);
+
+    const finalPristinePath = path.join(f.pristineDir, String(grantId));
+    const realRename = fsP.rename.bind(fsP);
+    let tripped = false;
+    const renameSpy = vi.spyOn(fsP, "rename").mockImplementation(async (src, dst) => {
+      const dstStr = String(dst);
+      if (
+        !tripped &&
+        dstStr === finalPristinePath &&
+        String(src).includes(`${grantId}.tmp.`)
+      ) {
+        tripped = true;
+        throw Object.assign(
+          new Error("SIMULATED_CRASH: process killed mid-pristine-rotation"),
+          { code: "EIO" }
+        );
+      }
+      return realRename(src, dst);
+    });
+
+    await expect(cfx_deploy_asset({ grantId, dryRun: false })).rejects.toThrow(
+      /SIMULATED_CRASH|mid-pristine-rotation/
+    );
+
+    const expectedMarkerPath = markerPath(f.stateDir, grantId);
+    expect(existsSync(expectedMarkerPath)).toBe(true);
+
+    renameSpy.mockRestore();
+
+    // Retry surfaces DeployInterruptedError.
+    await expect(cfx_deploy_asset({ grantId, dryRun: false })).rejects.toBeInstanceOf(
+      DeployInterruptedError
+    );
+
+    // Find the backup ISO deploy() created.
+    const slugBackupDir = path.join(f.backupDir, "my_asset");
+    const backupIsos = readdirSync(slugBackupDir);
+    expect(backupIsos.length).toBe(1);
+
+    // Rollback path: restore live to pre-crash (v1), clear marker, restore
+    // pristine from the backup manifest.
+    const rb = await cfx_rollback({ grantId, toTimestamp: backupIsos[0] });
+    expect(rb.restoredPath).toBe(f.target);
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v1");
+    expect(existsSync(expectedMarkerPath)).toBe(false);
+
+    // Next deploy should succeed cleanly (layer-2 path since pristine was
+    // restored by rollback).
+    const recoverResult = await cfx_deploy_asset({ grantId, dryRun: false });
+    expect(recoverResult.preservationMode).toBe("layer-2");
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v2");
+    expect(existsSync(expectedMarkerPath)).toBe(false);
+  });
+
+  // -------------------------------------------------------------------------
+  // Scenario 2c: first-deploy capturePristine failure (Gap #2 coverage).
+  //
+  // In first-deploy mode, deploy() succeeds and the code then calls
+  // capturePristine() before state.save(). Previously the marker was cleared
+  // inside deploy() so a capture failure would leave live swapped but no
+  // marker — the next run silently re-ran as first-deploy (with live = the
+  // new pack, which is fine, but the extra backup was a minor waste).
+  //
+  // After Gap #2: the marker persists if capturePristine throws. The
+  // operator is explicitly notified via DeployInterruptedError on retry.
+  // -------------------------------------------------------------------------
+  it("Scenario 2c: first-deploy capturePristine failure leaves marker + DeployInterruptedError on retry", async () => {
+    setupEnv(f);
+
+    // First-deploy world: live present, NO pristine yet.
+    const v1Files = { "fxmanifest.lua": "v1", "server.lua": "print('v1')" };
+    seedLive(f.target, v1Files);
+
+    const v2Files = { "fxmanifest.lua": "v2", "server.lua": "print('v2')" };
+    const zipPath = await makePackZip(f.cacheDir, "my_asset", v2Files);
+
+    writeMapping(f.stateDir, { [String(grantId)]: makeEntry(f.target) });
+    writeState(f.stateDir, [
+      makeAssetState(grantId, zipPath, f.target, {
+        versionId: 10,
+        deployedAt: "2026-04-17T00:00:00.000Z",
+        // No pristine → first-deploy mode.
+      }),
+    ]);
+
+    // Fail the capturePristine tmp→final rename. capturePristine uses a
+    // <grantId>.tmp.<...> naming scheme and renames it to
+    // `<pristineDir>/<grantId>`. Trip on that specific rename.
+    const finalPristinePath = path.join(f.pristineDir, String(grantId));
+    const realRename = fsP.rename.bind(fsP);
+    let tripped = false;
+    const renameSpy = vi.spyOn(fsP, "rename").mockImplementation(async (src, dst) => {
+      const dstStr = String(dst);
+      if (
+        !tripped &&
+        dstStr === finalPristinePath &&
+        String(src).includes(`${grantId}.tmp.`)
+      ) {
+        tripped = true;
+        throw Object.assign(new Error("SIMULATED_CRASH: capture killed"), { code: "EIO" });
+      }
+      return realRename(src, dst);
+    });
+
+    await expect(cfx_deploy_asset({ grantId, dryRun: false })).rejects.toThrow(
+      /SIMULATED_CRASH|capture killed/
+    );
+
+    // deploy() completed before capturePristine ran → live = v2.
+    expect(readFileSync(path.join(f.target, "fxmanifest.lua"), "utf8")).toBe("v2");
+
+    // Marker on disk — state.save never ran.
+    const expectedMarkerPath = markerPath(f.stateDir, grantId);
+    expect(existsSync(expectedMarkerPath)).toBe(true);
+    const stateAfterCrash = readState(f.stateDir).assets[String(grantId)]!;
+    expect(stateAfterCrash.pristineVersionId).toBeNull();
+
+    // Retry → DeployInterruptedError (marker-check gates before anything else).
+    renameSpy.mockRestore();
+    await expect(cfx_deploy_asset({ grantId, dryRun: false })).rejects.toBeInstanceOf(
+      DeployInterruptedError
+    );
   });
 
   // -------------------------------------------------------------------------

@@ -23,6 +23,20 @@
  *   - state.save() is the LAST write. A crash between deploy() and save() is
  *     recoverable because pristine rotate is idempotent (rotate.ts self-heals
  *     on next run) and the backup manifest records what WAS the pristine.
+ *
+ * In-flight marker window:
+ *   The marker is written BEFORE any mutation (applyPlan/deploy/rotate/save)
+ *   and cleared ONLY after state.save() commits. This covers crashes in:
+ *     - applyPlan (staging mutation)
+ *     - deploy() (live swap)
+ *     - capturePristine (first-deploy) / rotatePristine (layer-2)
+ *     - state.save()
+ *   A surviving marker on the next entry trips DeployInterruptedError so the
+ *   operator chooses between cfx_rollback (restores pre-crash live, clears
+ *   marker) and cfx_reset_pristine (clears marker + pristine fields; next
+ *   deploy re-baselines as first-deploy). Marker is managed at this MCP-tool
+ *   layer — deploy()/capturePristine()/rotatePristine() primitives are
+ *   marker-agnostic.
  */
 
 import type { z } from "zod";
@@ -57,7 +71,12 @@ import {
   DeployInterruptedError,
   EncryptedTamperDetectedError,
 } from "../../lib/errors.js";
-import { readInFlightMarker, markerPath } from "../../lib/deploy/inFlight.js";
+import {
+  readInFlightMarker,
+  markerPath,
+  writeInFlightMarker,
+  clearInFlightMarker,
+} from "../../lib/deploy/inFlight.js";
 import type { DeployPlan, PlanRow, ValidationFailure, ResolutionChoice } from "../../lib/preservation/types.js";
 
 type Input = z.infer<typeof DeployAssetInput>;
@@ -175,11 +194,78 @@ interface PathCtx {
 }
 
 /**
+ * Pre-compute the backup ISO + predicted backup dir so we can write the
+ * in-flight marker with the SAME backup path deploy() will use. deploy()
+ * accepts `backupIsoOverride` and reuses this ISO — keeping the marker's
+ * backupPath consistent with the on-disk reality even if the crash lands
+ * anywhere inside deploy().
+ */
+function buildBackupIso(): string {
+  return new Date().toISOString().replace(/[:.]/g, "-");
+}
+
+/**
+ * Write the in-flight marker for this grant. Called before the first
+ * filesystem mutation in each run-mode (applyPlan / deploy / capture /
+ * rotate). The marker is cleared after state.save() completes — ANY crash in
+ * the window between write and clear is observable on the next deploy entry
+ * as `DeployInterruptedError`.
+ */
+async function beginInFlight(
+  stateDir: string,
+  grantId: number,
+  stagingPath: string,
+  backupPath: string | null
+): Promise<void> {
+  await writeInFlightMarker(stateDir, {
+    grantId,
+    stagingPath,
+    backupPath,
+    startedAt: new Date().toISOString(),
+  });
+}
+
+/**
  * Legacy Phase-1 plain-swap path. Used when CFX_SYNC_PRESERVE=0.
  * Skips pristine capture entirely — the operator has opted out of Layer 2.
  */
 async function runLegacy(ctx: PathCtx): Promise<Output> {
   const { cfg, entry, stateEntry, unzip, state, dryRun } = ctx;
+
+  // Dry-run is pure read-only shape-preview — no marker write/clear needed.
+  if (dryRun) {
+    const result = await deploy({
+      stagingRoot: unzip.root,
+      targetPath: entry.target,
+      backupDir: cfg.backupDir,
+      slug: entry.slug,
+      dryRun,
+      backupRetain: cfg.backupRetain,
+    });
+    return {
+      slug: entry.slug,
+      deployedPath: result.deployedPath,
+      backupPath: result.backupPath,
+      suggestedServerCfg: null,
+      suggestedRestartCommand: `restart ${entry.slug}`,
+      dryRun,
+      plan: null,
+      preservePathsHints: preservePathsHintsFromMapping(entry),
+      packValidationFailures: unzip.validationFailures,
+      preservationMode: "legacy",
+      pristineCaptured: false,
+    };
+  }
+
+  // Predict backup path so the marker reflects what deploy() will write.
+  // If the target is missing (first deploy into a fresh target), backupPath=null.
+  const iso = buildBackupIso();
+  const destinationExists = await pathExists(entry.target);
+  const predictedBackupPath = destinationExists
+    ? path.join(cfg.backupDir, entry.slug, iso)
+    : null;
+
+  await beginInFlight(cfg.stateDir, stateEntry.grantId, unzip.root, predictedBackupPath);
 
   const result = await deploy({
     stagingRoot: unzip.root,
@@ -188,22 +274,23 @@ async function runLegacy(ctx: PathCtx): Promise<Output> {
     slug: entry.slug,
     dryRun,
     backupRetain: cfg.backupRetain,
-    stateDir: cfg.stateDir,
-    grantId: stateEntry.grantId,
+    backupIsoOverride: iso,
     // No pristine opts — we're not tracking pristine in this mode.
   });
 
-  if (!dryRun) {
-    state.upsert({
-      ...stateEntry,
-      deployedPath: result.deployedPath,
-      deployedAt: new Date().toISOString(),
-      backups: result.backupPath
-        ? [result.backupPath, ...stateEntry.backups].slice(0, cfg.backupRetain)
-        : stateEntry.backups,
-    });
-    await state.save();
-  }
+  state.upsert({
+    ...stateEntry,
+    deployedPath: result.deployedPath,
+    deployedAt: new Date().toISOString(),
+    backups: result.backupPath
+      ? [result.backupPath, ...stateEntry.backups].slice(0, cfg.backupRetain)
+      : stateEntry.backups,
+  });
+  await state.save();
+
+  // All commits succeeded — clear the marker. If this unlink throws, the next
+  // deploy would false-positive as interrupted; bubble instead of swallow.
+  await clearInFlightMarker(cfg.stateDir, stateEntry.grantId);
 
   return {
     slug: entry.slug,
@@ -239,30 +326,24 @@ async function runLegacy(ctx: PathCtx): Promise<Output> {
 async function runFirstDeploy(ctx: PathCtx): Promise<Output> {
   const { cfg, paths, entry, stateEntry, unzip, state, dryRun } = ctx;
 
-  // dryRun on first-deploy returns the same shape as legacy dryRun but with
-  // a note that Layer 2 will activate on the next deploy.
-  const result = await deploy({
-    stagingRoot: unzip.root,
-    targetPath: entry.target,
-    backupDir: cfg.backupDir,
-    slug: entry.slug,
-    dryRun,
-    backupRetain: cfg.backupRetain,
-    stateDir: cfg.stateDir,
-    grantId: stateEntry.grantId,
-    // Pristine opts included so the backup manifest schema is consistent, but
-    // currentPristineVersionId=null tells deploy() "no prior pristine to snapshot".
-    pristine: {
-      grantId: stateEntry.grantId,
-      currentPristineVersionId: null,
-      pristineDir: paths.pristineDir,
-      pristineHistoryDir: paths.pristineHistoryDir,
-      currentPristineHashes: null,
-      currentPristineCapturedAt: null,
-    },
-  });
-
+  // Dry-run: pure preview — no mutations, no marker needed.
   if (dryRun) {
+    const result = await deploy({
+      stagingRoot: unzip.root,
+      targetPath: entry.target,
+      backupDir: cfg.backupDir,
+      slug: entry.slug,
+      dryRun,
+      backupRetain: cfg.backupRetain,
+      pristine: {
+        grantId: stateEntry.grantId,
+        currentPristineVersionId: null,
+        pristineDir: paths.pristineDir,
+        pristineHistoryDir: paths.pristineHistoryDir,
+        currentPristineHashes: null,
+        currentPristineCapturedAt: null,
+      },
+    });
     return {
       slug: entry.slug,
       deployedPath: result.deployedPath,
@@ -277,6 +358,39 @@ async function runFirstDeploy(ctx: PathCtx): Promise<Output> {
       pristineCaptured: false,
     };
   }
+
+  // Predict backup path for the marker.
+  const iso = buildBackupIso();
+  const destinationExists = await pathExists(entry.target);
+  const predictedBackupPath = destinationExists
+    ? path.join(cfg.backupDir, entry.slug, iso)
+    : null;
+
+  // Marker covers: deploy() + capturePristine() + state.save() — the entire
+  // first-deploy critical section. A crash in capturePristine (e.g. disk full)
+  // leaves the marker so the next entry trips DeployInterruptedError instead
+  // of silently re-running as a fresh first-deploy.
+  await beginInFlight(cfg.stateDir, stateEntry.grantId, unzip.root, predictedBackupPath);
+
+  const result = await deploy({
+    stagingRoot: unzip.root,
+    targetPath: entry.target,
+    backupDir: cfg.backupDir,
+    slug: entry.slug,
+    dryRun,
+    backupRetain: cfg.backupRetain,
+    backupIsoOverride: iso,
+    // Pristine opts included so the backup manifest schema is consistent, but
+    // currentPristineVersionId=null tells deploy() "no prior pristine to snapshot".
+    pristine: {
+      grantId: stateEntry.grantId,
+      currentPristineVersionId: null,
+      pristineDir: paths.pristineDir,
+      pristineHistoryDir: paths.pristineHistoryDir,
+      currentPristineHashes: null,
+      currentPristineCapturedAt: null,
+    },
+  });
 
   // Real deploy just succeeded. Capture pristine from the deployed live dir so
   // the next run can do a real diff. Use the deployed path as the source —
@@ -300,6 +414,9 @@ async function runFirstDeploy(ctx: PathCtx): Promise<Output> {
     pristineHashes: mapToRecord(snapshot.hashes),
   });
   await state.save();
+
+  // All commits succeeded — clear the marker.
+  await clearInFlightMarker(cfg.stateDir, stateEntry.grantId);
 
   return {
     slug: entry.slug,
@@ -400,6 +517,18 @@ async function runLayer2(
     .map((r) => r.path);
   if (unresolved.length > 0) throw new ConflictsUnresolvedError(unresolved);
 
+  // -- Predict backup path + write in-flight marker ----------------------
+  // Marker window now covers: applyPlan → deploy → rotatePristine → state.save.
+  // Previous impl only covered deploy(), leaving a Gap #2 window where a rotate
+  // or save failure would commit the live swap but leave state.pristine* stale,
+  // causing row-4 false conflicts on retry.
+  const iso = buildBackupIso();
+  const destinationExists = await pathExists(entry.target);
+  const predictedBackupPath = destinationExists
+    ? path.join(cfg.backupDir, entry.slug, iso)
+    : null;
+  await beginInFlight(cfg.stateDir, stateEntry.grantId, unzip.root, predictedBackupPath);
+
   // -- Apply plan to staging ---------------------------------------------
   // applyPlan copies live bytes into staging for preserve-live rows, writes
   // sidecars for staged-for-merge rows, and deletes take-newPack-delete rows.
@@ -419,8 +548,7 @@ async function runLayer2(
     slug: entry.slug,
     dryRun: false,
     backupRetain: cfg.backupRetain,
-    stateDir: cfg.stateDir,
-    grantId: stateEntry.grantId,
+    backupIsoOverride: iso,
     pristine: {
       grantId: stateEntry.grantId,
       currentPristineVersionId: stateEntry.pristineVersionId,
@@ -434,6 +562,10 @@ async function runLayer2(
   // -- Rotate pristine to the NEW pack contents --------------------------
   // Source is the deployed live dir (staging was moved into it).
   // rotatePristine is idempotent + self-healing; retry-safe if we crash here.
+  // A crash BETWEEN deploy() and here (or between rotate and save below) now
+  // leaves the marker on disk — recovery is via cfx_rollback (restores live to
+  // pre-crash + clears marker) or cfx_reset_pristine (clears marker + nulls
+  // pristine fields, so next deploy is first-deploy).
   const rotation = await rotatePristine({
     grantId: stateEntry.grantId,
     newStagingRoot: result.deployedPath,
@@ -442,10 +574,7 @@ async function runLayer2(
     newVersionId: stateEntry.versionId,
   });
 
-  // -- Commit state (LAST write). A crash earlier is recoverable; a crash
-  //    after deploy + rotate but before save means next run sees old state
-  //    entry with stale pristineHashes — deploy will re-rotate to the same
-  //    versionId (idempotent) and this time save. No data loss.
+  // -- Commit state (LAST write). ----------------------------------------
   state.upsert({
     ...stateEntry,
     deployedPath: result.deployedPath,
@@ -458,6 +587,9 @@ async function runLayer2(
     pristineHashes: mapToRecord(rotation.newPristineHashes),
   });
   await state.save();
+
+  // All commits succeeded — clear the marker.
+  await clearInFlightMarker(cfg.stateDir, stateEntry.grantId);
 
   return {
     slug: entry.slug,
@@ -514,6 +646,17 @@ async function hashTreeIfExists(root: string): Promise<Map<string, string>> {
     throw e;
   }
   return hashTree(root);
+}
+
+/** True iff `p` exists on disk. ENOENT-tolerant; any other stat error bubbles. */
+async function pathExists(p: string): Promise<boolean> {
+  try {
+    await fsP.stat(p);
+    return true;
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") return false;
+    throw e;
+  }
 }
 
 function preservePathsHintsFromMapping(entry: MappingEntry): string[] {

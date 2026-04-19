@@ -16,6 +16,11 @@ import {
 } from "../../../src/mcp/schemas/index.js";
 import { NotFoundError, CfxError } from "../../../src/lib/errors.js";
 import type { AssetState } from "../../../src/lib/state/state.js";
+import {
+  writeInFlightMarker,
+  readInFlightMarker,
+  markerPath,
+} from "../../../src/lib/deploy/inFlight.js";
 
 function makeAssetState(overrides: Partial<AssetState> & { grantId: number }): AssetState {
   return {
@@ -321,5 +326,96 @@ describe("cfx_reset_pristine", () => {
   it("NotFoundError is a CfxError (consistent with other tools)", async () => {
     writeState(stateDir, []);
     await expect(cfx_reset_pristine({ grantId: 999 })).rejects.toBeInstanceOf(CfxError);
+  });
+
+  // --- Gap #2 fix: reset_pristine clears in-flight marker -----------------
+  // When a prior deploy crashed in the rotate-or-save window, the marker is
+  // left on disk to flag the torn state. Running `cfx_reset_pristine {grantId}`
+  // is the "accept current live, re-baseline pristine" recovery path — it
+  // MUST clear the marker so the next deploy is a clean first-deploy rather
+  // than throwing DeployInterruptedError again.
+
+  it("grantId: clears the in-flight marker for the targeted grant", async () => {
+    writeState(stateDir, [
+      makeAssetState({ grantId: 100, pristineVersionId: 10, pristineHashes: { a: "b" } }),
+      makeAssetState({ grantId: 200, pristineVersionId: 20, pristineHashes: { c: "d" } }),
+    ]);
+    seedPristineDir(pristineDir, 100);
+    seedPristineDir(pristineDir, 200);
+    await writeInFlightMarker(stateDir, {
+      grantId: 100,
+      stagingPath: "/tmp/staging",
+      backupPath: "/tmp/backup",
+      startedAt: "2026-04-18T00:00:00.000Z",
+    });
+    await writeInFlightMarker(stateDir, {
+      grantId: 200,
+      stagingPath: "/tmp/staging2",
+      backupPath: null,
+      startedAt: "2026-04-18T00:00:00.000Z",
+    });
+
+    await cfx_reset_pristine({ grantId: 100 });
+
+    // Marker for 100 cleared; 200's marker survives (untargeted).
+    expect(existsSync(markerPath(stateDir, 100))).toBe(false);
+    expect(await readInFlightMarker(stateDir, 100)).toBeNull();
+    expect(existsSync(markerPath(stateDir, 200))).toBe(true);
+    expect(await readInFlightMarker(stateDir, 200)).not.toBeNull();
+  });
+
+  it("grantId: succeeds when no marker exists (ENOENT-tolerant)", async () => {
+    // Common case: reset called without any prior crash. clearInFlightMarker
+    // must not throw on ENOENT.
+    writeState(stateDir, [
+      makeAssetState({ grantId: 100, pristineVersionId: 10, pristineHashes: { a: "b" } }),
+    ]);
+    seedPristineDir(pristineDir, 100);
+
+    await expect(cfx_reset_pristine({ grantId: 100 })).resolves.toBeTruthy();
+    expect(existsSync(markerPath(stateDir, 100))).toBe(false);
+  });
+
+  it("all: true — clears markers for every reset grant", async () => {
+    writeState(stateDir, [
+      makeAssetState({ grantId: 100, pristineVersionId: 10, pristineHashes: { a: "b" } }),
+      makeAssetState({ grantId: 200, pristineVersionId: 20, pristineHashes: { c: "d" } }),
+    ]);
+    seedPristineDir(pristineDir, 100);
+    seedPristineDir(pristineDir, 200);
+    await writeInFlightMarker(stateDir, {
+      grantId: 100,
+      stagingPath: "/s1",
+      backupPath: null,
+      startedAt: "2026-04-18T00:00:00.000Z",
+    });
+    await writeInFlightMarker(stateDir, {
+      grantId: 200,
+      stagingPath: "/s2",
+      backupPath: null,
+      startedAt: "2026-04-18T00:00:00.000Z",
+    });
+
+    const result = await cfx_reset_pristine({ all: true });
+    expect(result.removed.sort((a, b) => a - b)).toEqual([100, 200]);
+
+    expect(existsSync(markerPath(stateDir, 100))).toBe(false);
+    expect(existsSync(markerPath(stateDir, 200))).toBe(false);
+  });
+
+  it("empty {} — clears markers (equivalent to {all: true})", async () => {
+    writeState(stateDir, [
+      makeAssetState({ grantId: 100, pristineVersionId: 10, pristineHashes: { a: "b" } }),
+    ]);
+    seedPristineDir(pristineDir, 100);
+    await writeInFlightMarker(stateDir, {
+      grantId: 100,
+      stagingPath: "/s",
+      backupPath: null,
+      startedAt: "2026-04-18T00:00:00.000Z",
+    });
+
+    await cfx_reset_pristine({});
+    expect(existsSync(markerPath(stateDir, 100))).toBe(false);
   });
 });
