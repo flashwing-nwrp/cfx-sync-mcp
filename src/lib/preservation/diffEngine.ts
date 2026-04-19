@@ -91,12 +91,24 @@ export function computeDeployPlan(input: ComputeDeployPlanInput): DeployPlan {
   // these paths but the diff engine itself surfaces everything.
   const collisionPaths = collectCollisionPaths(caseCollisions);
   for (const p of collisionPaths) {
+    const group = caseCollisions.find((g) => g.paths.includes(p));
     rows.push(
-      buildBlockerRow(p, "CASE_COLLISION_DETECTED", blockerDetailForCollision(p, caseCollisions), {
-        pristineHashes,
-        liveHashes,
-        packHashes,
-      })
+      buildBlockerRow(
+        p,
+        "CASE_COLLISION_DETECTED",
+        blockerDetailForCollision(p, caseCollisions),
+        {
+          pristineHashes,
+          liveHashes,
+          packHashes,
+        },
+        group
+          ? {
+              lowerPath: group.lowerPath,
+              paths: [...group.paths].sort(),
+            }
+          : undefined
+      )
     );
   }
 
@@ -437,7 +449,8 @@ function buildBlockerRow(
     pristineHashes: Map<string, string>;
     liveHashes: Map<string, string>;
     packHashes: Map<string, string>;
-  }
+  },
+  collision?: { lowerPath: string; paths: string[] }
 ): PlanRow {
   const pristineSha = hashes.pristineHashes.get(path);
   const liveSha = hashes.liveHashes.get(path);
@@ -449,6 +462,7 @@ function buildBlockerRow(
     rowNumber,
     blockerCode: code,
     blockerDetail: detail,
+    ...(collision !== undefined ? { collision } : {}),
     ...(pristineSha !== undefined ? { pristineSha } : {}),
     ...(liveSha !== undefined ? { liveSha } : {}),
     ...(packSha !== undefined ? { packSha } : {}),

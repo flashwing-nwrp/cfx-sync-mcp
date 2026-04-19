@@ -74,6 +74,12 @@ export type BlockerCode =
  *                        still need downstream processing (merge-diff3,
  *                        staged-for-merge, take-live-at-*-path)
  *   - blockerCode/Detail: blocker
+ *   - collision:         blocker rows with `blockerCode === "CASE_COLLISION_DETECTED"`
+ *                        carry the full collision group (all colliding paths +
+ *                        the lowercased key) so Task 12 can construct a typed
+ *                        `CaseCollisionDetectedError` without regex-parsing
+ *                        `blockerDetail`. `blockerDetail` remains the
+ *                        human-readable string for logs/UI.
  *   - liveSha / pristineSha / packSha: populated whenever the respective side
  *                        has a hash for this path, useful for debug and for
  *                        Task 12's merge helpers.
@@ -96,6 +102,12 @@ export interface PlanRow {
   resolution?: ResolutionChoice;
   blockerCode?: BlockerCode;
   blockerDetail?: string;
+  /**
+   * Structured collision group for `CASE_COLLISION_DETECTED` blocker rows.
+   * All paths in the group (including `path` itself) are repo-relative,
+   * forward-slash, sorted ASCII-ascending. Absent on non-collision blockers.
+   */
+  collision?: { lowerPath: string; paths: string[] };
   liveSha?: string;
   pristineSha?: string;
   packSha?: string;

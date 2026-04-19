@@ -1,13 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   mkdtempSync,
   rmSync,
   writeFileSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   existsSync,
   statSync,
 } from "node:fs";
+import fsP from "node:fs/promises";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { applyPlan } from "../../../src/lib/preservation/applyPlan.js";
@@ -762,6 +764,204 @@ describe("applyPlan", () => {
       expect(
         existsSync(path.join(conflictDir, "my-grant", "f.lua.live"))
       ).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // tmp cleanup on rename failure (fixup item 1)
+  // -------------------------------------------------------------------------
+
+  describe("atomic write tmp cleanup on rename failure", () => {
+    it("atomicCopy (staged-for-merge .live sidecar): leaves no *.tmp-* orphan when rename throws", async () => {
+      writeFile(liveRoot, "config/server.lua", "USER-CONTENT");
+      writeFile(stagingRoot, "config/server.lua", "PACK-CONTENT");
+
+      // Patch fs.rename to fail on first invocation. The very first rename
+      // during staged-for-merge is the .live sidecar — which is what we want
+      // to verify the atomicCopy catch-cleanup path on.
+      const realRename = fsP.rename.bind(fsP);
+      const spy = vi.spyOn(fsP, "rename").mockImplementationOnce(async () => {
+        const e = new Error("simulated EACCES") as NodeJS.ErrnoException;
+        e.code = "EACCES";
+        throw e;
+      });
+
+      try {
+        await expect(
+          applyPlan({
+            plan: makePlan([
+              {
+                path: "config/server.lua",
+                decision: "conflict",
+                rowNumber: 4,
+                resolution: "staged-for-merge",
+                conflictOptions: ["staged-for-merge"],
+                liveSha: "l",
+                packSha: "k",
+              },
+            ]),
+            liveRoot,
+            stagingRoot,
+            conflictDir,
+            grantId,
+          })
+        ).rejects.toThrow(/EACCES/);
+      } finally {
+        spy.mockRestore();
+        // Sanity: real rename still works after restore.
+        void realRename;
+      }
+
+      // The .live sidecar should not exist (rename failed).
+      const sidecarDir = path.join(conflictDir, String(grantId), "config");
+      const liveSidecar = path.join(sidecarDir, "server.lua.live");
+      expect(existsSync(liveSidecar)).toBe(false);
+
+      // No orphaned `.tmp-*` files anywhere in the sidecar directory.
+      if (existsSync(sidecarDir)) {
+        const entries = readdirSync(sidecarDir);
+        const orphans = entries.filter((n) => /\.tmp-/.test(n));
+        expect(orphans).toEqual([]);
+      }
+    });
+
+    it("atomicWrite (empty .live sidecar when live missing): leaves no *.tmp-* orphan on rename failure", async () => {
+      // No live file at this path, so staged-for-merge takes the atomicWrite
+      // branch for the .live sidecar.
+      writeFile(stagingRoot, "config/orphan.lua", "PACK-CONTENT");
+
+      const spy = vi.spyOn(fsP, "rename").mockImplementationOnce(async () => {
+        const e = new Error("simulated ENOSPC") as NodeJS.ErrnoException;
+        e.code = "ENOSPC";
+        throw e;
+      });
+
+      try {
+        await expect(
+          applyPlan({
+            plan: makePlan([
+              {
+                path: "config/orphan.lua",
+                decision: "conflict",
+                rowNumber: 4,
+                resolution: "staged-for-merge",
+                conflictOptions: ["staged-for-merge"],
+                packSha: "k",
+              },
+            ]),
+            liveRoot,
+            stagingRoot,
+            conflictDir,
+            grantId,
+          })
+        ).rejects.toThrow(/ENOSPC/);
+      } finally {
+        spy.mockRestore();
+      }
+
+      const sidecarDir = path.join(conflictDir, String(grantId), "config");
+      if (existsSync(sidecarDir)) {
+        const entries = readdirSync(sidecarDir);
+        const orphans = entries.filter((n) => /\.tmp-/.test(n));
+        expect(orphans).toEqual([]);
+      }
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // structured collision field (fixup item 2)
+  // -------------------------------------------------------------------------
+
+  describe("blocker row collision field", () => {
+    it("CaseCollisionDetectedError.pathB comes from structured collision.paths, not blockerDetail regex", async () => {
+      try {
+        await applyPlan({
+          plan: makePlan([
+            {
+              path: "Config.lua",
+              decision: "blocker",
+              rowNumber: 9,
+              blockerCode: "CASE_COLLISION_DETECTED",
+              // Intentionally garbage detail — if applyPlan were still parsing
+              // blockerDetail instead of the structured field, it would
+              // extract an empty or wrong pathB.
+              blockerDetail: "!!!malformed!!! does not mention the other path",
+              collision: {
+                lowerPath: "config.lua",
+                paths: ["Config.lua", "config.lua"],
+              },
+            },
+          ]),
+          liveRoot,
+          stagingRoot,
+          conflictDir,
+          grantId,
+        });
+        throw new Error("expected throw");
+      } catch (err) {
+        expect(err).toBeInstanceOf(CaseCollisionDetectedError);
+        const e = err as CaseCollisionDetectedError;
+        expect(e.pathA).toBe("Config.lua");
+        expect(e.pathB).toBe("config.lua");
+      }
+    });
+
+    it("falls back to blockerDetail regex when collision field absent (legacy/hand-built plans)", async () => {
+      try {
+        await applyPlan({
+          plan: makePlan([
+            {
+              path: "A.lua",
+              decision: "blocker",
+              rowNumber: 9,
+              blockerCode: "CASE_COLLISION_DETECTED",
+              blockerDetail:
+                "case collision: A.lua collides with a.lua (lowercased to a.lua)",
+              // no `collision` field — simulates pre-fixup hand-built plan
+            },
+          ]),
+          liveRoot,
+          stagingRoot,
+          conflictDir,
+          grantId,
+        });
+        throw new Error("expected throw");
+      } catch (err) {
+        expect(err).toBeInstanceOf(CaseCollisionDetectedError);
+        expect((err as CaseCollisionDetectedError).pathB).toBe("a.lua");
+      }
+    });
+
+    it("multi-path collision group picks the first 'other' path deterministically", async () => {
+      try {
+        await applyPlan({
+          plan: makePlan([
+            {
+              path: "B.lua",
+              decision: "blocker",
+              rowNumber: 9,
+              blockerCode: "CASE_COLLISION_DETECTED",
+              blockerDetail: "(whatever)",
+              collision: {
+                lowerPath: "b.lua",
+                paths: ["A.lua", "B.lua", "b.lua"],
+              },
+            },
+          ]),
+          liveRoot,
+          stagingRoot,
+          conflictDir,
+          grantId,
+        });
+        throw new Error("expected throw");
+      } catch (err) {
+        expect(err).toBeInstanceOf(CaseCollisionDetectedError);
+        const e = err as CaseCollisionDetectedError;
+        expect(e.pathA).toBe("B.lua");
+        // `Array.find` returns the first non-self path; paths are sorted in
+        // diffEngine before attaching, so the answer is stable.
+        expect(e.pathB).toBe("A.lua");
+      }
     });
   });
 });

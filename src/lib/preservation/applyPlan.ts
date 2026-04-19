@@ -78,11 +78,10 @@ export async function applyPlan(opts: ApplyPlanOpts): Promise<void> {
   for (const row of plan.rows) {
     if (row.decision !== "blocker") continue;
     if (row.blockerCode === "CASE_COLLISION_DETECTED") {
-      // blockerDetail format from diffEngine: "case collision: A collides
-      // with B (lowercased to ...)" — extract the two paths as best we can,
-      // but fallback to the row path alone is fine; the error just needs to
-      // identify the offender.
-      throw new CaseCollisionDetectedError(row.path, extractOtherPath(row));
+      // Prefer the structured `collision` field (set by diffEngine). Fall
+      // back to a best-effort regex parse of `blockerDetail` only for
+      // hand-built plans (tests, external callers) that don't populate it.
+      throw new CaseCollisionDetectedError(row.path, otherCollidingPath(row));
     }
     if (row.blockerCode === "ENCRYPTED_TAMPER_DETECTED") {
       throw new EncryptedTamperDetectedError(row.path);
@@ -351,19 +350,60 @@ async function fileExists(abs: string): Promise<boolean> {
 }
 
 async function atomicCopy(src: string, dst: string): Promise<void> {
-  const tmp = `${dst}.tmp-${process.pid}-${Date.now()}`;
-  await fs.copyFile(src, tmp);
-  await fs.rename(tmp, dst);
+  const tmp = tmpName(dst);
+  try {
+    await fs.copyFile(src, tmp);
+    await fs.rename(tmp, dst);
+  } catch (err) {
+    // Clean up the tmp file so orphans don't accumulate under the conflict
+    // dir. Rename failure can come from EACCES / ENOSPC / EXDEV / parent-dir
+    // disappearing mid-flight. Swallow cleanup errors — the original is what
+    // the caller needs to see.
+    await fs.rm(tmp, { force: true }).catch(() => {});
+    throw err;
+  }
 }
 
 async function atomicWrite(dst: string, content: string): Promise<void> {
-  const tmp = `${dst}.tmp-${process.pid}-${Date.now()}`;
-  await fs.writeFile(tmp, content);
-  await fs.rename(tmp, dst);
+  const tmp = tmpName(dst);
+  try {
+    await fs.writeFile(tmp, content);
+    await fs.rename(tmp, dst);
+  } catch (err) {
+    await fs.rm(tmp, { force: true }).catch(() => {});
+    throw err;
+  }
 }
 
-/** Best-effort: pull the second offender out of a CASE_COLLISION detail string. */
-function extractOtherPath(row: PlanRow): string {
+/**
+ * Unique tmp filename for atomic write-then-rename. Includes a random
+ * suffix so two fast-succeeding writes to the same dst can't collide.
+ */
+function tmpName(dst: string): string {
+  const rand = Math.random().toString(36).slice(2, 10);
+  return `${dst}.tmp-${process.pid}-${Date.now()}-${rand}`;
+}
+
+/**
+ * Resolve the "other path" for CaseCollisionDetectedError construction.
+ *
+ * Prefers the structured `row.collision` field (populated by diffEngine).
+ * Falls back to regex-parsing `row.blockerDetail` only when the structured
+ * field is absent — this keeps hand-built plans (e.g. fixtures in tests
+ * predating the structured field) from crashing, while the production path
+ * never touches the regex.
+ */
+function otherCollidingPath(row: PlanRow): string {
+  if (row.collision?.paths && row.collision.paths.length > 0) {
+    const other = row.collision.paths.find((p) => p !== row.path);
+    if (other !== undefined) return other;
+    // Single-path group (degenerate) — fall through to detail fallback.
+  }
+  return extractOtherPathFromDetail(row);
+}
+
+/** Legacy fallback: pull the second offender out of a CASE_COLLISION detail string. */
+function extractOtherPathFromDetail(row: PlanRow): string {
   const d = row.blockerDetail ?? "";
   // diffEngine emits: "case collision: A collides with B, C (lowercased ...)"
   const m = d.match(/collides with ([^(]+?)(?:\s*\(lowercased|$)/);

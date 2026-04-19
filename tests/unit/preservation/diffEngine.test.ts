@@ -250,6 +250,13 @@ describe("computeDeployPlan — row 9 (case collision blocker)", () => {
       expect(row.rowNumber).toBe(9);
       expect(row.blockerCode).toBe("CASE_COLLISION_DETECTED");
       expect(row.blockerDetail).toContain("case collision");
+      // Structured collision field is populated for Task 12 applyPlan —
+      // avoids regex-parsing blockerDetail to reconstruct the group.
+      expect(row.collision).toBeDefined();
+      expect(row.collision?.lowerPath).toBe("configs/server.lua");
+      expect(row.collision?.paths).toEqual(
+        ["Configs/server.lua", "configs/server.lua"].sort()
+      );
     }
     const paths = plan.blockers.map((r) => r.path).sort();
     expect(paths).toEqual(["Configs/server.lua", "configs/server.lua"]);
