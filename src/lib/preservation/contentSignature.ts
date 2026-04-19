@@ -22,27 +22,33 @@
  *   - pure structural lines (`}`, `},`, `end`) are excluded from both
  *     numerator and denominator so pretty-printed configs aren't punished.
  *
- * Weights are prototype values. A separate Task 0 calibration pass has run
- * against a labeled FLRP corpus and settled on LAYER_1_THRESHOLD = 0.6 —
- * but Task 0 used a different (simpler) scorer, so we keep 0.70 here as
- * the conservative placeholder until our scorer is re-calibrated against
- * the same corpus. See tests/fixtures/calibration/ for the labeled data.
+ * Weights were prototype-tuned in Task 10. A reconcile-pass calibration
+ * (Apr 2026) re-ran the 50-file labeled FLRP corpus through THIS scorer
+ * and picked LAYER_1_THRESHOLD = 0.60 based on the production-realistic
+ * confusion matrix (data/** path-excluded). See tests/fixtures/calibration/
+ * for the corpus + results, and Appendix A-bis in the preservation design
+ * spec for the threshold-choice narrative.
  */
 
 import { readFile } from "node:fs/promises";
 
-// ----- Tunable constants (re-calibrate against labeled corpus before ship) --
+// ----- Tunable constants (calibrated against labeled FLRP corpus) ----------
 
 /**
  * Score ≥ LAYER_1_THRESHOLD → treat as config-like when the path doesn't match
  * a standard config pattern.
  *
- * PLACEHOLDER: 0.70 per the Task 10 spec. Task 0 already landed a calibrated
- * value of 0.6 for a *different* scorer (scripts/run-calibration.ts). Before
- * Phase 1.5 ships, re-run the calibration harness against THIS scorer and
- * update this constant.
+ * CALIBRATED: 0.60 (Apr 2026 reconcile pass). On the production-realistic
+ * corpus (data/** path-excluded, 25 files: 13 config + 12 logic), this
+ * scorer produces precision=1.000 at every threshold 0.5..0.8 (no logic
+ * file scores above 0.06 — huge separation). Recall peaks at 0.846 for
+ * thresholds ≤ 0.60, drops to 0.769 at 0.70 and 0.615 at 0.80. We pick
+ * 0.60: maximizes F1 (0.917), keeps perfect precision, and favors
+ * false-negatives over false-positives per the Layer-1 advisory contract.
+ *
+ * See `tests/fixtures/calibration/results.md` + spec Appendix A-bis.
  */
-export const LAYER_1_THRESHOLD = 0.7;
+export const LAYER_1_THRESHOLD = 0.6;
 
 const WEIGHTS = {
   tableLine: 1.0, // line opens a table literal

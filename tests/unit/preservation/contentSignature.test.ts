@@ -16,8 +16,8 @@ describe("contentSignature", () => {
       expect(LAYER_1_THRESHOLD).toBeLessThanOrEqual(1);
     });
 
-    it("has the placeholder prototype value 0.70 (Task 0 will tune)", () => {
-      expect(LAYER_1_THRESHOLD).toBe(0.7);
+    it("has the calibrated value 0.60 (reconcile pass against this scorer)", () => {
+      expect(LAYER_1_THRESHOLD).toBe(0.6);
     });
   });
 
