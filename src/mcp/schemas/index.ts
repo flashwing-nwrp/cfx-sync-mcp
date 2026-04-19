@@ -139,6 +139,18 @@ export const ScanConfigsOutput = z.object({
   })).optional(),
 }).strict();
 
+export const ResetPristineInput = z.object({
+  grantId: z.number().int().positive().optional(),
+  all: z.boolean().optional(),
+}).strict().refine(
+  (v) => !(v.grantId !== undefined && v.all === true),
+  { message: "Pass grantId OR all, not both" }
+);
+export const ResetPristineOutput = z.object({
+  removed: z.array(z.number()),
+  orphansGced: z.array(z.number()),
+}).strict();
+
 export const RollbackInput = z.object({
   grantId: z.number().optional(),
   slug: z.string().optional(),

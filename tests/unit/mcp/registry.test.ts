@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { TOOLS, toolNames } from "../../../src/mcp/tools/index.js";
 
 describe("MCP tool registry", () => {
-  it("exports exactly 12 tools", () => {
-    expect(toolNames().length).toBe(12);
+  it("exports exactly 13 tools", () => {
+    expect(toolNames().length).toBe(13);
   });
 
   it("contains all expected tools", () => {
@@ -11,8 +11,8 @@ describe("MCP tool registry", () => {
       [
         "cfx_approve_mapping", "cfx_check_updates", "cfx_deploy_asset",
         "cfx_discover", "cfx_download_asset", "cfx_list_grants",
-        "cfx_login", "cfx_logout", "cfx_rollback", "cfx_scan_configs",
-        "cfx_status", "cfx_sync_all",
+        "cfx_login", "cfx_logout", "cfx_reset_pristine", "cfx_rollback",
+        "cfx_scan_configs", "cfx_status", "cfx_sync_all",
       ]
     );
   });
