@@ -75,7 +75,7 @@ function migrateV2ToV3(v2: MappingFileV2): MappingFileV3 {
   return { version: 3, approvedAt: v2.approvedAt, entries: v2.entries as Record<string, MappingEntryV3>, newInstalls: v2.newInstalls, orphaned: v2.orphaned };
 }
 
-async function migrateV3ToV4(v3: MappingFileV3, _stateDir: string): Promise<MappingFile> {
+async function migrateV3ToV4(v3: MappingFileV3): Promise<MappingFile> {
   const entries: Record<string, MappingEntry> = {};
   for (const [k, v] of Object.entries(v3.entries)) {
     const status: EntryStatus = v.disabled === true ? "disabled" : "active";
@@ -97,11 +97,9 @@ async function migrateV3ToV4(v3: MappingFileV3, _stateDir: string): Promise<Mapp
 
 export class Mapping {
   private file: string;
-  private stateDir: string;
   private data: MappingFile | null = null;
 
   constructor(stateDir: string) {
-    this.stateDir = stateDir;
     this.file = path.join(stateDir, "cfx-sync-map.json");
   }
 
@@ -114,9 +112,9 @@ export class Mapping {
         throw new StateSchemaTooNewError(onDisk, MAPPING_CODE_VERSION, MAPPING_REQUIRED_BINARY);
       }
       if (isV4(parsed)) this.data = parsed;
-      else if (isV3(parsed)) this.data = await migrateV3ToV4(parsed, this.stateDir);
-      else if (isV2(parsed)) this.data = await migrateV3ToV4(migrateV2ToV3(parsed), this.stateDir);
-      else if (isV1(parsed)) this.data = await migrateV3ToV4(migrateV2ToV3(migrateV1ToV2(parsed)), this.stateDir);
+      else if (isV3(parsed)) this.data = await migrateV3ToV4(parsed);
+      else if (isV2(parsed)) this.data = await migrateV3ToV4(migrateV2ToV3(parsed));
+      else if (isV1(parsed)) this.data = await migrateV3ToV4(migrateV2ToV3(migrateV1ToV2(parsed)));
       else throw new Error(`Unknown cfx-sync-map.json version: ${String(onDisk)} (file: ${this.file})`);
     } catch (e) {
       if ((e as NodeJS.ErrnoException)?.code === "ENOENT") { this.data = null; return; }
