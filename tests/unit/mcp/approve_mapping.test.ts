@@ -46,7 +46,7 @@ describe("cfx_approve_mapping — narrowed to confidence===1.0", () => {
     };
 
     const out = await cfx_approve_mapping({ proposed });
-    expect(out.entriesCount).toBe(1);          // only tier 1 / confidence===1.0
+    expect(out.entriesCount).toBe(1);          // only tier 1+2 count as auto-approved
     expect(out.needsResolution.fuzzy).toBe(1);
     expect(out.needsResolution.newInstalls).toBe(2);
     expect(out.nextStep).toBe("call cfx_list_unresolved");
@@ -54,11 +54,39 @@ describe("cfx_approve_mapping — narrowed to confidence===1.0", () => {
     const raw = JSON.parse(
       await fs.readFile(path.join(stateDir, "cfx-sync-map.json"), "utf8")
     );
-    expect(Object.keys(raw.entries)).toEqual(["1"]);
+    // Both tier 1 and tier 4 land in entries; tier 4 is provisional (reviewedByUser: false).
+    expect(Object.keys(raw.entries).sort()).toEqual(["1", "2"]);
     expect(raw.entries["1"].reviewedByUser).toBe(true);
     expect(raw.entries["1"].status).toBe("active");
-    // The tier-4 fuzzy entry + newInstalls stay in the out-of-band queue for the wizard.
+    expect(raw.entries["2"].reviewedByUser).toBe(false);   // provisional — surfaces in suspicious bucket
+    expect(raw.entries["2"].status).toBe("active");
+    expect(raw.entries["2"].discoveredTier).toBe(4);
+    // newInstalls stay in the out-of-band queue for the wizard.
     expect(raw.newInstalls).toEqual(expect.arrayContaining([777, 888]));
+  });
+
+  it("logs only tier 1+2 as auto-approve; tier 3+4 entries do NOT appear in resolution log", async () => {
+    const { cfx_approve_mapping } = await import("../../../src/mcp/tools/approve_mapping.js");
+
+    const proposed = {
+      version: 1 as const,
+      generatedAt: new Date().toISOString(),
+      entries: {
+        "10": { slug: "t1", target: "/tmp/10", disabled: false, assetName: "Auto",
+                discoveredTier: 1, discoveredConfidence: 1.0 },
+        "20": { slug: "t4", target: "/tmp/20", disabled: false, assetName: "Fuzzy",
+                discoveredTier: 4, discoveredConfidence: 0.82 },
+      },
+      newInstalls: [],
+      orphaned: [],
+      caveats: [],
+    };
+
+    await cfx_approve_mapping({ proposed });
+    const logRaw = await fs.readFile(path.join(stateDir, "resolution-log.jsonl"), "utf8");
+    const lines = logRaw.trim().split("\n").filter(Boolean).map((l) => JSON.parse(l));
+    const autoApproveGrantIds = lines.filter((l) => l.action === "auto-approve").map((l) => l.grantId);
+    expect(autoApproveGrantIds).toEqual([10]);  // only tier 1+2 logs
   });
 
   it("returns no nextStep when all entries are confidence===1.0 and no newInstalls", async () => {
