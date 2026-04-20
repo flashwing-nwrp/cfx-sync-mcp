@@ -345,3 +345,46 @@ export const RollbackOutput = z.object({
    */
   pristineRotatedTo: z.number().nullable(),
 });
+
+// ---------------------------------------------------------------------------
+// Phase 1.7 — cfx_list_unresolved (Task 7).
+//
+// Lists all mapping entries needing operator input: tier 3+4 fuzzy matches,
+// new-installs, reactivated, name-collisions, plus pre-existing suspicious
+// commits (reviewedByUser=false). Non-destructive query.
+// ---------------------------------------------------------------------------
+
+export const ListUnresolvedInput = z.object({});
+export const ListUnresolvedOutput = z.object({
+  unresolved: z.array(z.object({
+    grantId: z.number(),
+    assetName: z.string(),
+    author: z.string().nullable(),
+    proposed: z.object({
+      target: z.string(),
+      tier: z.number(),
+      confidence: z.number(),
+    }).nullable(),
+    alternatives: z.array(z.object({
+      target: z.string(),
+      tier: z.number(),
+      confidence: z.number(),
+      authorPrefixBoosted: z.boolean(),
+    })),
+    reason: z.enum(["fuzzy-match", "new-install", "reactivated", "name-collision"]),
+    collidesWith: z.object({ grantId: z.number(), target: z.string() }).optional(),
+  })),
+  suspicious: z.array(z.object({
+    grantId: z.number(),
+    assetName: z.string(),
+    currentTarget: z.string(),
+    tierAtCommit: z.number(),
+    confidenceAtCommit: z.number(),
+  })),
+  summary: z.object({
+    unresolvedCount: z.number(),
+    suspiciousCount: z.number(),
+    autoApprovedCount: z.number(),
+  }),
+  notice: z.string().optional(),
+});

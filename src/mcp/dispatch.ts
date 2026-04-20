@@ -2,6 +2,7 @@ import { cfx_login } from "./tools/login.js";
 import { cfx_logout } from "./tools/logout.js";
 import { cfx_status } from "./tools/status.js";
 import { cfx_list_grants } from "./tools/list_grants.js";
+import { cfx_list_unresolved } from "./tools/list_unresolved.js";
 import { cfx_check_updates } from "./tools/check_updates.js";
 import { cfx_scan_updates } from "./tools/scan_updates.js";
 import { cfx_discover } from "./tools/discover.js";
@@ -29,6 +30,7 @@ const HANDLERS: Record<string, Handler> = {
   cfx_logout:          wrap(cfx_logout),
   cfx_status:          wrap(cfx_status),
   cfx_list_grants:     wrap(cfx_list_grants),
+  cfx_list_unresolved: wrap(cfx_list_unresolved),
   cfx_check_updates:   wrap(cfx_check_updates),
   cfx_scan_updates:    wrap(cfx_scan_updates),
   cfx_discover:        wrap(cfx_discover),
