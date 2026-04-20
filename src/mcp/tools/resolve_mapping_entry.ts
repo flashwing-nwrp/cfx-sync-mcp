@@ -164,6 +164,14 @@ export async function cfx_resolve_mapping_entry(
     // pick — select an alternative from the re-ranked candidate list.
     // -----------------------------------------------------------------------
     if (input.action === "pick") {
+      // Remap-over guard: if this entry was already reviewed, require confirmation.
+      if (currentEntry?.reviewedByUser === true) {
+        const expected = currentEntry.target ? path.basename(currentEntry.target) : "";
+        if (!input.allowRemapOver || input.allowRemapOver.toLowerCase() !== expected.toLowerCase()) {
+          return fail("remap-requires-confirmation", { expectedBasename: expected });
+        }
+      }
+
       if (input.pickIndex === undefined) return fail("pick-index-out-of-range");
       if (!grant) return fail("grantId-not-owned");
 
@@ -191,14 +199,6 @@ export async function cfx_resolve_mapping_entry(
       );
       if (input.pickIndex >= alts.length) return fail("pick-index-out-of-range");
       const chosen = alts[input.pickIndex]!;
-
-      // Remap-over guard: if this entry was already reviewed, require confirmation.
-      if (currentEntry?.reviewedByUser === true) {
-        const expected = currentEntry.target ? path.basename(currentEntry.target) : "";
-        if (!input.allowRemapOver || input.allowRemapOver.toLowerCase() !== expected.toLowerCase()) {
-          return fail("remap-requires-confirmation", { expectedBasename: expected });
-        }
-      }
 
       const isRemap = currentEntry?.reviewedByUser === true;
       const slug =

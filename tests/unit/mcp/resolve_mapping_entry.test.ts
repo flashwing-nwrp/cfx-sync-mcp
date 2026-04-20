@@ -294,3 +294,104 @@ describe("cfx_resolve_mapping_entry — reactivate", () => {
     expect(out.error).toBe("reactivate-invalid-state");
   });
 });
+
+describe("cfx_resolve_mapping_entry — allowRemapOver guard + field carry-over", () => {
+  let stateDir: string;
+  let resourcesDir: string;
+
+  beforeEach(async () => {
+    stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "rme-state-"));
+    resourcesDir = await fs.mkdtemp(path.join(os.tmpdir(), "rme-res-"));
+
+    process.env.CFX_STATE_DIR = stateDir;
+    process.env.CFX_SERVER_RESOURCES = resourcesDir;
+    process.env.CFX_CACHE_DIR = path.join(stateDir, "cache");
+    process.env.CFX_STAGING_DIR = path.join(stateDir, "staging");
+    process.env.CFX_BACKUP_DIR = path.join(stateDir, "backups");
+    process.env.CFX_COOKIE_FILE = path.join(stateDir, ".cookies.json");
+
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
+      grants: [{ grant_id: 50, asset: { name: "FuzzyAsset", author: "BroFX" } }] as any,
+      page: 1,
+      page_count: 1,
+      item_count: 1,
+    } as any);
+  });
+
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    await fs.rm(stateDir, { recursive: true, force: true });
+    await fs.rm(resourcesDir, { recursive: true, force: true });
+  });
+
+  /**
+   * Seeds a reviewed entry with preservation settings and fork intent.
+   * Used to test remap rejection/approval and field carry-over logic.
+   */
+  async function seedReviewedEntry(extras: Partial<any> = {}): Promise<void> {
+    const target = path.join(resourcesDir, "brofx_church");
+    await fs.mkdir(target, { recursive: true });
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({
+      "50": {
+        slug: "fuzzy",
+        target,
+        assetName: "FuzzyAsset",
+        discoveredTier: 4,
+        discoveredConfidence: 0.82,
+        preservePaths: ["config/config.lua"],
+        preservePathsSource: "user",
+        ignoreUpstreamUpdates: true,
+        ignoreUpstreamUpdatesReason: "local fork",
+        ignoreUpstreamUpdatesSetAt: "2026-04-01T00:00:00.000Z",
+        status: "active",
+        reviewedByUser: true,
+        ...extras,
+      },
+    });
+    await m.save();
+    await fs.mkdir(path.join(resourcesDir, "brofx_mansion_10_v2"), { recursive: true });
+  }
+
+  it("rejects pick without allowRemapOver when reviewedByUser=true", async () => {
+    await seedReviewedEntry();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({ grantId: 50, action: "pick", pickIndex: 0 });
+    expect(out.committed).toBe(false);
+    expect(out.error).toBe("remap-requires-confirmation");
+    expect(out.expectedBasename).toBe("brofx_church");
+  });
+
+  it("commits remap when allowRemapOver matches currentBasename (case-insensitive)", async () => {
+    await seedReviewedEntry();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 50,
+      action: "override",
+      overrideInput: "brofx_mansion_10_v2",
+      allowRemapOver: "BROFX_CHURCH",
+    });
+    expect(out.committed).toBe(true);
+    expect(out.entry!.target).toContain("brofx_mansion_10_v2");
+    // Field carry-over: preservePaths cleared, preservePathsSource cleared
+    expect(out.entry!.preservePaths).toBeNull();
+    expect(out.entry!.preservePathsSource).toBeNull();
+    // But ignoreUpstreamUpdates* triad is preserved
+    expect(out.entry!.ignoreUpstreamUpdates).toBe(true);
+    expect(out.entry!.ignoreUpstreamUpdatesReason).toBe("local fork");
+    expect(out.entry!.ignoreUpstreamUpdatesSetAt).toBe("2026-04-01T00:00:00.000Z");
+  });
+
+  it("rejects when allowRemapOver mismatches", async () => {
+    await seedReviewedEntry();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 50,
+      action: "pick",
+      pickIndex: 0,
+      allowRemapOver: "some_wrong_basename",
+    });
+    expect(out.committed).toBe(false);
+    expect(out.error).toBe("remap-requires-confirmation");
+  });
+});
