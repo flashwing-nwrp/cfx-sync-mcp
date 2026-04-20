@@ -65,6 +65,11 @@ export const ApproveMappingInput = z.object({
 export const ApproveMappingOutput = z.object({
   path: z.string(),
   entriesCount: z.number(),
+  needsResolution: z.object({
+    fuzzy: z.number(),
+    newInstalls: z.number(),
+  }),
+  nextStep: z.string().optional(),
 });
 
 export const DownloadAssetInput = z.object({
