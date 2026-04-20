@@ -24,10 +24,11 @@ export function proposeMapping(match: MatchGrantsResult, grants: Grant[]): Propo
     entries[String(m.grantId)] = {
       slug: slugify(g.asset.name),
       target: m.matchedPath,
-      disabled: false,
       assetName: g.asset.name,
       discoveredTier: m.matchTier,
       discoveredConfidence: m.confidence,
+      status: "active",
+      reviewedByUser: false,
     };
   }
   return {

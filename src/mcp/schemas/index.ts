@@ -50,9 +50,11 @@ export const DiscoverOutput = z.object({
   version: z.literal(1),
   generatedAt: z.string(),
   entries: z.record(z.object({
-    slug: z.string(), target: z.string(), disabled: z.boolean(),
+    slug: z.string(), target: z.string(),
     assetName: z.string(), discoveredTier: z.number(), discoveredConfidence: z.number(),
     notes: z.string().optional(),
+    status: z.enum(["active", "new-install", "disabled"]),
+    reviewedByUser: z.boolean(),
   })),
   newInstalls: z.array(z.number()),
   orphaned: z.array(z.string()),
