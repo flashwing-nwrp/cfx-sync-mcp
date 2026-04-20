@@ -6,6 +6,27 @@ Format roughly follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.4.0] - 2026-04-19 — Mapping Wizard
+
+### Breaking
+
+- `cfx_approve_mapping` now commits only `confidence === 1.0` entries (tier 1+2 exact/slug-normalized matches). Tier 3+4 fuzzy matches and `newInstalls` surface via the new `cfx_list_unresolved` tool for interactive resolution. Operators upgrading from v0.3.x will see fewer auto-commits; re-run `cfx_discover` + `cfx_approve_mapping` on any tree, then chain through `cfx_list_unresolved` + `cfx_resolve_mapping_entry` for the remainder.
+
+### Added
+
+- `cfx_list_unresolved` — non-destructive query returning the wizard queue (fuzzy + new-install + reactivated + name-collision + suspicious buckets).
+- `cfx_resolve_mapping_entry` — single-entry commit with actions `accept`, `pick`, `override` (fuzzy-confirmed), `skip`, `new-install`, `reactivate`. Remap over a reviewed entry requires `allowRemapOver: "<currentBasename>"` echo-back.
+- Mapping schema v4 (additive): `status: "active" | "new-install" | "disabled"` + `reviewedByUser: boolean`. Legacy `disabled: true` migrates to `status: "disabled"`; v4 writes omit the `disabled` field. v4 is strictly forward-only.
+- Author-prefix boost in candidate ranking (BroFX, Codesign, Apollo, quasarstore, ULC/Dawnstar, Prompt, Rcore, Molo, LondonStudios, AL-Developments).
+- `state/resolution-log.jsonl` — append-only audit log of wizard decisions (Phase 2 KB submission source material).
+- `Mapping.getActiveEntries()` helper — downstream consumers (deploy, rollback, scan_configs, scan_updates, preflight) switch to this filter to skip `new-install` + `disabled` entries cleanly.
+
+### Fixed
+
+- `cfx_deploy_asset` on an unresolved grant now rejects with a helpful operator-facing error pointing at `cfx_resolve_mapping_entry` (previously could crash on null target).
+
+---
+
 ## v0.3.0 — 2026-04-19
 
 Phase 1.6: update scanner. Merges portal signal with in-game server-log update notices, detects non-portal resources, and handles the fork case (local ahead of upstream) without hand-editing the mapping file.
