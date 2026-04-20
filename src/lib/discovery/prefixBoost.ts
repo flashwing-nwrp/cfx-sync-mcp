@@ -13,9 +13,10 @@ export interface BoostedCandidate extends BoostableCandidate {
 
 /**
  * Re-rank candidates so that prefix-matching entries appear first within each tier.
- * Within boosted items at the same tier: sort by confidence ascending.
- * Non-boosted items preserve original order.
- * Surfaces a `authorPrefixBoosted` flag on each candidate for caller display logic.
+ * Does NOT change tiers or confidences; only re-orders. Surfaces a
+ * `authorPrefixBoosted` flag on each candidate for caller display logic.
+ *
+ * Stable: original relative order is preserved within each (tier, boosted) bucket.
  */
 export function applyAuthorPrefixBoost(
   candidates: BoostableCandidate[],
@@ -27,8 +28,7 @@ export function applyAuthorPrefixBoost(
     const boosted = prefixes.some((p) => basename.startsWith(p));
     return { ...c, authorPrefixBoosted: boosted };
   });
-  // Sort: tier asc, then (boosted=true) ahead of (boosted=false).
-  // Within boosted group: confidence ascending. Non-boosted: preserve original order (stable).
+  // Stable sort: tier asc, then (boosted=true) ahead of (boosted=false), then original-index stable.
   return decorated
     .map((c, i) => ({ c, i }))
     .sort((a, b) => {
@@ -36,11 +36,6 @@ export function applyAuthorPrefixBoost(
       if (a.c.authorPrefixBoosted !== b.c.authorPrefixBoosted) {
         return a.c.authorPrefixBoosted ? -1 : 1;
       }
-      // Only sort by confidence within boosted group
-      if (a.c.authorPrefixBoosted && a.c.confidence !== b.c.confidence) {
-        return a.c.confidence - b.c.confidence;
-      }
-      // Preserve original order for non-boosted items
       return a.i - b.i;
     })
     .map(({ c }) => c);

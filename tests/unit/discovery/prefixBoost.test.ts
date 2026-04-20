@@ -3,9 +3,9 @@ import { applyAuthorPrefixBoost, type BoostableCandidate } from "../../../src/li
 
 describe("applyAuthorPrefixBoost", () => {
   const cands: BoostableCandidate[] = [
-    { target: "[maps]/brofx_church",       tier: 4, confidence: 0.82 },
-    { target: "[maps]/brofx_mansion_10_v2", tier: 4, confidence: 0.78 },
-    { target: "[maps]/unrelated_mlo",      tier: 4, confidence: 0.71 },
+    { target: "[maps]/brofx_mansion_10_v2", tier: 4, confidence: 0.84 },
+    { target: "[maps]/brofx_church",        tier: 4, confidence: 0.82 },
+    { target: "[maps]/unrelated_mlo",       tier: 4, confidence: 0.71 },
   ];
 
   it("moves prefix-matching alternatives ahead within the same tier", () => {
