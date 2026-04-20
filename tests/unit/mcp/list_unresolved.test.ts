@@ -1,10 +1,11 @@
 /**
  * Task 8 — cfx_list_unresolved query implementation tests.
  *
- * Three core cases:
+ * Four core cases:
  *  1. No approved mapping → notice returned, empty buckets.
  *  2. Suspicious bucket: active entries with discoveredTier >= 3 + reviewedByUser=false.
  *  3. Unresolved bucket: newInstalls surfaced with reason "new-install".
+ *  4. Name-collision: newInstall shares assetName with an active entry → reason "name-collision".
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
@@ -121,5 +122,73 @@ describe("cfx_list_unresolved", () => {
     expect(out.unresolved).toHaveLength(1);
     expect(out.unresolved[0]!.reason).toBe("new-install");
     expect(out.unresolved[0]!.proposed).toBeNull();
+  });
+
+  it("surfaces name-collision when a newInstall shares assetName with an active entry", async () => {
+    // Active entry "400" (AuthorA) is already committed; newInstall grant 500
+    // (AuthorB) has the same asset name — classic Cfx name-collision case.
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({
+      "400": {
+        slug: "dispatch",
+        target: path.join(resourcesDir, "dispatch_authorA"),
+        assetName: "dispatch",
+        discoveredTier: 1,
+        discoveredConfidence: 1.0,
+        status: "active",
+        reviewedByUser: true,
+      },
+    });
+    m.getFile().newInstalls = [500];
+    await m.save();
+
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
+      grants: [
+        {
+          grant_id: 400,
+          asset: {
+            id: 1,
+            name: "dispatch",
+            author: "AuthorA",
+            state: "active",
+            is_disabled: false,
+            disabled_reason: null,
+            versions: [],
+          },
+          transferable: false,
+          updated_since_last_download: false,
+          download_url: "",
+          received_at: "",
+          updated_at: "",
+        },
+        {
+          grant_id: 500,
+          asset: {
+            id: 2,
+            name: "dispatch",
+            author: "AuthorB",
+            state: "active",
+            is_disabled: false,
+            disabled_reason: null,
+            versions: [],
+          },
+          transferable: false,
+          updated_since_last_download: false,
+          download_url: "",
+          received_at: "",
+          updated_at: "",
+        },
+      ],
+      page: 1,
+      page_count: 1,
+      item_count: 2,
+    });
+
+    const { cfx_list_unresolved } = await import("../../../src/mcp/tools/list_unresolved.js");
+    const out = await cfx_list_unresolved({});
+    const collision = out.unresolved.find((u) => u.grantId === 500);
+    expect(collision).toBeDefined();
+    expect(collision!.reason).toBe("name-collision");
+    expect(collision!.collidesWith).toMatchObject({ grantId: 400 });
   });
 });

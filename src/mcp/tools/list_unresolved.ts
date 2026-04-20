@@ -27,10 +27,11 @@ export async function cfx_list_unresolved(
   }
 
   // Suspicious bucket: active entries committed at tier >= 3 with reviewedByUser=false.
-  const entries = mapping.entries();
+  // Use getActiveEntries() — matches the Task 2 convention and drops the inline status guard.
+  const activeEntries = mapping.getActiveEntries();
   const suspicious: z.infer<typeof ListUnresolvedOutput>["suspicious"] = [];
-  for (const [k, v] of Object.entries(entries)) {
-    if (v.status === "active" && v.discoveredTier >= 3 && v.reviewedByUser === false) {
+  for (const [k, v] of Object.entries(activeEntries)) {
+    if (v.discoveredTier >= 3 && v.reviewedByUser === false) {
       suspicious.push({
         grantId: Number(k),
         assetName: v.assetName,
@@ -41,6 +42,11 @@ export async function cfx_list_unresolved(
     }
   }
 
+  // Keep `entries` (ALL entries including new-install/disabled) for the
+  // name-collision scan inner loop + the reactivated loop — both need to see
+  // the full mapping. Status filtering is done inline in those loops.
+  const entries = mapping.entries();
+
   // Unresolved bucket: newInstalls + reactivated new-install entries + name-collisions.
   const mappingFile = mapping.getFile();
   const newInstallIds = new Set(mappingFile.newInstalls ?? []);
@@ -49,16 +55,28 @@ export async function cfx_list_unresolved(
   const jar = new CookieJar();
   try {
     await loadCookiesFromFile(cfg.cookieFile, jar);
-  } catch {
-    // Cookie file missing or invalid — proceed without auth; portal fetch will fail below.
+  } catch (err) {
+    // Cookie file missing or invalid — proceed without auth; portal fetch will
+    // also fail below and log its own warning. We still want this one because
+    // a corrupt cookie file is a distinct operator-actionable failure mode.
+    console.warn(
+      "[cfx_list_unresolved] cookie load failed:",
+      (err as Error).message
+    );
   }
   const client = new PortalApiClient({ apiBase: cfg.apiBase, cookieJar: jar });
   let grants: Array<{ grant_id: number; asset: { name: string; author: string } }> = [];
   try {
     const r = await client.listGrants({});
     grants = r.grants as Array<{ grant_id: number; asset: { name: string; author: string } }>;
-  } catch {
-    // Portal unreachable — unresolved bucket may be incomplete; surface a notice below.
+  } catch (err) {
+    // Portal unreachable — unresolved bucket will be incomplete. This is the
+    // most dangerous silent catch: without the warn, the operator can't tell
+    // "nothing to resolve" from "portal down, retry later".
+    console.warn(
+      "[cfx_list_unresolved] portal listGrants failed:",
+      (err as Error).message
+    );
   }
   const grantById = new Map(grants.map((g) => [g.grant_id, g]));
 
@@ -67,8 +85,12 @@ export async function cfx_list_unresolved(
   try {
     const layout = detectLayout(cfg.serverResources);
     resources = scanResources(cfg.serverResources, layout);
-  } catch {
+  } catch (err) {
     // Directory has unusual layout or is empty — proceed with empty resources.
+    console.warn(
+      "[cfx_list_unresolved] resource scan failed:",
+      (err as Error).message
+    );
   }
 
   const unresolved: z.infer<typeof ListUnresolvedOutput>["unresolved"] = [];
