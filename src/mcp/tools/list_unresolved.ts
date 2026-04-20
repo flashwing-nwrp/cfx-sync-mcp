@@ -10,6 +10,14 @@ import { scanResources, type ResourceMeta } from "../../lib/discovery/scanResour
 import { matchGrants } from "../../lib/discovery/matchGrants.js";
 import { applyAuthorPrefixBoost } from "../../lib/discovery/prefixBoost.js";
 
+/**
+ * Non-destructive query of the wizard queue. Does NOT acquire StateLock —
+ * concurrent `cfx_resolve_mapping_entry` calls may commit mid-read, making
+ * returned counts and proposed targets occasionally stale by one entry. This
+ * is an intentional tradeoff: wizard resolution is interactive and serialized
+ * through the operator's conversation, not parallel. If automated-polling use
+ * cases emerge, add an advisory lock-snapshot pattern.
+ */
 export async function cfx_list_unresolved(
   _input: z.infer<typeof ListUnresolvedInput>
 ): Promise<z.infer<typeof ListUnresolvedOutput>> {

@@ -14,7 +14,7 @@ Format roughly follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- `cfx_list_unresolved` — non-destructive query returning the wizard queue (fuzzy + new-install + reactivated + name-collision + suspicious buckets).
+- `cfx_list_unresolved` — non-destructive query returning the wizard queue. Two output buckets: `unresolved` (new-install grants, reactivated new-installs whose resource now exists on disk, and name-collisions between same-name grants by different authors) and `suspicious` (active entries committed at tier 3+4 with `reviewedByUser: false`). Tier 3+4 fuzzy matches that fail auto-approve are NOT surfaced here — re-run `cfx_discover` to see them.
 - `cfx_resolve_mapping_entry` — single-entry commit with actions `accept`, `pick`, `override` (fuzzy-confirmed), `skip`, `new-install`, `reactivate`. Remap over a reviewed entry requires `allowRemapOver: "<currentBasename>"` echo-back.
 - Mapping schema v4 (additive): `status: "active" | "new-install" | "disabled"` + `reviewedByUser: boolean`. Legacy `disabled: true` migrates to `status: "disabled"`; v4 writes omit the `disabled` field. v4 is strictly forward-only.
 - Author-prefix boost in candidate ranking (BroFX, Codesign, Apollo, quasarstore, ULC/Dawnstar, Prompt, Rcore, Molo, LondonStudios, AL-Developments).
