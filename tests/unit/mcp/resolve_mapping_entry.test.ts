@@ -123,3 +123,112 @@ describe("cfx_resolve_mapping_entry — basic actions", () => {
     expect(out.error).toBe("unexpected-field");
   });
 });
+
+describe("cfx_resolve_mapping_entry — override", () => {
+  // Reuse beforeEach from the basic-actions block.
+  let stateDir: string;
+  let resourcesDir: string;
+
+  beforeEach(async () => {
+    stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "rme-state-"));
+    resourcesDir = await fs.mkdtemp(path.join(os.tmpdir(), "rme-res-"));
+
+    // Set up env vars so loadConfig() works without throwing.
+    process.env.CFX_STATE_DIR = stateDir;
+    process.env.CFX_SERVER_RESOURCES = resourcesDir;
+    process.env.CFX_CACHE_DIR = path.join(stateDir, "cache");
+    process.env.CFX_STAGING_DIR = path.join(stateDir, "staging");
+    process.env.CFX_BACKUP_DIR = path.join(stateDir, "backups");
+    process.env.CFX_COOKIE_FILE = path.join(stateDir, ".cookies.json");
+
+    // Default portal stub — returns the FuzzyAsset grant.
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
+      grants: [{ grant_id: 50, asset: { name: "FuzzyAsset", author: "BroFX" } }] as any,
+      page: 1,
+      page_count: 1,
+      item_count: 1,
+    } as any);
+  });
+
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    await fs.rm(stateDir, { recursive: true, force: true });
+    await fs.rm(resourcesDir, { recursive: true, force: true });
+  });
+
+  it("commits with overrideResolved when input has exactly one ≥0.9 match", async () => {
+    await fs.mkdir(path.join(resourcesDir, "brofx_mansion_10_v2"), { recursive: true });
+    await fs.mkdir(path.join(resourcesDir, "unrelated_one"), { recursive: true });
+    await fs.mkdir(path.join(resourcesDir, "unrelated_two"), { recursive: true });
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({});
+    m.getFile().newInstalls = [50];
+    await m.save();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 50, action: "override", overrideInput: "brofx_mansion_10_v2",
+    });
+    expect(out.committed).toBe(true);
+    expect(out.overrideResolved).toBeDefined();
+    expect(out.entry!.target).toContain("brofx_mansion_10_v2");
+  });
+
+  it("returns overrideAmbiguous when input matches 0 folders ≥0.9", async () => {
+    await fs.mkdir(path.join(resourcesDir, "aaa"), { recursive: true });
+    await fs.mkdir(path.join(resourcesDir, "bbb"), { recursive: true });
+    const m = new Mapping(stateDir); m.approveFromProposed({});
+    m.getFile().newInstalls = [50]; await m.save();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 50, action: "override", overrideInput: "zzz_nowhere_near",
+    });
+    expect(out.committed).toBe(false);
+    expect(out.overrideAmbiguous).toBeDefined();
+    expect(out.overrideAmbiguous!.candidates.length).toBeGreaterThan(0);
+  });
+
+  it("returns overrideAmbiguous when input matches 2+ folders ≥0.9", async () => {
+    await fs.mkdir(path.join(resourcesDir, "mansion_01"), { recursive: true });
+    await fs.mkdir(path.join(resourcesDir, "mansion_02"), { recursive: true });
+    await fs.mkdir(path.join(resourcesDir, "mansion_03"), { recursive: true });
+    const m = new Mapping(stateDir); m.approveFromProposed({});
+    m.getFile().newInstalls = [50]; await m.save();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 50, action: "override", overrideInput: "mansion",
+    });
+    expect(out.committed).toBe(false);
+    expect(out.overrideAmbiguous).toBeDefined();
+    expect(out.overrideAmbiguous!.candidates.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("commits with filesystem-canonical casing even when overrideInput is different case", async () => {
+    await fs.mkdir(path.join(resourcesDir, "BroFX_Mansion_10"), { recursive: true });
+    const m = new Mapping(stateDir); m.approveFromProposed({});
+    m.getFile().newInstalls = [50]; await m.save();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 50, action: "override", overrideInput: "brofx_mansion_10",
+    });
+    expect(out.committed).toBe(true);
+    expect(path.basename(out.entry!.target)).toBe("BroFX_Mansion_10");
+  });
+
+  it("rejects when target is already consumed by another grant", async () => {
+    await fs.mkdir(path.join(resourcesDir, "shared_folder"), { recursive: true });
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({
+      "99": { slug: "owner", target: path.join(resourcesDir, "shared_folder"), assetName: "Owner",
+              discoveredTier: 1, discoveredConfidence: 1.0,
+              status: "active", reviewedByUser: true },
+    });
+    m.getFile().newInstalls = [50]; await m.save();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 50, action: "override", overrideInput: "shared_folder",
+    });
+    expect(out.committed).toBe(false);
+    expect(out.error).toBe("target-owned-by-other-grant");
+    expect(out.ownedBy).toBe(99);
+  });
+});

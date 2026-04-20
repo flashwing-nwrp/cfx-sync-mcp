@@ -8,10 +8,38 @@ import { ResolutionLog } from "../../lib/state/resolutionLog.js";
 import { CookieJar } from "../../lib/auth/cookieJar.js";
 import { loadCookiesFromFile } from "../../lib/auth/fileAuth.js";
 import { PortalApiClient } from "../../lib/portal/client.js";
+import fs from "node:fs";
 import { detectLayout } from "../../lib/discovery/detectLayout.js";
 import { scanResources } from "../../lib/discovery/scanResources.js";
 import { matchGrants } from "../../lib/discovery/matchGrants.js";
 import { applyAuthorPrefixBoost, type BoostedCandidate } from "../../lib/discovery/prefixBoost.js";
+
+function levenshtein(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const w = n + 1;
+  const dp = new Uint32Array((m + 1) * w);
+  for (let i = 0; i <= m; i++) dp[i * w] = i;
+  for (let j = 0; j <= n; j++) dp[j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i * w + j] = Math.min(
+        dp[(i - 1) * w + j]! + 1,
+        dp[i * w + (j - 1)]! + 1,
+        dp[(i - 1) * w + (j - 1)]! + cost,
+      );
+    }
+  }
+  return dp[m * w + n]!;
+}
+function similarity(a: string, b: string): number {
+  if (a === b) return 1;
+  const max = Math.max(a.length, b.length);
+  if (max === 0) return 1;
+  return 1 - levenshtein(a, b) / max;
+}
 
 type ToolOutput = z.infer<typeof ResolveMappingEntryOutput>;
 
@@ -207,7 +235,110 @@ export async function cfx_resolve_mapping_entry(
       return { committed: true, entry, remainingUnresolvedCount: -1 };
     }
 
-    // override / reactivate implemented in follow-up tasks (11 + 12).
+    // -----------------------------------------------------------------------
+    // override — fuzzy-match overrideInput against scanned resources and
+    // commit if exactly one folder scores ≥0.9.
+    // -----------------------------------------------------------------------
+    if (input.action === "override") {
+      if (input.overrideInput === undefined) return fail("unexpected-field");
+      if (!grant) return fail("grantId-not-owned");
+
+      // Enumerate all subdirectories (and category subdirectories for categorized
+      // layouts) regardless of fxmanifest presence, so bare/pending folders are
+      // also reachable via override.
+      const allFolderPaths: string[] = [];
+      const addDirsFrom = (root: string) => {
+        try {
+          for (const e of fs.readdirSync(root, { withFileTypes: true })) {
+            if (!e.isDirectory() || e.isSymbolicLink()) continue;
+            allFolderPaths.push(path.join(root, e.name));
+          }
+        } catch { /* ignore unreadable dirs */ }
+      };
+      // Try to detect layout; if unknown, treat the root itself as the flat root.
+      try {
+        const layout = detectLayout(cfg.serverResources);
+        if (layout === "categorized") {
+          for (const e of fs.readdirSync(cfg.serverResources, { withFileTypes: true })) {
+            if (e.isDirectory() && e.name.startsWith("[") && e.name.endsWith("]")) {
+              addDirsFrom(path.join(cfg.serverResources, e.name));
+            }
+          }
+        } else {
+          addDirsFrom(cfg.serverResources);
+        }
+      } catch {
+        // UnknownLayoutError — fall back to treating root as flat.
+        addDirsFrom(cfg.serverResources);
+      }
+
+      // Fuzzy-match overrideInput against every folder path.
+      const normalize = (s: string): string =>
+        s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+      const target = normalize(input.overrideInput);
+      const scored = allFolderPaths.map((p) => {
+        const sim = similarity(target, normalize(path.basename(p)));
+        return { target: p, similarity: sim };
+      });
+      scored.sort((a, b) => b.similarity - a.similarity);
+      const hits = scored.filter((s) => s.similarity >= 0.9);
+      if (hits.length !== 1) {
+        return {
+          committed: false, entry: null, remainingUnresolvedCount: -1,
+          overrideAmbiguous: {
+            input: input.overrideInput,
+            candidates: scored.slice(0, 5),
+          },
+        };
+      }
+      const chosen = hits[0]!;
+
+      // Target ownership guard
+      for (const [otherK, otherV] of Object.entries(mapping.entries())) {
+        if (Number(otherK) !== input.grantId
+            && otherV.status === "active"
+            && otherV.target === chosen.target) {
+          return fail("target-owned-by-other-grant", { ownedBy: Number(otherK) });
+        }
+      }
+
+      // Remap guard
+      if (currentEntry?.reviewedByUser === true) {
+        const expected = currentEntry.target ? path.basename(currentEntry.target) : "";
+        if (!input.allowRemapOver || input.allowRemapOver.toLowerCase() !== expected.toLowerCase()) {
+          return fail("remap-requires-confirmation", { expectedBasename: expected });
+        }
+      }
+
+      const isRemap = currentEntry?.reviewedByUser === true;
+      const slug = currentEntry?.slug ?? grant.asset.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+      const entry: MappingEntry = {
+        slug, target: chosen.target, assetName: grant.asset.name,
+        discoveredTier: 0, discoveredConfidence: chosen.similarity,
+        preservePaths: null, preservePathsSource: null,
+        ignoreUpstreamUpdates: currentEntry?.ignoreUpstreamUpdates,
+        ignoreUpstreamUpdatesReason: currentEntry?.ignoreUpstreamUpdatesReason,
+        ignoreUpstreamUpdatesSetAt: currentEntry?.ignoreUpstreamUpdatesSetAt,
+        status: "active", reviewedByUser: true,
+      };
+      mapping.setEntry(input.grantId, entry);
+      mappingFile.newInstalls = (mappingFile.newInstalls ?? []).filter((g) => g !== input.grantId);
+      await mapping.save();
+      await log.append({
+        ts: new Date().toISOString(), grantId: input.grantId,
+        author: grant.asset.author ?? null, assetName: grant.asset.name,
+        action: isRemap ? "remap" : "override",
+        tierBefore: currentEntry?.discoveredTier ?? null,
+        confidenceBefore: currentEntry?.discoveredConfidence ?? null,
+        chosenBasename: path.basename(chosen.target), overrideInput: input.overrideInput,
+      });
+      return {
+        committed: true, entry, remainingUnresolvedCount: -1,
+        overrideResolved: { input: input.overrideInput, matchedTarget: chosen.target, similarity: chosen.similarity },
+      };
+    }
+
+    // reactivate implemented in follow-up task 12.
     return fail("unexpected-field");
   } finally {
     await lock.release();
