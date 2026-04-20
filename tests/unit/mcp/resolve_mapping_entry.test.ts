@@ -232,3 +232,65 @@ describe("cfx_resolve_mapping_entry — override", () => {
     expect(out.ownedBy).toBe(99);
   });
 });
+
+describe("cfx_resolve_mapping_entry — reactivate", () => {
+  // Reuse beforeEach from the basic-actions block.
+  let stateDir: string;
+  let resourcesDir: string;
+
+  beforeEach(async () => {
+    stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "rme-state-"));
+    resourcesDir = await fs.mkdtemp(path.join(os.tmpdir(), "rme-res-"));
+
+    // Set up env vars so loadConfig() works without throwing.
+    process.env.CFX_STATE_DIR = stateDir;
+    process.env.CFX_SERVER_RESOURCES = resourcesDir;
+    process.env.CFX_CACHE_DIR = path.join(stateDir, "cache");
+    process.env.CFX_STAGING_DIR = path.join(stateDir, "staging");
+    process.env.CFX_BACKUP_DIR = path.join(stateDir, "backups");
+    process.env.CFX_COOKIE_FILE = path.join(stateDir, ".cookies.json");
+
+    // Default portal stub — returns the FuzzyAsset grant.
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
+      grants: [{ grant_id: 50, asset: { name: "FuzzyAsset", author: "BroFX" } }] as any,
+      page: 1,
+      page_count: 1,
+      item_count: 1,
+    } as any);
+  });
+
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    await fs.rm(stateDir, { recursive: true, force: true });
+    await fs.rm(resourcesDir, { recursive: true, force: true });
+  });
+
+  it("flips status 'new-install' → 'active' and clears reviewedByUser", async () => {
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({
+      "50": { slug: "x", target: "", assetName: "FuzzyAsset",
+              discoveredTier: 0, discoveredConfidence: 0,
+              status: "new-install", reviewedByUser: true },
+    });
+    await m.save();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({ grantId: 50, action: "reactivate" });
+    expect(out.committed).toBe(true);
+    expect(out.entry!.status).toBe("active");
+    expect(out.entry!.reviewedByUser).toBe(false);
+  });
+
+  it("returns reactivate-invalid-state for a non-new-install entry", async () => {
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({
+      "50": { slug: "x", target: path.join(resourcesDir, "x"), assetName: "X",
+              discoveredTier: 1, discoveredConfidence: 1.0,
+              status: "active", reviewedByUser: true },
+    });
+    await m.save();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({ grantId: 50, action: "reactivate" });
+    expect(out.committed).toBe(false);
+    expect(out.error).toBe("reactivate-invalid-state");
+  });
+});

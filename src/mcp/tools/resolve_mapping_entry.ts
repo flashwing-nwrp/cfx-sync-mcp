@@ -338,7 +338,29 @@ export async function cfx_resolve_mapping_entry(
       };
     }
 
-    // reactivate implemented in follow-up task 12.
+    // -----------------------------------------------------------------------
+    // reactivate — flip status from 'new-install' back to 'active', clear reviewedByUser.
+    // -----------------------------------------------------------------------
+    if (input.action === "reactivate") {
+      if (!currentEntry) return fail("reactivate-invalid-state");
+      if (currentEntry.status !== "new-install") return fail("reactivate-invalid-state");
+      const entry: MappingEntry = {
+        ...currentEntry,
+        status: "active",
+        reviewedByUser: false,
+        target: currentEntry.target || "",  // caller is expected to run override next
+      };
+      mapping.setEntry(input.grantId, entry);
+      await mapping.save();
+      await log.append({
+        ts: new Date().toISOString(), grantId: input.grantId,
+        author: grant?.asset.author ?? null, assetName: entry.assetName,
+        action: "reactivate",
+        tierBefore: null, confidenceBefore: null, chosenBasename: null, overrideInput: null,
+      });
+      return { committed: true, entry, remainingUnresolvedCount: -1 };
+    }
+
     return fail("unexpected-field");
   } finally {
     await lock.release();
