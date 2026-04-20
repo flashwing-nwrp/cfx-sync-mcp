@@ -390,3 +390,44 @@ export const ListUnresolvedOutput = z.object({
   }),
   notice: z.string().optional(),
 });
+
+// ---------------------------------------------------------------------------
+// Phase 1.7 — cfx_resolve_mapping_entry (Task 9).
+//
+// Resolve a single mapping entry surfaced by cfx_list_unresolved.
+// Actions: accept | pick | override | skip | new-install | reactivate.
+// For reviewedByUser=true entries, pick/override require allowRemapOver confirmation.
+// ---------------------------------------------------------------------------
+
+export const ResolveMappingEntryInput = z.object({
+  grantId: z.number().int(),
+  action: z.enum(["accept", "pick", "override", "skip", "new-install", "reactivate"]),
+  pickIndex: z.number().int().min(0).optional(),
+  overrideInput: z.string().optional(),
+  allowRemapOver: z.string().optional(),
+});
+
+export const ResolveMappingEntryOutput = z.object({
+  committed: z.boolean(),
+  entry: z.any().nullable(),   // MappingEntry — not worth restating in zod
+  overrideResolved: z.object({
+    input: z.string(), matchedTarget: z.string(), similarity: z.number(),
+  }).optional(),
+  overrideAmbiguous: z.object({
+    input: z.string(),
+    candidates: z.array(z.object({ target: z.string(), similarity: z.number() })),
+  }).optional(),
+  remainingUnresolvedCount: z.number().int(),
+  error: z.enum([
+    "no-proposal-to-accept",
+    "pick-index-out-of-range",
+    "target-owned-by-other-grant",
+    "grantId-not-owned",
+    "remap-requires-confirmation",
+    "reactivate-invalid-state",
+    "unexpected-field",
+    "state-locked",
+  ]).optional(),
+  ownedBy: z.number().int().optional(),
+  expectedBasename: z.string().optional(),
+});

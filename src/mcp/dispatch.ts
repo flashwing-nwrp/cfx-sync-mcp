@@ -13,6 +13,7 @@ import { cfx_sync_all } from "./tools/sync_all.js";
 import { cfx_rollback } from "./tools/rollback.js";
 import { cfx_scan_configs } from "./tools/scan_configs.js";
 import { cfx_reset_pristine } from "./tools/reset_pristine.js";
+import { cfx_resolve_mapping_entry } from "./tools/resolve_mapping_entry.js";
 import { cfx_set_fork_mode } from "./tools/set_fork_mode.js";
 
 // Each handler accepts its own validated input type. The dispatch boundary
@@ -26,22 +27,23 @@ function wrap<T>(fn: (input: T) => Promise<unknown>): Handler {
 }
 
 const HANDLERS: Record<string, Handler> = {
-  cfx_login:           wrap(cfx_login),
-  cfx_logout:          wrap(cfx_logout),
-  cfx_status:          wrap(cfx_status),
-  cfx_list_grants:     wrap(cfx_list_grants),
-  cfx_list_unresolved: wrap(cfx_list_unresolved),
-  cfx_check_updates:   wrap(cfx_check_updates),
-  cfx_scan_updates:    wrap(cfx_scan_updates),
-  cfx_discover:        wrap(cfx_discover),
-  cfx_approve_mapping: wrap(cfx_approve_mapping),
-  cfx_download_asset:  wrap(cfx_download_asset),
-  cfx_deploy_asset:    wrap(cfx_deploy_asset),
-  cfx_sync_all:        wrap(cfx_sync_all),
-  cfx_rollback:        wrap(cfx_rollback),
-  cfx_scan_configs:    wrap(cfx_scan_configs),
-  cfx_reset_pristine:  wrap(cfx_reset_pristine),
-  cfx_set_fork_mode:   wrap(cfx_set_fork_mode),
+  cfx_login:                wrap(cfx_login),
+  cfx_logout:               wrap(cfx_logout),
+  cfx_status:               wrap(cfx_status),
+  cfx_list_grants:          wrap(cfx_list_grants),
+  cfx_list_unresolved:      wrap(cfx_list_unresolved),
+  cfx_check_updates:        wrap(cfx_check_updates),
+  cfx_scan_updates:         wrap(cfx_scan_updates),
+  cfx_discover:             wrap(cfx_discover),
+  cfx_approve_mapping:      wrap(cfx_approve_mapping),
+  cfx_download_asset:       wrap(cfx_download_asset),
+  cfx_deploy_asset:         wrap(cfx_deploy_asset),
+  cfx_sync_all:             wrap(cfx_sync_all),
+  cfx_rollback:             wrap(cfx_rollback),
+  cfx_scan_configs:         wrap(cfx_scan_configs),
+  cfx_reset_pristine:       wrap(cfx_reset_pristine),
+  cfx_resolve_mapping_entry: wrap(cfx_resolve_mapping_entry),
+  cfx_set_fork_mode:        wrap(cfx_set_fork_mode),
 };
 
 export async function dispatch(name: string, args: unknown): Promise<unknown> {

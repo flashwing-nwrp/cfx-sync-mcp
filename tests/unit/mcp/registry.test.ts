@@ -3,8 +3,8 @@ import { TOOLS, toolNames } from "../../../src/mcp/tools/index.js";
 import { dispatch } from "../../../src/mcp/dispatch.js";
 
 describe("MCP tool registry", () => {
-  it("exports exactly 16 tools", () => {
-    expect(toolNames().length).toBe(16);
+  it("exports exactly 17 tools", () => {
+    expect(toolNames().length).toBe(17);
   });
 
   it("contains all expected tools", () => {
@@ -13,7 +13,7 @@ describe("MCP tool registry", () => {
         "cfx_approve_mapping", "cfx_check_updates", "cfx_deploy_asset",
         "cfx_discover", "cfx_download_asset", "cfx_list_grants",
         "cfx_list_unresolved", "cfx_login", "cfx_logout", "cfx_reset_pristine",
-        "cfx_rollback", "cfx_scan_configs", "cfx_scan_updates", "cfx_set_fork_mode",
+        "cfx_resolve_mapping_entry", "cfx_rollback", "cfx_scan_configs", "cfx_scan_updates", "cfx_set_fork_mode",
         "cfx_status", "cfx_sync_all",
       ]
     );

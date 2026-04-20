@@ -22,11 +22,12 @@ export const TOOLS: ToolDef[] = [
   { name: "cfx_approve_mapping", description: "Commit a proposed mapping to cfx-sync-map.json.", inputSchema: S.ApproveMappingInput, outputSchema: S.ApproveMappingOutput, destructive: true },
   { name: "cfx_scan_configs", description: "Layer 1 preservation scan: write advisory preservePaths into cfx-sync-map.json for one or all mapped grants.", inputSchema: S.ScanConfigsInput, outputSchema: S.ScanConfigsOutput, destructive: true },
   { name: "cfx_reset_pristine", description: "Drop pristine baseline (one grant or all); clears state pristine fields + GCs orphans. Next deploy treats as first-deploy.", inputSchema: S.ResetPristineInput, outputSchema: S.ResetPristineOutput, destructive: true },
+  { name: "cfx_resolve_mapping_entry", description: "Resolve a single mapping entry surfaced by cfx_list_unresolved. Actions: accept | pick | override | skip | new-install | reactivate. For reviewedByUser=true entries, pick/override require allowRemapOver: <currentBasename>.", inputSchema: S.ResolveMappingEntryInput, outputSchema: S.ResolveMappingEntryOutput, destructive: true },
+  { name: "cfx_rollback", description: "Restore a previous backup.", inputSchema: S.RollbackInput, outputSchema: S.RollbackOutput, destructive: true },
   { name: "cfx_set_fork_mode", description: "Flag a mapping entry as a local fork (ignoreUpstreamUpdates triad). Suppresses the resource from cfx_scan_updates output regardless of portal/log signal. Pass enabled:true with an optional reason to enable; enabled:false to clear. Mutually exclusive {slug, grantId}; requires approved mapping.", inputSchema: S.SetForkModeInput, outputSchema: S.SetForkModeOutput, destructive: true },
   { name: "cfx_download_asset", description: "Stream a pack zip to cache. Does NOT deploy.", inputSchema: S.DownloadAssetInput, outputSchema: S.DownloadAssetOutput, destructive: true },
   { name: "cfx_deploy_asset", description: "Unzip + stage + swap with backup.", inputSchema: S.DeployAssetInput, outputSchema: S.DeployAssetOutput, destructive: true },
   { name: "cfx_sync_all", description: "check → download(changed) → deploy(downloaded).", inputSchema: S.SyncAllInput, outputSchema: S.SyncAllOutput, destructive: true },
-  { name: "cfx_rollback", description: "Restore a previous backup.", inputSchema: S.RollbackInput, outputSchema: S.RollbackOutput, destructive: true },
 ];
 
 export function toolNames(): string[] {
