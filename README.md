@@ -77,11 +77,22 @@ In Claude Code, ask:
 - "Log me into Cfx" → runs `cfx_login`
 - "Discover my Cfx assets" → runs `cfx_discover`
 - "Check what's outdated" → runs `cfx_check_updates`
+- "Approve the auto-safe mappings" → runs `cfx_approve_mapping` (commits only conf=1.0)
+- "Show me unresolved mappings" → runs `cfx_list_unresolved`
+- "Resolve grant <id> as <action>" → runs `cfx_resolve_mapping_entry { grantId, action, ... }`
 - "Sync everything, but skip qs-housing" → runs `cfx_sync_all { skip: [<grantId>] }`
 - "Scan mapped grants for likely config paths" → runs `cfx_scan_configs`
 - "Reset the pristine baseline for grant X" → runs `cfx_reset_pristine { grantId: <id> }`
 
 See [`docs/PRESERVATION.md`](docs/PRESERVATION.md) for the full preservation-tool reference.
+
+## Mapping wizard (v0.4.0)
+
+`cfx_approve_mapping` only commits confidence=1.0 entries (tier 1+2 exact and slug-normalized matches). Tier 3+4 fuzzy matches and grants the operator owns but hasn't installed locally surface via `cfx_list_unresolved` for interactive resolution.
+
+**v0.3.x → v0.4.0 breaking change:** if you relied on `cfx_approve_mapping` committing every proposal — including fuzzy matches — you now need one call to `cfx_list_unresolved` + one `cfx_resolve_mapping_entry` call per ambiguous entry. See the walkthrough in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#mapping-wizard-v040).
+
+Each resolution carries Claude through a per-entry decision: **accept** the auto-proposal, **pick** an alternative by index, **override** with a path you type (fuzzy-confirmed against your resource scan), **skip** for later, or **new-install** if you own the grant but haven't installed it locally yet. Author-prefix hints (BroFX → `brofx_*`, Codesign → `cd_*`, etc.) rank alternatives so ambiguous cases like `brofx_mansion_10` no longer auto-map to `brofx_church`.
 
 ## Update scanning
 
