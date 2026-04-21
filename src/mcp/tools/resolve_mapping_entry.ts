@@ -8,6 +8,7 @@ import { ResolutionLog } from "../../lib/state/resolutionLog.js";
 import { CookieJar } from "../../lib/auth/cookieJar.js";
 import { loadCookiesFromFile } from "../../lib/auth/fileAuth.js";
 import { PortalApiClient } from "../../lib/portal/client.js";
+import { AuthExpiredError, AuthMissingError } from "../../lib/errors.js";
 import type { Grant } from "../../lib/portal/types.js";
 import fs from "node:fs";
 import { detectLayout } from "../../lib/discovery/detectLayout.js";
@@ -81,11 +82,21 @@ export async function cfx_resolve_mapping_entry(
     // Fetch fresh grant info for assetName/author + owned-grant verification.
     const jar = new CookieJar();
     try { await loadCookiesFromFile(cfg.cookieFile, jar); }
-    catch (err) { console.warn("[cfx_resolve_mapping_entry] cookie load failed:", (err as Error).message); }
+    catch (err) {
+      // Re-throw auth errors so they surface properly in the envelope.
+      // Non-auth transient failures (NetworkError, etc.) still log-and-continue.
+      if (err instanceof AuthExpiredError || err instanceof AuthMissingError) throw err;
+      console.warn("[cfx_resolve_mapping_entry] cookie load failed:", (err as Error).message);
+    }
     const client = new PortalApiClient({ apiBase: cfg.apiBase, cookieJar: jar });
     let grants: Grant[] = [];
     try { grants = (await client.listGrants({})).grants; }
-    catch (err) { console.warn("[cfx_resolve_mapping_entry] listGrants failed:", (err as Error).message); }
+    catch (err) {
+      // Re-throw auth errors so they surface properly in the envelope.
+      // Non-auth transient failures (NetworkError, etc.) still log-and-continue.
+      if (err instanceof AuthExpiredError || err instanceof AuthMissingError) throw err;
+      console.warn("[cfx_resolve_mapping_entry] listGrants failed:", (err as Error).message);
+    }
     const grant = grants.find((g) => g.grant_id === input.grantId);
 
     // -----------------------------------------------------------------------

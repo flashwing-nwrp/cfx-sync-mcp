@@ -31,6 +31,9 @@ describe("cfx_list_unresolved", () => {
     process.env.CFX_BACKUP_DIR = path.join(stateDir, "backups");
     process.env.CFX_COOKIE_FILE = path.join(stateDir, ".cookies.json");
 
+    // Create a dummy cookie file so loadCookiesFromFile doesn't throw on file-not-found.
+    await fs.writeFile(process.env.CFX_COOKIE_FILE, "{}");
+
     // Default: portal is unreachable (no cookie file) — most tests don't need it.
     vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
       grants: [],
@@ -304,5 +307,75 @@ describe("cfx_list_unresolved", () => {
     const out = await cfx_list_unresolved({});
     const r = out.unresolved.find((u) => u.grantId === 300);
     expect(r?.reason).toBe("reactivated");
+  });
+});
+
+describe("cfx_list_unresolved — auth error surfacing", () => {
+  let stateDir: string;
+  let resourcesDir: string;
+
+  beforeEach(async () => {
+    stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "lu-auth-"));
+    resourcesDir = await fs.mkdtemp(path.join(os.tmpdir(), "lu-auth-res-"));
+    process.env.CFX_STATE_DIR = stateDir;
+    process.env.CFX_SERVER_RESOURCES = resourcesDir;
+    process.env.CFX_API_BASE = "https://portal.test";
+    process.env.CFX_COOKIE_FILE = path.join(stateDir, "cookies.json");
+
+    // Create a dummy cookie file so loadCookiesFromFile doesn't throw on file-not-found.
+    await fs.writeFile(process.env.CFX_COOKIE_FILE, "{}");
+
+    // Seed an approved mapping so we reach the portal-call path.
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({
+      "1": {
+        slug: "x",
+        target: path.join(resourcesDir, "x"),
+        assetName: "X",
+        discoveredTier: 1,
+        discoveredConfidence: 1.0,
+        status: "active",
+        reviewedByUser: true,
+      },
+    });
+    await m.save();
+  });
+
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    await fs.rm(stateDir, { recursive: true, force: true });
+    await fs.rm(resourcesDir, { recursive: true, force: true });
+  });
+
+  it("re-throws AuthExpiredError from listGrants instead of returning empty", async () => {
+    const { AuthExpiredError } = await import("../../../src/lib/errors.js");
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockRejectedValue(
+      new AuthExpiredError("Portal session expired or invalid.")
+    );
+
+    const { cfx_list_unresolved } = await import("../../../src/mcp/tools/list_unresolved.js");
+    await expect(cfx_list_unresolved({})).rejects.toThrow(AuthExpiredError);
+  });
+
+  it("re-throws AuthMissingError from listGrants", async () => {
+    const { AuthMissingError } = await import("../../../src/lib/errors.js");
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockRejectedValue(
+      new AuthMissingError("No cookies available.")
+    );
+
+    const { cfx_list_unresolved } = await import("../../../src/mcp/tools/list_unresolved.js");
+    await expect(cfx_list_unresolved({})).rejects.toThrow(AuthMissingError);
+  });
+
+  it("still swallows NetworkError (non-auth failures remain non-fatal)", async () => {
+    const { NetworkError } = await import("../../../src/lib/errors.js");
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockRejectedValue(
+      new NetworkError("Portal 500")
+    );
+
+    const { cfx_list_unresolved } = await import("../../../src/mcp/tools/list_unresolved.js");
+    const out = await cfx_list_unresolved({});
+    // Tool returns gracefully with reduced coverage (no grant-enriched buckets)
+    expect(out.summary).toBeDefined();
   });
 });

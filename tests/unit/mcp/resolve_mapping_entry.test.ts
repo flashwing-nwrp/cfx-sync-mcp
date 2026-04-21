@@ -32,6 +32,9 @@ describe("cfx_resolve_mapping_entry — basic actions", () => {
     process.env.CFX_BACKUP_DIR = path.join(stateDir, "backups");
     process.env.CFX_COOKIE_FILE = path.join(stateDir, ".cookies.json");
 
+    // Create a dummy cookie file so loadCookiesFromFile doesn't throw on file-not-found.
+    await fs.writeFile(process.env.CFX_COOKIE_FILE, "{}");
+
     // Default portal stub — returns the FuzzyAsset grant.
     vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
       grants: [{ grant_id: 50, asset: { name: "FuzzyAsset", author: "BroFX" } }] as any,
@@ -140,6 +143,9 @@ describe("cfx_resolve_mapping_entry — override", () => {
     process.env.CFX_STAGING_DIR = path.join(stateDir, "staging");
     process.env.CFX_BACKUP_DIR = path.join(stateDir, "backups");
     process.env.CFX_COOKIE_FILE = path.join(stateDir, ".cookies.json");
+
+    // Create a dummy cookie file so loadCookiesFromFile doesn't throw on file-not-found.
+    await fs.writeFile(process.env.CFX_COOKIE_FILE, "{}");
 
     // Default portal stub — returns the FuzzyAsset grant.
     vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
@@ -250,6 +256,9 @@ describe("cfx_resolve_mapping_entry — reactivate", () => {
     process.env.CFX_BACKUP_DIR = path.join(stateDir, "backups");
     process.env.CFX_COOKIE_FILE = path.join(stateDir, ".cookies.json");
 
+    // Create a dummy cookie file so loadCookiesFromFile doesn't throw on file-not-found.
+    await fs.writeFile(process.env.CFX_COOKIE_FILE, "{}");
+
     // Default portal stub — returns the FuzzyAsset grant.
     vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
       grants: [{ grant_id: 50, asset: { name: "FuzzyAsset", author: "BroFX" } }] as any,
@@ -309,6 +318,9 @@ describe("cfx_resolve_mapping_entry — allowRemapOver guard + field carry-over"
     process.env.CFX_STAGING_DIR = path.join(stateDir, "staging");
     process.env.CFX_BACKUP_DIR = path.join(stateDir, "backups");
     process.env.CFX_COOKIE_FILE = path.join(stateDir, ".cookies.json");
+
+    // Create a dummy cookie file so loadCookiesFromFile doesn't throw on file-not-found.
+    await fs.writeFile(process.env.CFX_COOKIE_FILE, "{}");
 
     vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
       grants: [{ grant_id: 50, asset: { name: "FuzzyAsset", author: "BroFX" } }] as any,
@@ -393,5 +405,83 @@ describe("cfx_resolve_mapping_entry — allowRemapOver guard + field carry-over"
     });
     expect(out.committed).toBe(false);
     expect(out.error).toBe("remap-requires-confirmation");
+  });
+});
+
+describe("cfx_resolve_mapping_entry — auth error surfacing", () => {
+  let stateDir: string;
+  let resourcesDir: string;
+
+  beforeEach(async () => {
+    stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "rme-auth-"));
+    resourcesDir = await fs.mkdtemp(path.join(os.tmpdir(), "rme-auth-res-"));
+    process.env.CFX_STATE_DIR = stateDir;
+    process.env.CFX_SERVER_RESOURCES = resourcesDir;
+    process.env.CFX_API_BASE = "https://portal.test";
+    process.env.CFX_COOKIE_FILE = path.join(stateDir, "cookies.json");
+    process.env.CFX_CACHE_DIR = path.join(stateDir, "cache");
+    process.env.CFX_STAGING_DIR = path.join(stateDir, "staging");
+    process.env.CFX_BACKUP_DIR = path.join(stateDir, "backups");
+
+    // Create a dummy cookie file so loadCookiesFromFile doesn't throw AuthMissingError
+    // on the file-not-found path (we'll test portal auth errors, not file errors).
+    await fs.writeFile(path.join(stateDir, "cookies.json"), "{}");
+
+    // Seed an approved mapping with one entry so we reach the portal-call path.
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({
+      "999": {
+        slug: "y",
+        target: path.join(resourcesDir, "y"),
+        assetName: "Y",
+        discoveredTier: 1,
+        discoveredConfidence: 1.0,
+        status: "active",
+        reviewedByUser: true,
+      },
+    });
+    await m.save();
+  });
+
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    await fs.rm(stateDir, { recursive: true, force: true });
+    await fs.rm(resourcesDir, { recursive: true, force: true });
+  });
+
+  it("re-throws AuthExpiredError from listGrants instead of returning grantId-not-owned", async () => {
+    const { AuthExpiredError } = await import("../../../src/lib/errors.js");
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockRejectedValue(
+      new AuthExpiredError("Portal session expired or invalid.")
+    );
+
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    await expect(
+      cfx_resolve_mapping_entry({ grantId: 999, action: "new-install" })
+    ).rejects.toThrow(AuthExpiredError);
+  });
+
+  it("re-throws AuthMissingError from listGrants", async () => {
+    const { AuthMissingError } = await import("../../../src/lib/errors.js");
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockRejectedValue(
+      new AuthMissingError("No cookies available.")
+    );
+
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    await expect(
+      cfx_resolve_mapping_entry({ grantId: 999, action: "new-install" })
+    ).rejects.toThrow(AuthMissingError);
+  });
+
+  it("still swallows NetworkError (non-auth failures remain non-fatal)", async () => {
+    const { NetworkError } = await import("../../../src/lib/errors.js");
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockRejectedValue(
+      new NetworkError("Portal 500")
+    );
+
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({ grantId: 999, action: "new-install" });
+    // Tool returns gracefully with error since no grant info available
+    expect(out.committed).toBe(false);
   });
 });

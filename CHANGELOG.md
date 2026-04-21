@@ -6,6 +6,13 @@ Format roughly follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.4.4] - 2026-04-20 — Auth error surfacing
+
+### Fixed
+- `cfx_list_unresolved` and `cfx_resolve_mapping_entry` now re-throw `AuthExpiredError` / `AuthMissingError` from the portal client instead of masking them as empty-unresolved / `grantId-not-owned`. Operators see the proper `AUTH_EXPIRED` envelope with the "run cfx_login" hint, matching `cfx_discover`'s behavior. Non-auth transient failures (NetworkError etc.) still log-and-continue.
+
+---
+
 ## [0.4.3] - 2026-04-20 — CI lint fixes
 
 ### Fixed

@@ -5,6 +5,7 @@ import { Mapping } from "../../lib/state/mapping.js";
 import { CookieJar } from "../../lib/auth/cookieJar.js";
 import { loadCookiesFromFile } from "../../lib/auth/fileAuth.js";
 import { PortalApiClient } from "../../lib/portal/client.js";
+import { AuthExpiredError, AuthMissingError } from "../../lib/errors.js";
 import { detectLayout } from "../../lib/discovery/detectLayout.js";
 import { scanResources, type ResourceMeta } from "../../lib/discovery/scanResources.js";
 import { matchGrants } from "../../lib/discovery/matchGrants.js";
@@ -64,6 +65,9 @@ export async function cfx_list_unresolved(
   try {
     await loadCookiesFromFile(cfg.cookieFile, jar);
   } catch (err) {
+    // Re-throw auth errors so they surface properly in the envelope.
+    // Non-auth transient failures (NetworkError, etc.) still log-and-continue.
+    if (err instanceof AuthExpiredError || err instanceof AuthMissingError) throw err;
     // Cookie file missing or invalid — proceed without auth; portal fetch will
     // also fail below and log its own warning. We still want this one because
     // a corrupt cookie file is a distinct operator-actionable failure mode.
@@ -78,6 +82,9 @@ export async function cfx_list_unresolved(
     const r = await client.listGrants({});
     grants = r.grants as Array<{ grant_id: number; asset: { name: string; author: string } }>;
   } catch (err) {
+    // Re-throw auth errors so they surface properly in the envelope.
+    // Non-auth transient failures (NetworkError, etc.) still log-and-continue.
+    if (err instanceof AuthExpiredError || err instanceof AuthMissingError) throw err;
     // Portal unreachable — unresolved bucket will be incomplete. This is the
     // most dangerous silent catch: without the warn, the operator can't tell
     // "nothing to resolve" from "portal down, retry later".
