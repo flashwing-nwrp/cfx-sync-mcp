@@ -9,12 +9,11 @@
  * 5. Verify state file + resolution log correct
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { PortalApiClient } from "../../src/lib/portal/client.js";
-import { loadCookiesFromFile } from "../../src/lib/auth/fileAuth.js";
 
 describe("wizard happy-path end-to-end", () => {
   let stateDir: string;

@@ -11,13 +11,12 @@
  * 6. Verify that reactivate action on non-new-install entries is rejected.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { Mapping } from "../../src/lib/state/mapping.js";
 import { PortalApiClient } from "../../src/lib/portal/client.js";
-import { loadCookiesFromFile } from "../../src/lib/auth/fileAuth.js";
 
 describe("wizard reactivate — new-install → installed later", () => {
   let stateDir: string;

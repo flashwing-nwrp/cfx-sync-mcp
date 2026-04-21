@@ -6,6 +6,16 @@ Format roughly follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.4.3] - 2026-04-20 — CI lint fixes
+
+### Fixed
+- ESLint unused-var rule widened to accept `_`-prefixed destructured vars (standard "strip this field" pattern via `varsIgnorePattern` and `destructuredArrayIgnorePattern`).
+- `@typescript-eslint/no-explicit-any` disabled in `tests/**/*.ts` where mock portal responses legitimately use `as any` for test fixture flexibility.
+- Removed 6 genuinely-unused imports in wizard integration tests (`loadCookiesFromFile`) and unit tests (`AUTHOR_PREFIXES`, `vi`).
+- Replaced 2 production `as any` casts in `resolve_mapping_entry.ts` with proper `Grant` type assertions in grant list and synthetic grant construction.
+
+---
+
 ## [0.4.2] - 2026-04-20 — Typecheck fixes
 
 ### Fixed

@@ -9,13 +9,12 @@
  * 5. pick WITH matching allowRemapOver commits and logs action: "remap".
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { Mapping } from "../../src/lib/state/mapping.js";
 import { PortalApiClient } from "../../src/lib/portal/client.js";
-import { loadCookiesFromFile } from "../../src/lib/auth/fileAuth.js";
 
 describe("wizard remap — suspicious bucket + allowRemapOver guard", () => {
   let stateDir: string;

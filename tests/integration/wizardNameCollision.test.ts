@@ -10,13 +10,12 @@
  * 5. Operator can override to a different folder to resolve the collision.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { Mapping } from "../../src/lib/state/mapping.js";
 import { PortalApiClient } from "../../src/lib/portal/client.js";
-import { loadCookiesFromFile } from "../../src/lib/auth/fileAuth.js";
 
 describe("wizard name-collision — two grants, same assetName, different authors", () => {
   let stateDir: string;

@@ -6,7 +6,14 @@ module.exports = {
   env: { node: true, es2022: true },
   parserOptions: { ecmaVersion: 2022, sourceType: "module" },
   rules: {
-    "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        destructuredArrayIgnorePattern: "^_",
+      },
+    ],
     "no-restricted-imports": [
       "error",
       {
@@ -24,6 +31,10 @@ module.exports = {
     {
       files: ["src/lib/portal/**/*.ts", "tests/**/*.ts"],
       rules: { "no-restricted-imports": "off" },
+    },
+    {
+      files: ["tests/**/*.ts"],
+      rules: { "@typescript-eslint/no-explicit-any": "off" },
     },
   ],
 };

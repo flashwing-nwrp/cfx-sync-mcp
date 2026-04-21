@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { AUTHOR_PREFIXES, prefixesForAuthor } from "../../../src/lib/discovery/authorPrefixes.js";
+import { prefixesForAuthor } from "../../../src/lib/discovery/authorPrefixes.js";
 
 describe("authorPrefixes", () => {
   it("returns prefix list for known authors (case-insensitive)", () => {
