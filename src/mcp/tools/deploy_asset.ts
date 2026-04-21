@@ -114,6 +114,15 @@ export async function cfx_deploy_asset(input: Input): Promise<Output> {
 
     const entry = mapping.get(input.grantId);
     if (!entry) throw new NotFoundError(`grantId ${input.grantId} not in mapping`);
+    if (entry.status === "new-install") {
+      throw new Error(
+        `Entry for grant ${input.grantId} has status: 'new-install' (not installed locally). ` +
+        `Run cfx_resolve_mapping_entry { grantId: ${input.grantId}, action: 'reactivate' } after installing the resource.`
+      );
+    }
+    if (entry.status === "disabled") {
+      throw new Error(`Grant ${input.grantId} is disabled. Flip status:'active' in cfx-sync-map.json to re-enable.`);
+    }
 
     const stateEntry = state.get(input.grantId);
     if (!stateEntry) {

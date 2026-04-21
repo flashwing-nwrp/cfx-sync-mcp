@@ -39,6 +39,16 @@ Schema migrations are **one-way**. Older binaries reading a newer state/mapping 
 ### `src/lib/discovery/`
 Propose a mapping from local resources + portal grants. Used by `cfx_discover`. Emits a proposal that the operator reviews + commits via `cfx_approve_mapping`.
 
+### Mapping wizard (v0.4.0)
+
+- `src/lib/discovery/authorPrefixes.ts` — static `Record<author, prefix[]>` consulted by the boost helper. Extension point: add a new vendor here; no other code changes required.
+- `src/lib/discovery/prefixBoost.ts` — stable re-ranker; returns candidates annotated with `authorPrefixBoosted: boolean`.
+- `src/lib/state/resolutionLog.ts` — append-only `state/resolution-log.jsonl`; best-effort writes (log failures never block mapping commits).
+- `src/mcp/tools/list_unresolved.ts` — non-destructive query: fuzzy + new-install + reactivated + name-collision + suspicious buckets.
+- `src/mcp/tools/resolve_mapping_entry.ts` — single-entry commit (accept/pick/override/skip/new-install/reactivate). Remap over a reviewed entry requires `allowRemapOver: "<basename>"` echo-back.
+- `src/mcp/tools/approve_mapping.ts` — narrowed in v0.4.0 to `confidence===1.0` only.
+- `src/lib/state/mapping.ts` — schema v4 adds `status` + `reviewedByUser`. Consumers iterating `entry.target` must use `getActiveEntries()`.
+
 ### `src/lib/preservation/` (Phase 1.5)
 The 10-row decision matrix that preserves operator edits across deploys. See [`PRESERVATION.md`](PRESERVATION.md) for the full table. Key ideas:
 

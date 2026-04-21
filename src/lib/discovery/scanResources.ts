@@ -34,10 +34,15 @@ function readResourceDir(dir: string): ResourceMeta | null {
   };
 }
 
+const BRACKET_NEST_LIMIT = 5;
+const isBracketDir = (name: string): boolean =>
+  name.startsWith("[") && name.endsWith("]");
+
 export function scanResources(serverResources: string, layout: Layout): ResourceMeta[] {
   const out: ResourceMeta[] = [];
 
-  const walkDirs = (roots: string[]) => {
+  const walkDirs = (roots: string[], depth = 0) => {
+    if (depth > BRACKET_NEST_LIMIT) return;
     for (const root of roots) {
       let entries: fs.Dirent[];
       try { entries = fs.readdirSync(root, { withFileTypes: true }); } catch { continue; }
@@ -46,6 +51,11 @@ export function scanResources(serverResources: string, layout: Layout): Resource
         if (e.isSymbolicLink()) continue;
         if (!e.isDirectory()) continue;
         const p = path.join(root, e.name);
+        if (isBracketDir(e.name)) {
+          // Nested category — recurse one deeper.
+          walkDirs([p], depth + 1);
+          continue;
+        }
         const meta = readResourceDir(p);
         if (meta) out.push(meta);
       }
@@ -59,7 +69,7 @@ export function scanResources(serverResources: string, layout: Layout): Resource
         cats.push(path.join(serverResources, e.name));
       }
     }
-    walkDirs(cats);
+    walkDirs(cats, 1);
   } else {
     walkDirs([serverResources]);
   }

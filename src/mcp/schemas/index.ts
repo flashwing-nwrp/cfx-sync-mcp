@@ -50,9 +50,11 @@ export const DiscoverOutput = z.object({
   version: z.literal(1),
   generatedAt: z.string(),
   entries: z.record(z.object({
-    slug: z.string(), target: z.string(), disabled: z.boolean(),
+    slug: z.string(), target: z.string(),
     assetName: z.string(), discoveredTier: z.number(), discoveredConfidence: z.number(),
     notes: z.string().optional(),
+    status: z.enum(["active", "new-install", "disabled"]),
+    reviewedByUser: z.boolean(),
   })),
   newInstalls: z.array(z.number()),
   orphaned: z.array(z.string()),
@@ -65,6 +67,11 @@ export const ApproveMappingInput = z.object({
 export const ApproveMappingOutput = z.object({
   path: z.string(),
   entriesCount: z.number(),
+  needsResolution: z.object({
+    fuzzy: z.number(),
+    newInstalls: z.number(),
+  }),
+  nextStep: z.string().optional(),
 });
 
 export const DownloadAssetInput = z.object({
@@ -339,4 +346,88 @@ export const RollbackOutput = z.object({
    * first-deploy.
    */
   pristineRotatedTo: z.number().nullable(),
+});
+
+// ---------------------------------------------------------------------------
+// Phase 1.7 — cfx_list_unresolved (Task 7).
+//
+// Lists all mapping entries needing operator input: tier 3+4 fuzzy matches,
+// new-installs, reactivated, name-collisions, plus pre-existing suspicious
+// commits (reviewedByUser=false). Non-destructive query.
+// ---------------------------------------------------------------------------
+
+export const ListUnresolvedInput = z.object({});
+export const ListUnresolvedOutput = z.object({
+  unresolved: z.array(z.object({
+    grantId: z.number(),
+    assetName: z.string(),
+    author: z.string().nullable(),
+    proposed: z.object({
+      target: z.string(),
+      tier: z.number(),
+      confidence: z.number(),
+    }).nullable(),
+    alternatives: z.array(z.object({
+      target: z.string(),
+      tier: z.number(),
+      confidence: z.number(),
+      authorPrefixBoosted: z.boolean(),
+    })),
+    reason: z.enum(["fuzzy-match", "new-install", "reactivated", "name-collision"]),
+    collidesWith: z.object({ grantId: z.number(), target: z.string() }).optional(),
+  })),
+  suspicious: z.array(z.object({
+    grantId: z.number(),
+    assetName: z.string(),
+    currentTarget: z.string(),
+    tierAtCommit: z.number(),
+    confidenceAtCommit: z.number(),
+  })),
+  summary: z.object({
+    unresolvedCount: z.number(),
+    suspiciousCount: z.number(),
+    autoApprovedCount: z.number(),
+  }),
+  notice: z.string().optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Phase 1.7 — cfx_resolve_mapping_entry (Task 9).
+//
+// Resolve a single mapping entry surfaced by cfx_list_unresolved.
+// Actions: accept | pick | override | skip | new-install | reactivate.
+// For reviewedByUser=true entries, pick/override require allowRemapOver confirmation.
+// ---------------------------------------------------------------------------
+
+export const ResolveMappingEntryInput = z.object({
+  grantId: z.number().int(),
+  action: z.enum(["accept", "pick", "override", "skip", "new-install", "reactivate"]),
+  pickIndex: z.number().int().min(0).optional(),
+  overrideInput: z.string().optional(),
+  allowRemapOver: z.string().optional(),
+});
+
+export const ResolveMappingEntryOutput = z.object({
+  committed: z.boolean(),
+  entry: z.any().nullable(),   // MappingEntry — not worth restating in zod
+  overrideResolved: z.object({
+    input: z.string(), matchedTarget: z.string(), similarity: z.number(),
+  }).optional(),
+  overrideAmbiguous: z.object({
+    input: z.string(),
+    candidates: z.array(z.object({ target: z.string(), similarity: z.number() })),
+  }).optional(),
+  remainingUnresolvedCount: z.number().int(),
+  error: z.enum([
+    "no-proposal-to-accept",
+    "pick-index-out-of-range",
+    "target-owned-by-other-grant",
+    "grantId-not-owned",
+    "remap-requires-confirmation",
+    "reactivate-invalid-state",
+    "unexpected-field",
+    "state-locked",
+  ]).optional(),
+  ownedBy: z.number().int().optional(),
+  expectedBasename: z.string().optional(),
 });

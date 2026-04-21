@@ -26,7 +26,8 @@ function makeResource(root: string, files: Record<string, string>): string {
 
 function makeMappingEntry(partial: Partial<MappingEntry> & { slug: string; target: string }): MappingEntry {
   return {
-    disabled: false,
+    status: "active",
+    reviewedByUser: true,
     assetName: partial.slug,
     discoveredTier: 1,
     discoveredConfidence: 1.0,
@@ -38,7 +39,7 @@ function makeMappingEntry(partial: Partial<MappingEntry> & { slug: string; targe
 
 function writeMapping(stateDir: string, entries: Record<string, MappingEntry>): void {
   const file: MappingFile = {
-    version: 3,
+    version: 4,
     approvedAt: "2026-04-17T10:30:00.000Z",
     entries,
     newInstalls: [],
@@ -133,7 +134,7 @@ describe("cfx_scan_configs", () => {
 
     writeMapping(stateDir, {
       "100": makeMappingEntry({ slug: "res_a", target: rA }),
-      "200": makeMappingEntry({ slug: "res_b", target: rB, disabled: true }),
+      "200": makeMappingEntry({ slug: "res_b", target: rB, status: "disabled" }),
     });
 
     const result = await cfx_scan_configs({});
@@ -182,7 +183,7 @@ describe("cfx_scan_configs", () => {
       "config.lua": "return { a = 1 }",
     });
     writeMapping(stateDir, {
-      "100": makeMappingEntry({ slug: "res_a", target: rA, disabled: true }),
+      "100": makeMappingEntry({ slug: "res_a", target: rA, status: "disabled" }),
     });
     await expect(cfx_scan_configs({ grantId: 100 })).rejects.toBeInstanceOf(CfxError);
   });

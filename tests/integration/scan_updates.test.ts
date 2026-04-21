@@ -45,7 +45,8 @@ function makeEntry(partial: Partial<MappingEntry> & { slug: string }): MappingEn
   return {
     slug: partial.slug,
     target: partial.target ?? `[cfx]/${partial.slug}`,
-    disabled: partial.disabled ?? false,
+    status: partial.status ?? "active",
+    reviewedByUser: partial.reviewedByUser ?? true,
     assetName: partial.assetName ?? partial.slug,
     discoveredTier: partial.discoveredTier ?? 1,
     discoveredConfidence: partial.discoveredConfidence ?? 1,
@@ -71,7 +72,7 @@ describe("scan_updates integration — flrp-boot-2000 end-to-end", () => {
   // Baseline mapping: only cd_bridge mapped to a grantId so most notices
   // fall through to the `unmapped` bucket (where we can assert across slugs).
   const baselineMapping: MappingFile = {
-    version: 3,
+    version: 4,
     approvedAt: "2025-01-01T00:00:00.000Z",
     newInstalls: [],
     orphaned: [],

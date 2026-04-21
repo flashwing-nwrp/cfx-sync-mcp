@@ -49,6 +49,47 @@ describe("scanResources (categorized)", () => {
   });
 });
 
+describe("scanResources — nested [bracket] categories", () => {
+  let dir: string;
+  beforeEach(() => { dir = mkdtempSync(path.join(tmpdir(), "cfx-scan-nested-")); });
+  afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+  it("finds resources two bracket levels deep", () => {
+    const nested = path.join(dir, "[maps]", "[apollo]", "apollo_fishing_pier");
+    mkdirSync(nested, { recursive: true });
+    writeFileSync(
+      path.join(nested, "fxmanifest.lua"),
+      "fx_version 'cerulean'\ngame 'gta5'\nname 'apollo_fishing_pier'\nauthor 'Apollo Developments'\n"
+    );
+    const out = scanResources(dir, "categorized");
+    expect(out.map((r) => r.folderName)).toContain("apollo_fishing_pier");
+    const apollo = out.find((r) => r.folderName === "apollo_fishing_pier")!;
+    expect(apollo.author).toBe("Apollo Developments");
+  });
+
+  it("does not descend past the nesting safety cap", () => {
+    // 6 bracket levels deep: [a]/[b]/[c]/[d]/[e]/[f]/deep_resource
+    // Root bracket [a] is level 0; cap is 5, so [f] would be level 6 — should be skipped.
+    const deep = path.join(dir, "[a]", "[b]", "[c]", "[d]", "[e]", "[f]", "deep_resource");
+    mkdirSync(deep, { recursive: true });
+    writeFileSync(path.join(deep, "fxmanifest.lua"), "fx_version 'cerulean'\ngame 'gta5'\n");
+    const out = scanResources(dir, "categorized");
+    expect(out.map((r) => r.folderName)).not.toContain("deep_resource");
+  });
+
+  it("handles a mix of flat resources and nested brackets", () => {
+    const flat = path.join(dir, "[maps]", "flat_resource");
+    const nested = path.join(dir, "[maps]", "[brofx]", "brofx_mansion_10");
+    mkdirSync(flat, { recursive: true });
+    mkdirSync(nested, { recursive: true });
+    writeFileSync(path.join(flat, "fxmanifest.lua"), "fx_version 'cerulean'\ngame 'gta5'\n");
+    writeFileSync(path.join(nested, "fxmanifest.lua"), "fx_version 'cerulean'\ngame 'gta5'\n");
+    const out = scanResources(dir, "categorized");
+    const names = out.map((r) => r.folderName).sort();
+    expect(names).toEqual(["brofx_mansion_10", "flat_resource"]);
+  });
+});
+
 describe("scanResources (flat)", () => {
   let dir: string;
   beforeEach(() => { dir = mkdtempSync(path.join(tmpdir(), "cfx-scan-flat-")); });
