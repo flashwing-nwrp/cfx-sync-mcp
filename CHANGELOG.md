@@ -6,6 +6,15 @@ Format roughly follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.4.1] - 2026-04-20 — Dogfood fixes
+
+### Fixed
+- `scanResources` now recurses into nested `[bracket]/[bracket]/` directories (FiveM auto-load convention). Previously, resources organized under a subcategory (e.g. `[maps]/[apollo]/apollo_fishing_pier`) were invisible to discovery and override. Safety cap of 5 levels of bracket nesting.
+- `cfx_list_unresolved` no longer surfaces `status: "new-install"` entries as `reason: "reactivated"` based on tier 3/4 fuzzy matches. Only tier 1+2 (confidence 1.0) re-detections trigger reactivation. Prevents the wizard from re-proposing the exact wrong targets the operator just dismissed.
+- `cfx_approve_mapping` commits tier 3+4 entries provisionally with `reviewedByUser: false` (instead of dropping them) so they surface in `cfx_list_unresolved`'s suspicious bucket for review. Fixes a hole where pre-wizard auto-committed fuzzy entries had no path to the wizard review queue.
+
+---
+
 ## [0.4.0] - 2026-04-19 — Mapping Wizard
 
 ### Breaking

@@ -191,4 +191,118 @@ describe("cfx_list_unresolved", () => {
     expect(collision!.reason).toBe("name-collision");
     expect(collision!.collidesWith).toMatchObject({ grantId: 400 });
   });
+
+  it("does NOT surface new-install entries as reactivated when matcher only finds tier 3/4", async () => {
+    // Seed a new-install entry. The grant is in entries[] with status:"new-install"
+    // but NOT in newInstalls[] — this tests the reactivation loop (b), not the
+    // new-install loop (a).
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({
+      "992304": {
+        slug: "brofx_mansion_10",
+        target: "",
+        assetName: "brofx_mansion_10",
+        discoveredTier: 0,
+        discoveredConfidence: 0,
+        status: "new-install",
+        reviewedByUser: true,
+      },
+    });
+    await m.save();
+
+    // A resource that author-matches (tier 3) but is NOT an exact or slug match.
+    // brofx_mansion_10 vs brofx_church: author "brofx" matches, token "brofx" (len 5)
+    // is shared → hits tier 3. Not tier 1 (different folder name), not tier 2 (different slug).
+    await fs.mkdir(path.join(resourcesDir, "[maps]", "brofx_church"), { recursive: true });
+    await fs.writeFile(
+      path.join(resourcesDir, "[maps]", "brofx_church", "fxmanifest.lua"),
+      "fx_version 'cerulean'\ngame 'gta5'\nauthor 'brofx'\n"
+    );
+
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
+      grants: [
+        {
+          grant_id: 992304,
+          asset: {
+            id: 1,
+            name: "brofx_mansion_10",
+            author: "brofx",
+            state: "active",
+            is_disabled: false,
+            disabled_reason: null,
+            versions: [],
+          },
+          transferable: false,
+          updated_since_last_download: false,
+          download_url: "",
+          received_at: "",
+          updated_at: "",
+        },
+      ],
+      page: 1,
+      page_count: 1,
+      item_count: 1,
+    });
+
+    const { cfx_list_unresolved } = await import("../../../src/mcp/tools/list_unresolved.js");
+    const out = await cfx_list_unresolved({});
+
+    // The new-install entry should NOT appear as reactivated — tier 3 match is filtered.
+    const reactivated = out.unresolved.filter((u) => u.reason === "reactivated");
+    expect(reactivated).toHaveLength(0);
+  });
+
+  it("surfaces new-install entry as reactivated when matcher finds a tier-1 exact match", async () => {
+    // Seed a new-install entry (in entries[], not newInstalls[]).
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({
+      "300": {
+        slug: "pending_asset",
+        target: "",
+        assetName: "pending_asset",
+        discoveredTier: 0,
+        discoveredConfidence: 0,
+        status: "new-install",
+        reviewedByUser: true,
+      },
+    });
+    await m.save();
+
+    // Folder name exactly equals assetName — tier 1 exact match.
+    await fs.mkdir(path.join(resourcesDir, "[standalone]", "pending_asset"), { recursive: true });
+    await fs.writeFile(
+      path.join(resourcesDir, "[standalone]", "pending_asset", "fxmanifest.lua"),
+      "fx_version 'cerulean'\ngame 'gta5'\n"
+    );
+
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
+      grants: [
+        {
+          grant_id: 300,
+          asset: {
+            id: 2,
+            name: "pending_asset",
+            author: "Anybody",
+            state: "active",
+            is_disabled: false,
+            disabled_reason: null,
+            versions: [],
+          },
+          transferable: false,
+          updated_since_last_download: false,
+          download_url: "",
+          received_at: "",
+          updated_at: "",
+        },
+      ],
+      page: 1,
+      page_count: 1,
+      item_count: 1,
+    });
+
+    const { cfx_list_unresolved } = await import("../../../src/mcp/tools/list_unresolved.js");
+    const out = await cfx_list_unresolved({});
+    const r = out.unresolved.find((u) => u.grantId === 300);
+    expect(r?.reason).toBe("reactivated");
+  });
 });

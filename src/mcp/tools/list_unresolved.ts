@@ -145,7 +145,7 @@ export async function cfx_list_unresolved(
       resources
     );
     const match = matchRes.matches[0];
-    if (match) {
+    if (match && match.matchTier <= 2) {
       const alts = applyAuthorPrefixBoost(
         [
           { target: match.matchedPath, tier: match.matchTier, confidence: match.confidence },
