@@ -332,7 +332,7 @@ describe("cfx_scan_updates end-to-end smoke", () => {
 
     // Seed an empty mapping so the scanner has something to load.
     const mapping: MappingFile = {
-      version: 3,
+      version: 4,
       approvedAt: new Date().toISOString(),
       entries: {},
       newInstalls: [],
@@ -367,7 +367,7 @@ describe("cfx_scan_updates end-to-end smoke", () => {
     writeFileSync(path.join(stateDir, "state.json"), JSON.stringify(state));
 
     const mapping: MappingFile = {
-      version: 3,
+      version: 4,
       approvedAt: new Date().toISOString(),
       entries: {},
       newInstalls: [],
@@ -404,13 +404,14 @@ describe("cfx_scan_updates end-to-end smoke", () => {
     const entry: MappingEntry = {
       slug: "cd_dispatch",
       target: path.join(dir, "resources/cd_dispatch"),
-      disabled: false,
+      status: "active",
+      reviewedByUser: true,
       assetName: "cd_dispatch",
       discoveredTier: 1,
       discoveredConfidence: 1.0,
     };
     const mapping: MappingFile = {
-      version: 3,
+      version: 4,
       approvedAt: new Date().toISOString(),
       entries: { "100": entry },
       newInstalls: [],
@@ -551,7 +552,7 @@ describe("cfx_scan_updates — graceful degradation end-to-end", () => {
     writeFileSync(path.join(stateDir, "state.json"), JSON.stringify(state));
 
     const mapping: MappingFile = {
-      version: 3,
+      version: 4,
       approvedAt: new Date().toISOString(),
       entries: {},
       newInstalls: [],
@@ -587,7 +588,7 @@ describe("cfx_scan_updates — graceful degradation end-to-end", () => {
     writeFileSync(path.join(stateDir, "state.json"), JSON.stringify(state));
 
     const mapping: MappingFile = {
-      version: 3,
+      version: 4,
       approvedAt: new Date().toISOString(),
       entries: {},
       newInstalls: [],

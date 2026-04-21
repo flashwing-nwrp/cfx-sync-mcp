@@ -26,7 +26,8 @@ describe("cfx_approve_mapping — narrowed to confidence===1.0", () => {
         "1": {
           slug: "tier1",
           target: "/tmp/1",
-          disabled: false,
+          status: "active" as const,
+          reviewedByUser: true,
           assetName: "T1",
           discoveredTier: 1,
           discoveredConfidence: 1.0,
@@ -34,7 +35,8 @@ describe("cfx_approve_mapping — narrowed to confidence===1.0", () => {
         "2": {
           slug: "tier4_fuzzy",
           target: "/tmp/2",
-          disabled: false,
+          status: "active" as const,
+          reviewedByUser: false,
           assetName: "T4",
           discoveredTier: 4,
           discoveredConfidence: 0.88,
@@ -72,9 +74,9 @@ describe("cfx_approve_mapping — narrowed to confidence===1.0", () => {
       version: 1 as const,
       generatedAt: new Date().toISOString(),
       entries: {
-        "10": { slug: "t1", target: "/tmp/10", disabled: false, assetName: "Auto",
+        "10": { slug: "t1", target: "/tmp/10", status: "active" as const, reviewedByUser: true, assetName: "Auto",
                 discoveredTier: 1, discoveredConfidence: 1.0 },
-        "20": { slug: "t4", target: "/tmp/20", disabled: false, assetName: "Fuzzy",
+        "20": { slug: "t4", target: "/tmp/20", status: "active" as const, reviewedByUser: false, assetName: "Fuzzy",
                 discoveredTier: 4, discoveredConfidence: 0.82 },
       },
       newInstalls: [],
@@ -99,7 +101,8 @@ describe("cfx_approve_mapping — narrowed to confidence===1.0", () => {
         "5": {
           slug: "clean_asset",
           target: "/tmp/5",
-          disabled: false,
+          status: "active" as const,
+          reviewedByUser: true,
           assetName: "CleanAsset",
           discoveredTier: 2,
           discoveredConfidence: 1.0,

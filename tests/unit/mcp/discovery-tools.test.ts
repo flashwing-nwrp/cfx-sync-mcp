@@ -37,7 +37,8 @@ describe("cfx_approve_mapping", () => {
           "12345": {
             slug: "qs_inventory",
             target: "/srv/[qs]/qs-inventory",
-            disabled: false,
+            status: "active",
+            reviewedByUser: true,
             assetName: "QS Inventory",
             discoveredTier: 1,
             discoveredConfidence: 1.0,

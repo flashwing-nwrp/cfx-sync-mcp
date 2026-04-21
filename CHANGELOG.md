@@ -6,6 +6,13 @@ Format roughly follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.4.2] - 2026-04-20 — Typecheck fixes
+
+### Fixed
+- Test file typecheck errors from v3→v4 schema shim. Updated all test fixtures to use new `status` and `reviewedByUser` fields (no runtime behavior change). CI now passes with strict `tsc --noEmit`.
+
+---
+
 ## [0.4.1] - 2026-04-20 — Dogfood fixes
 
 ### Fixed

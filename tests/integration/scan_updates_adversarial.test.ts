@@ -40,7 +40,7 @@ function loadFixture(name: string): string[] {
 }
 
 const EMPTY_MAPPING: MappingFile = {
-  version: 3,
+  version: 4,
   approvedAt: "2025-01-01T00:00:00.000Z",
   newInstalls: [],
   orphaned: [],

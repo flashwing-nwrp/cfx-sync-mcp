@@ -30,7 +30,8 @@ describe("Mapping", () => {
       "12345": {
         slug: "qs_inventory",
         target: "server/resources/[qs]/qs-inventory",
-        disabled: false,
+        status: "active",
+        reviewedByUser: true,
         assetName: "QS Inventory",
         discoveredTier: 1,
         discoveredConfidence: 1.0,
@@ -55,7 +56,7 @@ describe("Mapping", () => {
   it("get(grantId) returns entry or undefined", async () => {
     const m = new Mapping(dir);
     m.approveFromProposed({
-      "1": { slug: "a", target: "/x", disabled: false, assetName: "A", discoveredTier: 1, discoveredConfidence: 1 },
+      "1": { slug: "a", target: "/x", status: "active", reviewedByUser: true, assetName: "A", discoveredTier: 1, discoveredConfidence: 1 },
     });
     expect(m.get(1)?.slug).toBe("a");
     expect(m.get(999)).toBeUndefined();
@@ -253,7 +254,8 @@ describe("Mapping", () => {
       "55": {
         slug: "baz",
         target: "/srv/baz",
-        disabled: false,
+        status: "active",
+        reviewedByUser: true,
         assetName: "Baz",
         discoveredTier: 1,
         discoveredConfidence: 1.0,

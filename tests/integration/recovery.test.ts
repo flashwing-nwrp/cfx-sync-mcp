@@ -107,7 +107,7 @@ function mkFixture(prefix = "cfx-recovery-int-"): Fixture {
 
 function writeMapping(stateDir: string, entries: Record<string, MappingEntry>): void {
   const file: MappingFile = {
-    version: 3,
+    version: 4,
     approvedAt: new Date().toISOString(),
     entries,
     newInstalls: [],
@@ -160,7 +160,8 @@ function makeEntry(target: string, slug = "my_asset"): MappingEntry {
   return {
     slug,
     target,
-    disabled: false,
+    status: "active",
+    reviewedByUser: true,
     assetName: "My Asset",
     discoveredTier: 1,
     discoveredConfidence: 1.0,

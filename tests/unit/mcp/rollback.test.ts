@@ -206,7 +206,8 @@ describe("cfx_rollback", () => {
       "7": {
         slug: "qs_inventory",
         target,
-        disabled: false,
+        status: "active",
+        reviewedByUser: true,
         assetName: "QS Inventory",
         discoveredTier: 1,
         discoveredConfidence: 1.0,
@@ -272,7 +273,8 @@ describe("cfx_rollback", () => {
       "7": {
         slug: "qs_inventory",
         target,
-        disabled: false,
+        status: "active",
+        reviewedByUser: true,
         assetName: "QS Inventory",
         discoveredTier: 1,
         discoveredConfidence: 1.0,
@@ -324,7 +326,8 @@ describe("cfx_rollback", () => {
       "7": {
         slug: "qs_inventory",
         target,
-        disabled: false,
+        status: "active",
+        reviewedByUser: true,
         assetName: "QS Inventory",
         discoveredTier: 1,
         discoveredConfidence: 1.0,
@@ -383,7 +386,8 @@ describe("cfx_rollback", () => {
       "7": {
         slug: "qs_inventory",
         target,
-        disabled: false,
+        status: "active",
+        reviewedByUser: true,
         assetName: "QS Inventory",
         discoveredTier: 1,
         discoveredConfidence: 1.0,
@@ -422,7 +426,8 @@ describe("cfx_rollback", () => {
       "7": {
         slug: "qs_inventory",
         target,
-        disabled: false,
+        status: "active",
+        reviewedByUser: true,
         assetName: "QS Inventory",
         discoveredTier: 1,
         discoveredConfidence: 1.0,

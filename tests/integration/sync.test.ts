@@ -101,7 +101,8 @@ describe("integration: full sync pipeline", () => {
           "1": {
             slug: "qs_inventory",
             target: path.join(tmp, "srv", "[qs]", "qs-inventory"),
-            disabled: false,
+            status: "active",
+            reviewedByUser: true,
             assetName: "qs-inventory",
             discoveredTier: 1,
             discoveredConfidence: 1.0,

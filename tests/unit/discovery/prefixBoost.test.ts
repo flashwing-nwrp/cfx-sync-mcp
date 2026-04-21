@@ -10,12 +10,12 @@ describe("applyAuthorPrefixBoost", () => {
 
   it("moves prefix-matching alternatives ahead within the same tier", () => {
     const out = applyAuthorPrefixBoost(cands, "BroFX");
-    expect(out[0].target).toContain("brofx_mansion_10_v2");
-    expect(out[0].authorPrefixBoosted).toBe(true);
-    expect(out[1].target).toContain("brofx_church");
-    expect(out[1].authorPrefixBoosted).toBe(true);
-    expect(out[2].target).toContain("unrelated_mlo");
-    expect(out[2].authorPrefixBoosted).toBe(false);
+    expect(out[0]!.target).toContain("brofx_mansion_10_v2");
+    expect(out[0]!.authorPrefixBoosted).toBe(true);
+    expect(out[1]!.target).toContain("brofx_church");
+    expect(out[1]!.authorPrefixBoosted).toBe(true);
+    expect(out[2]!.target).toContain("unrelated_mlo");
+    expect(out[2]!.authorPrefixBoosted).toBe(false);
   });
 
   it("leaves ordering untouched for unknown authors", () => {
@@ -31,8 +31,8 @@ describe("applyAuthorPrefixBoost", () => {
     ];
     const out = applyAuthorPrefixBoost(mixed, "BroFX");
     // Tier 1 still ranks before tier 4 even though brofx_ matches.
-    expect(out[0].tier).toBe(1);
-    expect(out[1].tier).toBe(4);
+    expect(out[0]!.tier).toBe(1);
+    expect(out[1]!.tier).toBe(4);
   });
 
   it("handles null/undefined author gracefully", () => {
@@ -46,7 +46,7 @@ describe("applyAuthorPrefixBoost", () => {
       { target: "[x]/other",         tier: 4, confidence: 0.8 },
     ];
     const out = applyAuthorPrefixBoost(upper, "BroFX");
-    expect(out[0].target).toContain("BROFX_mansion");
-    expect(out[0].authorPrefixBoosted).toBe(true);
+    expect(out[0]!.target).toContain("BROFX_mansion");
+    expect(out[0]!.authorPrefixBoosted).toBe(true);
   });
 });
