@@ -95,4 +95,89 @@ describe("cfx_resolve_mapping_entry — install-to action", () => {
     expect(out.committed).toBe(false);
     expect((out as any).error).toBe("unexpected-field");
   });
+
+  // Test 7 — category format
+  it("rejects category with missing brackets", async () => {
+    await seedNewInstallQueue();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "maps",
+    });
+    expect((out as any).error).toBe("category-invalid");
+  });
+
+  it("rejects category with traversal segments", async () => {
+    await seedNewInstallQueue();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]/..",
+    });
+    expect((out as any).error).toBe("category-invalid");
+  });
+
+  it("rejects absolute category path", async () => {
+    await seedNewInstallQueue();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "/etc",
+    });
+    expect((out as any).error).toBe("category-invalid");
+  });
+
+  // Test 8 — category not on disk
+  it("rejects category that does not exist on disk", async () => {
+    await seedNewInstallQueue();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[nonexistent]",
+    });
+    expect((out as any).error).toBe("category-not-found");
+  });
+
+  // Test 9 — slug regex
+  it("rejects slug with path separator", async () => {
+    await seedNewInstallQueue();
+    await ensureMapsCategory();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]", slug: "a/b",
+    });
+    expect((out as any).error).toBe("slug-invalid");
+  });
+
+  it("rejects slug with leading underscore", async () => {
+    await seedNewInstallQueue();
+    await ensureMapsCategory();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]", slug: "_bad",
+    });
+    expect((out as any).error).toBe("slug-invalid");
+  });
+
+  it("rejects slug exceeding 60 chars", async () => {
+    await seedNewInstallQueue();
+    await ensureMapsCategory();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]", slug: "a".repeat(61),
+    });
+    expect((out as any).error).toBe("slug-invalid");
+  });
+
+  // Test 10 — slug derivation failed
+  it("rejects when auto-derived slug is empty", async () => {
+    await seedNewInstallQueue();
+    await ensureMapsCategory();
+    // Override the default portal mock — grant whose name slugifies to "".
+    vi.spyOn(PortalApiClient.prototype, "listGrants").mockResolvedValue({
+      grants: [{ grant_id: 100, asset: { name: "!!!", author: "BroFX" } }] as any,
+      page: 1, page_count: 1, item_count: 1,
+    } as any);
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]",
+    });
+    expect((out as any).error).toBe("slug-derivation-failed");
+  });
 });

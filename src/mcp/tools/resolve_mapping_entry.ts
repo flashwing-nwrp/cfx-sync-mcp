@@ -43,6 +43,26 @@ function similarity(a: string, b: string): number {
   return 1 - levenshtein(a, b) / max;
 }
 
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 60);
+}
+
+const SLUG_REGEX = /^[a-z0-9][a-z0-9_]{0,59}$/;
+const CATEGORY_SEGMENT_REGEX = /^\[[^\]]+\]$/;
+
+function validateCategory(category: string): "category-invalid" | "ok" {
+  if (!category || category.length === 0) return "category-invalid";
+  if (category.includes("..")) return "category-invalid";
+  if (category.startsWith("/") || category.startsWith("\\")) return "category-invalid";
+  // Windows drive-letter paranoia (e.g., "C:\\foo")
+  if (/^[a-zA-Z]:[\\/]/.test(category)) return "category-invalid";
+  const segments = category.split("/");
+  for (const seg of segments) {
+    if (!CATEGORY_SEGMENT_REGEX.test(seg)) return "category-invalid";
+  }
+  return "ok";
+}
+
 type ToolOutput = z.infer<typeof ResolveMappingEntryOutput>;
 
 function fail(error: NonNullable<ToolOutput["error"]>, extra: Partial<ToolOutput> = {}): ToolOutput {
@@ -373,6 +393,38 @@ export async function cfx_resolve_mapping_entry(
         tierBefore: null, confidenceBefore: null, chosenBasename: null, overrideInput: null,
       });
       return { committed: true, entry, remainingUnresolvedCount: -1 };
+    }
+
+    // -----------------------------------------------------------------------
+    // install-to — bind a new-install grant to a prospective target path.
+    // -----------------------------------------------------------------------
+    if (input.action === "install-to") {
+      // Validation order: category format → slug format → category exists on disk
+      // → fetch grant → slug-derive → ownership guard → state-machine → commit.
+      if (input.category === undefined) return fail("unexpected-field");
+      if (validateCategory(input.category) !== "ok") return fail("category-invalid");
+      if (input.slug !== undefined && !SLUG_REGEX.test(input.slug)) return fail("slug-invalid");
+
+      const categoryAbs = path.resolve(cfg.serverResources, input.category);
+      const rootAbs = path.resolve(cfg.serverResources);
+      // Containment check (paranoia on top of the format guard)
+      if (!(categoryAbs === rootAbs || categoryAbs.startsWith(rootAbs + path.sep))) {
+        return fail("category-invalid");
+      }
+      try {
+        const stat = await (await import("node:fs/promises")).stat(categoryAbs);
+        if (!stat.isDirectory()) return fail("category-not-found");
+      } catch {
+        return fail("category-not-found");
+      }
+
+      if (!grant) return fail("grantId-not-owned");
+
+      const finalSlug = input.slug ?? slugify(grant.asset.name);
+      if (!finalSlug) return fail("slug-derivation-failed");
+
+      // Remaining: state-machine + commit. Implemented in later tasks.
+      return fail("install-to-requires-new-install");
     }
 
     return fail("unexpected-field");
