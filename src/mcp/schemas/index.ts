@@ -401,10 +401,20 @@ export const ListUnresolvedOutput = z.object({
 
 export const ResolveMappingEntryInput = z.object({
   grantId: z.number().int(),
-  action: z.enum(["accept", "pick", "override", "skip", "new-install", "reactivate"]),
+  action: z.enum([
+    "accept",
+    "pick",
+    "override",
+    "skip",
+    "new-install",
+    "reactivate",
+    "install-to",
+  ]),
   pickIndex: z.number().int().min(0).optional(),
   overrideInput: z.string().optional(),
   allowRemapOver: z.string().optional(),
+  category: z.string().optional(),
+  slug: z.string().optional(),
 });
 
 export const ResolveMappingEntryOutput = z.object({
@@ -427,6 +437,12 @@ export const ResolveMappingEntryOutput = z.object({
     "reactivate-invalid-state",
     "unexpected-field",
     "state-locked",
+    "install-to-requires-new-install",
+    "grantId-not-in-mapping",
+    "category-invalid",
+    "category-not-found",
+    "slug-invalid",
+    "slug-derivation-failed",
   ]).optional(),
   ownedBy: z.number().int().optional(),
   expectedBasename: z.string().optional(),
