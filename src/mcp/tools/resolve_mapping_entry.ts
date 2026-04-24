@@ -54,10 +54,12 @@ function fail(error: NonNullable<ToolOutput["error"]>, extra: Partial<ToolOutput
  * Returns the offending field name, or null if all fields are valid.
  */
 function validateFieldsForAction(input: z.infer<typeof ResolveMappingEntryInput>): string | null {
-  const { action, pickIndex, overrideInput, allowRemapOver } = input;
+  const { action, pickIndex, overrideInput, allowRemapOver, category, slug } = input;
   if (action !== "pick" && pickIndex !== undefined) return "pickIndex";
   if (action !== "override" && overrideInput !== undefined) return "overrideInput";
   if (!(action === "pick" || action === "override") && allowRemapOver !== undefined) return "allowRemapOver";
+  if (action !== "install-to" && category !== undefined) return "category";
+  if (action !== "install-to" && slug !== undefined) return "slug";
   return null;
 }
 
