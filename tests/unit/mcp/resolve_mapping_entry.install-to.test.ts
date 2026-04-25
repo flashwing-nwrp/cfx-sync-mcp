@@ -268,4 +268,47 @@ describe("cfx_resolve_mapping_entry — install-to action", () => {
     expect(out.entry!.ignoreUpstreamUpdatesReason).toBe("preexisting");
     expect(out.entry!.ignoreUpstreamUpdatesSetAt).toBe("2026-04-01T00:00:00Z");
   });
+
+  // Test 5 — reject when entry is already active
+  it("rejects install-to when entry status is 'active'", async () => {
+    const m = new Mapping(stateDir);
+    const existingTarget = path.join(resourcesDir, "[maps]", "already_here");
+    await fs.mkdir(existingTarget, { recursive: true });
+    m.approveFromProposed({
+      "100": {
+        slug: "already_here",
+        target: existingTarget,
+        assetName: "BroFX Mansion 10",
+        discoveredTier: 1,
+        discoveredConfidence: 1,
+        status: "active",
+        reviewedByUser: true,
+      },
+    });
+    await m.save();
+    await ensureMapsCategory();
+
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]",
+    });
+    expect(out.committed).toBe(false);
+    expect((out as any).error).toBe("install-to-requires-new-install");
+  });
+
+  // Test 6 — reject when no entry and grantId not in newInstalls
+  it("rejects install-to when grantId is neither mapped nor in newInstalls", async () => {
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({});
+    // No newInstalls, no entries — but the portal stub still returns grant 100.
+    await m.save();
+    await ensureMapsCategory();
+
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]",
+    });
+    expect(out.committed).toBe(false);
+    expect((out as any).error).toBe("grantId-not-in-mapping");
+  });
 });
