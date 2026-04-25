@@ -22,7 +22,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { scoreContent } from "../src/lib/preservation/contentSignature.js";
+import { scoreContent } from "flrp-resource-preservation";
 
 // ---------------------------------------------------------------------------
 // Encrypted / non-Lua guard — decides whether to score or return null.

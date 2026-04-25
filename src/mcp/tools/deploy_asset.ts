@@ -56,13 +56,15 @@ import { StateLock } from "../../lib/state/lock.js";
 import { unzipToStaging } from "../../lib/deploy/unzipper.js";
 import { deploy } from "../../lib/deploy/deployer.js";
 import { checkPathLengths } from "../../lib/deploy/preflight.js";
-import { hashTree } from "../../lib/preservation/hashTree.js";
-import { findRenames } from "../../lib/preservation/renameDetection.js";
-import { detectCaseCollisions } from "../../lib/preservation/caseDetection.js";
-import { computeDeployPlan } from "../../lib/preservation/diffEngine.js";
-import { applyPlan } from "../../lib/preservation/applyPlan.js";
-import { capturePristine } from "../../lib/pristine/capture.js";
-import { rotatePristine } from "../../lib/pristine/rotate.js";
+import {
+  hashTree,
+  findRenames,
+  detectCaseCollisions,
+  computeDeployPlan,
+  applyPlan,
+  capturePristine,
+  rotatePristine,
+} from "flrp-resource-preservation";
 import {
   MappingUnapprovedError,
   NotFoundError,
@@ -77,7 +79,12 @@ import {
   writeInFlightMarker,
   clearInFlightMarker,
 } from "../../lib/deploy/inFlight.js";
-import type { DeployPlan, PlanRow, ValidationFailure, ResolutionChoice } from "../../lib/preservation/types.js";
+import type {
+  DeployPlan,
+  PlanRow,
+  ValidationFailure,
+  ResolutionChoice,
+} from "flrp-resource-preservation";
 
 type Input = z.infer<typeof DeployAssetInput>;
 type Output = z.infer<typeof DeployAssetOutput>;
@@ -608,7 +615,10 @@ async function runLayer2(
   const rotation = await rotatePristine({
     grantId: stateEntry.grantId,
     newStagingRoot: result.deployedPath,
-    stateEntry,
+    stateEntry: {
+      pristineHashes: stateEntry.pristineHashes,
+      pristineBaselineId: stateEntry.pristineVersionId,
+    },
     pristineDir: paths.pristineDir,
     newVersionId: stateEntry.versionId,
   });

@@ -7,7 +7,7 @@ import type {
 import { loadConfig } from "../../lib/config.js";
 import { Mapping } from "../../lib/state/mapping.js";
 import { StateLock } from "../../lib/state/lock.js";
-import { scanConfigs } from "../../lib/preservation/scanConfigs.js";
+import { scanConfigs } from "flrp-resource-preservation";
 import {
   MappingUnapprovedError,
   NotFoundError,
