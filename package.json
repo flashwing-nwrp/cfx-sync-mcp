@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
-    "flrp-resource-preservation": "github:flashwing-nwrp/flrp-resource-preservation#v1.0.0",
     "@types/semver": "7.7.1",
+    "flrp-resource-preservation": "github:flashwing-nwrp/flrp-resource-preservation#v1.0.0",
     "playwright": "1.59.1",
     "semver": "7.7.4",
     "undici": "6.25.0",

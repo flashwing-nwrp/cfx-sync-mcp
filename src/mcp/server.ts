@@ -2,7 +2,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { TOOLS } from "./tools/index.js";
-import { CfxError } from "../lib/errors.js";
+import { CfxError, PreservationError } from "../lib/errors.js";
 import { dispatch } from "./dispatch.js";
 
 export async function runMcpServer() {
@@ -33,7 +33,7 @@ export async function runMcpServer() {
       tool.outputSchema.parse(result);
       return { content: [{ type: "text", text: JSON.stringify({ success: true, data: result }) }] };
     } catch (e) {
-      const env = e instanceof CfxError
+      const env = (e instanceof CfxError || e instanceof PreservationError)
         ? e.toEnvelope()
         : { success: false as const, error: { code: "IO", message: e instanceof Error ? e.message : String(e) } };
       return {

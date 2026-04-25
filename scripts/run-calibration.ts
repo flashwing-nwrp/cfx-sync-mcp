@@ -6,7 +6,7 @@
 //
 // RECONCILE PASS (Apr 2026): Task 0 originally prototyped its own inline
 // scorer here and picked LAYER_1_THRESHOLD = 0.6 against that scorer. Task 10
-// shipped a richer production scorer at `src/lib/preservation/contentSignature.ts`
+// shipped a richer production scorer in flrp-resource-preservation (contentSignature module)
 // whose weights differ meaningfully, so Task 0's number no longer applies.
 //
 // This script now imports the production scorer directly and re-runs the
