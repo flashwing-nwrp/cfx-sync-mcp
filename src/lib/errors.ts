@@ -1,4 +1,6 @@
-export type CfxErrorCode =
+import type { PreservationErrorCode } from "flrp-resource-preservation";
+
+type CfxPortalErrorCode =
   | "AUTH_EXPIRED" | "AUTH_MISSING"
   | "INVALID_TARGET" | "FORBIDDEN_ENDPOINT"
   | "MAPPING_UNAPPROVED" | "NOT_FOUND" | "AMBIGUOUS_SLUG"
@@ -6,12 +8,16 @@ export type CfxErrorCode =
   | "TARGET_PARENT_MISSING" | "DISK_SPACE_LOW" | "STALL_TIMEOUT"
   | "UNKNOWN_LAYOUT" | "PLAYWRIGHT_NOT_INSTALLED"
   | "PORTAL_DISABLED"
-  | "NETWORK" | "IO" | "LOCK_HELD" | "RATE_LIMITED" | "CONFIG"
+  | "NETWORK" | "LOCK_HELD" | "RATE_LIMITED" | "CONFIG"
   | "FORBIDDEN" | "PORTAL_RATE_LIMIT"
-  | "STATE_SCHEMA_TOO_NEW" | "CASE_COLLISION_DETECTED"
-  | "ENCRYPTED_TAMPER_DETECTED" | "PRISTINE_CORRUPTED"
-  | "CONFLICTS_UNRESOLVED" | "DEPLOY_INTERRUPTED"
+  | "STATE_SCHEMA_TOO_NEW"
+  | "DEPLOY_INTERRUPTED"
   | "PATH_TOO_LONG";
+
+// Cfx-domain codes union'd with preservation-package codes. When the package
+// adds a new code, it flows through here automatically — the union stays in
+// sync without manual edits to this file.
+export type CfxErrorCode = CfxPortalErrorCode | PreservationErrorCode;
 
 export interface CfxErrorEnvelope {
   success: false;
