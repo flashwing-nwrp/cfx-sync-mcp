@@ -6,10 +6,13 @@ Format roughly follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## [Unreleased]
+## [0.5.0] - 2026-04-25 — Extract preservation engine
+
+### Changed
+- **Extracted** `lib/preservation/` and `lib/pristine/` into the new [`flrp-resource-preservation`](https://github.com/flashwing-nwrp/flrp-resource-preservation) package (git-dep). No behavior change for end users; preservation-domain errors are still importable from `src/lib/errors.ts` via re-export. Phase 0 of the github-sync-mcp project — the preservation engine becomes shared infrastructure for cfx-sync-mcp and the upcoming github-sync-mcp.
+- Widened `server.ts` and `sync_all.ts` MCP error guards to catch `PreservationError` alongside `CfxError` (preservation classes no longer share the `CfxError` base after extraction).
 
 ### Added
-
 - `cfx_resolve_mapping_entry` `install-to` action: bind a grant to a prospective target path without requiring the target directory to exist. Closes the gap that prevented `cfx_deploy_asset` from working on fresh new-install grants. Operator workflow: `cfx_resolve_mapping_entry { grantId, action: "install-to", category: "[maps]", slug? }` → `cfx_download_asset` → `cfx_deploy_asset`.
 
 ---
