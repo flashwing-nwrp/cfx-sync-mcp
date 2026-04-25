@@ -3,7 +3,7 @@ import type { SyncAllInput, SyncAllOutput } from "../schemas/index.js";
 import { cfx_check_updates } from "./check_updates.js";
 import { cfx_download_asset } from "./download_asset.js";
 import { cfx_deploy_asset } from "./deploy_asset.js";
-import { CfxError } from "../../lib/errors.js";
+import { CfxError, PreservationError } from "../../lib/errors.js";
 
 export async function cfx_sync_all(
   input: z.infer<typeof SyncAllInput>
@@ -44,7 +44,7 @@ export async function cfx_sync_all(
         grantId: u.grantId,
         slug: u.slug,
         action: "failed",
-        error: e instanceof CfxError
+        error: (e instanceof CfxError || e instanceof PreservationError)
           ? { code: e.code, message: e.message, hint: e.hint, retryable: e.retryable }
           : { code: "IO", message: e instanceof Error ? e.message : String(e) },
       });

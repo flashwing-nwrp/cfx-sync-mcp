@@ -6,6 +6,14 @@ Format roughly follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- `cfx_resolve_mapping_entry` `install-to` action: bind a grant to a prospective target path without requiring the target directory to exist. Closes the gap that prevented `cfx_deploy_asset` from working on fresh new-install grants. Operator workflow: `cfx_resolve_mapping_entry { grantId, action: "install-to", category: "[maps]", slug? }` → `cfx_download_asset` → `cfx_deploy_asset`.
+
+---
+
 ## [0.4.4] - 2026-04-20 — Auth error surfacing
 
 ### Fixed

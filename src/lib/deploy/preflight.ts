@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { DiskSpaceLowError, PathTooLongError } from "../errors.js";
-import { hashTree } from "../preservation/hashTree.js";
+import { hashTree } from "flrp-resource-preservation";
 
 export async function checkDiskSpace(anyPathOnFs: string, neededBytes: number): Promise<void> {
   const stat = await fs.statfs(anyPathOnFs);

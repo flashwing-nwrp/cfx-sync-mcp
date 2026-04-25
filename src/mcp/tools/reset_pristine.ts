@@ -8,7 +8,7 @@ import type {
 import { loadConfig, getPristinePaths } from "../../lib/config.js";
 import { State } from "../../lib/state/state.js";
 import { StateLock } from "../../lib/state/lock.js";
-import { detectOrphans } from "../../lib/pristine/gc.js";
+import { detectOrphans } from "flrp-resource-preservation";
 import { clearInFlightMarker } from "../../lib/deploy/inFlight.js";
 import { NotFoundError } from "../../lib/errors.js";
 

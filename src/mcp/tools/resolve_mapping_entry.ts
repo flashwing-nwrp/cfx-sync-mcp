@@ -43,6 +43,26 @@ function similarity(a: string, b: string): number {
   return 1 - levenshtein(a, b) / max;
 }
 
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 60);
+}
+
+const SLUG_REGEX = /^[a-z0-9][a-z0-9_]{0,59}$/;
+const CATEGORY_SEGMENT_REGEX = /^\[[^\]]+\]$/;
+
+function validateCategory(category: string): "category-invalid" | "ok" {
+  if (!category || category.length === 0) return "category-invalid";
+  if (category.includes("..")) return "category-invalid";
+  if (category.startsWith("/") || category.startsWith("\\")) return "category-invalid";
+  // Windows drive-letter paranoia (e.g., "C:\\foo")
+  if (/^[a-zA-Z]:[\\/]/.test(category)) return "category-invalid";
+  const segments = category.split("/");
+  for (const seg of segments) {
+    if (!CATEGORY_SEGMENT_REGEX.test(seg)) return "category-invalid";
+  }
+  return "ok";
+}
+
 type ToolOutput = z.infer<typeof ResolveMappingEntryOutput>;
 
 function fail(error: NonNullable<ToolOutput["error"]>, extra: Partial<ToolOutput> = {}): ToolOutput {
@@ -54,10 +74,12 @@ function fail(error: NonNullable<ToolOutput["error"]>, extra: Partial<ToolOutput
  * Returns the offending field name, or null if all fields are valid.
  */
 function validateFieldsForAction(input: z.infer<typeof ResolveMappingEntryInput>): string | null {
-  const { action, pickIndex, overrideInput, allowRemapOver } = input;
+  const { action, pickIndex, overrideInput, allowRemapOver, category, slug } = input;
   if (action !== "pick" && pickIndex !== undefined) return "pickIndex";
   if (action !== "override" && overrideInput !== undefined) return "overrideInput";
   if (!(action === "pick" || action === "override") && allowRemapOver !== undefined) return "allowRemapOver";
+  if (action !== "install-to" && category !== undefined) return "category";
+  if (action !== "install-to" && slug !== undefined) return "slug";
   return null;
 }
 
@@ -369,6 +391,87 @@ export async function cfx_resolve_mapping_entry(
         author: grant?.asset.author ?? null, assetName: entry.assetName,
         action: "reactivate",
         tierBefore: null, confidenceBefore: null, chosenBasename: null, overrideInput: null,
+      });
+      return { committed: true, entry, remainingUnresolvedCount: -1 };
+    }
+
+    // -----------------------------------------------------------------------
+    // install-to — bind a new-install grant to a prospective target path.
+    // -----------------------------------------------------------------------
+    if (input.action === "install-to") {
+      // Validation order: category format → slug format → category exists on disk
+      // → fetch grant → slug-derive → ownership guard → state-machine → commit.
+      if (input.category === undefined) return fail("unexpected-field");
+      if (validateCategory(input.category) !== "ok") return fail("category-invalid");
+      if (input.slug !== undefined && !SLUG_REGEX.test(input.slug)) return fail("slug-invalid");
+
+      const categoryAbs = path.resolve(cfg.serverResources, input.category);
+      const rootAbs = path.resolve(cfg.serverResources);
+      // Containment check (paranoia on top of the format guard)
+      if (!(categoryAbs === rootAbs || categoryAbs.startsWith(rootAbs + path.sep))) {
+        return fail("category-invalid");
+      }
+      try {
+        const stat = await (await import("node:fs/promises")).stat(categoryAbs);
+        if (!stat.isDirectory()) return fail("category-not-found");
+      } catch {
+        return fail("category-not-found");
+      }
+
+      if (!grant) return fail("grantId-not-owned");
+
+      const finalSlug = input.slug ?? slugify(grant.asset.name);
+      if (!finalSlug) return fail("slug-derivation-failed");
+
+      // -- State machine ---------------------------------------------------
+      const finalTarget = path.join(cfg.serverResources, input.category, finalSlug);
+
+      // Ownership guard — reject if another active entry already points here.
+      for (const [otherK, otherV] of Object.entries(mapping.entries())) {
+        if (Number(otherK) !== input.grantId
+            && otherV.status === "active"
+            && otherV.target === finalTarget) {
+          return fail("target-owned-by-other-grant", { ownedBy: Number(otherK) });
+        }
+      }
+
+      const inNewInstalls = (mappingFile.newInstalls ?? []).includes(input.grantId);
+
+      if (!currentEntry && !inNewInstalls) {
+        return fail("grantId-not-in-mapping");
+      }
+      if (currentEntry && currentEntry.status !== "new-install") {
+        return fail("install-to-requires-new-install");
+      }
+
+      const entry: MappingEntry = {
+        slug: finalSlug,
+        target: finalTarget,
+        assetName: grant.asset.name,
+        discoveredTier: 0,
+        discoveredConfidence: 1,
+        preservePaths: null,
+        preservePathsSource: null,
+        ignoreUpstreamUpdates: currentEntry?.ignoreUpstreamUpdates,
+        ignoreUpstreamUpdatesReason: currentEntry?.ignoreUpstreamUpdatesReason,
+        ignoreUpstreamUpdatesSetAt: currentEntry?.ignoreUpstreamUpdatesSetAt,
+        status: "active",
+        reviewedByUser: true,
+      };
+      mapping.setEntry(input.grantId, entry);
+      mappingFile.newInstalls = (mappingFile.newInstalls ?? []).filter((g) => g !== input.grantId);
+      await mapping.save();
+      await log.append({
+        ts: new Date().toISOString(),
+        grantId: input.grantId,
+        author: grant.asset.author ?? null,
+        assetName: grant.asset.name,
+        action: "install-to",
+        tierBefore: currentEntry?.discoveredTier ?? null,
+        confidenceBefore: currentEntry?.discoveredConfidence ?? null,
+        chosenBasename: finalSlug,
+        overrideInput: null,
+        category: input.category,
       });
       return { committed: true, entry, remainingUnresolvedCount: -1 };
     }

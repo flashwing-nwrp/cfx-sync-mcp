@@ -3,7 +3,7 @@ import fsP from "node:fs/promises";
 import path from "node:path";
 import { open as yauzlOpen } from "yauzl-promise";
 import { ValidationFailedError } from "../errors.js";
-import type { ValidationFailure } from "../preservation/types.js";
+import type { ValidationFailure } from "flrp-resource-preservation";
 
 export interface UnzipResult {
   root: string;

@@ -141,9 +141,7 @@ export class PortalDisabledError extends CfxError {
 export class NetworkError extends CfxError {
   constructor(message: string) { super("NETWORK", message, "Check connectivity; retry.", true); }
 }
-export class IoError extends CfxError {
-  constructor(message: string) { super("IO", message, "Check perms/disk."); }
-}
+// IoError class moved to flrp-resource-preservation; re-exported below.
 export class LockHeldError extends CfxError {
   constructor(pid: number | null) {
     super(
@@ -208,60 +206,18 @@ export class StateSchemaTooNewError extends CfxError {
   }
 }
 
-export class CaseCollisionDetectedError extends CfxError {
-  readonly pathA: string;
-  readonly pathB: string;
-  constructor(pathA: string, pathB: string = "") {
-    super(
-      "CASE_COLLISION_DETECTED",
-      `Case-insensitive collision between "${pathA}" and "${pathB}" — both map to the same deploy target on Windows/macOS.`,
-      "Rename one locally to resolve; deploy is case-safe only with distinct lowercase paths."
-    );
-    this.pathA = pathA;
-    this.pathB = pathB;
-  }
-}
-
-export class EncryptedTamperDetectedError extends CfxError {
-  readonly path: string;
-  constructor(path: string) {
-    super(
-      "ENCRYPTED_TAMPER_DETECTED",
-      `Encrypted file has been modified since last deploy: ${path}`,
-      "Run cfx_reset_pristine <grantId> to re-baseline, or cfx_rollback to restore from backup."
-    );
-    this.path = path;
-  }
-}
-
-export class PristineCorruptedError extends CfxError {
-  readonly grantId: number | string;
-  readonly reason: string;
-  constructor(grantId: number | string, reason: string = "pristine dir missing or hashes don't match state.json") {
-    super(
-      "PRISTINE_CORRUPTED",
-      `Pristine baseline for grant ${grantId} is corrupted: ${reason}`,
-      `Run cfx_reset_pristine ${grantId}; next deploy will treat as first-deploy.`
-    );
-    this.grantId = grantId;
-    this.reason = reason;
-  }
-}
-
-export class ConflictsUnresolvedError extends CfxError {
-  readonly paths: string[];
-  constructor(paths: string[] | string = []) {
-    const list = Array.isArray(paths) ? paths : [paths];
-    super(
-      "CONFLICTS_UNRESOLVED",
-      list.length > 0
-        ? `Deploy plan has ${list.length} unresolved conflict(s): ${list.join(", ")}`
-        : `Deploy plan has unresolved conflicts.`,
-      "Pass conflictResolutions {path: resolution} to deploy — one entry per conflicting path (resolution = 'keep-local' | 'take-upstream' | 'merge')."
-    );
-    this.paths = list;
-  }
-}
+// --- Re-exports from flrp-resource-preservation (preservation-domain errors) ---
+// The class definitions moved to the package in v0.5.0; re-exporting here keeps
+// existing import paths (`from "../../lib/errors.js"`) working for downstream callers.
+export {
+  PreservationError,
+  IoError,
+  CaseCollisionDetectedError,
+  EncryptedTamperDetectedError,
+  PristineCorruptedError,
+  ConflictsUnresolvedError,
+} from "flrp-resource-preservation";
+export type { PreservationErrorCode, PreservationErrorEnvelope } from "flrp-resource-preservation";
 
 export class DeployInterruptedError extends CfxError {
   readonly grantId: number;

@@ -14,11 +14,13 @@ export interface ResolutionLogEntry {
     | "new-install"
     | "reactivate"
     | "auto-approve"
-    | "remap";
+    | "remap"
+    | "install-to";
   tierBefore: number | null;
   confidenceBefore: number | null;
   chosenBasename: string | null;
   overrideInput: string | null;
+  category?: string | null;
 }
 
 export class ResolutionLog {
