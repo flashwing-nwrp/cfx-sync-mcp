@@ -311,4 +311,34 @@ describe("cfx_resolve_mapping_entry — install-to action", () => {
     expect(out.committed).toBe(false);
     expect((out as any).error).toBe("grantId-not-in-mapping");
   });
+
+  // Test 11 — reject when target is already owned by another active grant
+  it("rejects install-to when computed target is owned by another active grant", async () => {
+    const otherTarget = path.join(resourcesDir, "[maps]", "brofx_mansion_10");
+    await fs.mkdir(otherTarget, { recursive: true });
+
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({
+      // grant 999 already owns the target install-to would compute for grant 100
+      "999": {
+        slug: "brofx_mansion_10",
+        target: otherTarget,
+        assetName: "Some Other Asset",
+        discoveredTier: 1,
+        discoveredConfidence: 1,
+        status: "active",
+        reviewedByUser: true,
+      },
+    });
+    m.getFile().newInstalls = [100];
+    await m.save();
+
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]",
+    });
+    expect(out.committed).toBe(false);
+    expect((out as any).error).toBe("target-owned-by-other-grant");
+    expect((out as any).ownedBy).toBe(999);
+  });
 });
