@@ -4,7 +4,7 @@ Real-captured server-log excerpts from live FLRP (Full Life Roleplay) server, us
 
 ## Source
 
-- `E:/Full Life Roleplay 2.0/txData/default/logs/fxserver.log` (9654 lines, 914 KB at capture time)
+- `<txdata>/default/logs/fxserver.log` (9654 lines, 914 KB at capture time)
 - Boot cycle starting at line 2000 of the source log (qbx_core → cd_bridge → … → prompt resources → flrp_police)
 
 ## Sanitization

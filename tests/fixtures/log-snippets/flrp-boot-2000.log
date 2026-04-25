@@ -1446,8 +1446,8 @@
 [script:flrp_timesync] [flrp_timesync] [INFO] [flrp_timesync] Time tick thread started (cycleSpeed=%d, %dms per game-second)	15	250
 [ script:flrp_medical] [flrp_medical] Database tables initialized
 [script:sonoran_updat] sonoran_updatehelper is for internal use and should not be started as a resource.
-[   script:sonorancad] [12:16:54][SonoranCAD:INFO] Starting SonoranCAD from E:/Full Life Roleplay 2.0/server/resources//[sonorancad]/sonorancad
-[   script:sonorancms] Starting SonoranCMS from E:/Full Life Roleplay 2.0/server/resources//[sonorancms]/sonorancms
+[   script:sonorancad] [12:16:54][SonoranCAD:INFO] Starting SonoranCAD from /srv/fxserver/resources//[sonorancad]/sonorancad
+[   script:sonorancms] Starting SonoranCMS from /srv/fxserver/resources//[sonorancms]/sonorancms
 [   script:sonorancms] [12:16:54][SonoranCMS:WARNING] addonupdates folder exists but permission was denied when checking. Please verify permissions.
 [   script:sonorancms] [12:16:54][SonoranCMS:WARNING] config.NEW.lua exists but permission was denied when checking. Please verify permissions. See https://sonoran.link/cmsconfig for more information.
 [   script:sonorancms] [12:16:54][SonoranCMS:WARNING] qb-garages, qs-advancedgarages, jg-advancedgarages, ak47_qb_garage and cd_garage are not started. The garage data will be sent as empty. If you do not use the SonoranCMS Game Panel you can ignore this.
