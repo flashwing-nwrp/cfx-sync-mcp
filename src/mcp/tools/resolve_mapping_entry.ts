@@ -423,8 +423,57 @@ export async function cfx_resolve_mapping_entry(
       const finalSlug = input.slug ?? slugify(grant.asset.name);
       if (!finalSlug) return fail("slug-derivation-failed");
 
-      // Remaining: state-machine + commit. Implemented in later tasks.
-      return fail("install-to-requires-new-install");
+      // -- State machine ---------------------------------------------------
+      const finalTarget = path.join(cfg.serverResources, input.category, finalSlug);
+
+      // Ownership guard — reject if another active entry already points here.
+      for (const [otherK, otherV] of Object.entries(mapping.entries())) {
+        if (Number(otherK) !== input.grantId
+            && otherV.status === "active"
+            && otherV.target === finalTarget) {
+          return fail("target-owned-by-other-grant", { ownedBy: Number(otherK) });
+        }
+      }
+
+      const inNewInstalls = (mappingFile.newInstalls ?? []).includes(input.grantId);
+
+      if (!currentEntry && !inNewInstalls) {
+        return fail("grantId-not-in-mapping");
+      }
+      if (currentEntry && currentEntry.status !== "new-install") {
+        return fail("install-to-requires-new-install");
+      }
+
+      const entry: MappingEntry = {
+        slug: finalSlug,
+        target: finalTarget,
+        assetName: grant.asset.name,
+        discoveredTier: 0,
+        discoveredConfidence: 1,
+        preservePaths: null,
+        preservePathsSource: null,
+        ignoreUpstreamUpdates: currentEntry?.ignoreUpstreamUpdates,
+        ignoreUpstreamUpdatesReason: currentEntry?.ignoreUpstreamUpdatesReason,
+        ignoreUpstreamUpdatesSetAt: currentEntry?.ignoreUpstreamUpdatesSetAt,
+        status: "active",
+        reviewedByUser: true,
+      };
+      mapping.setEntry(input.grantId, entry);
+      mappingFile.newInstalls = (mappingFile.newInstalls ?? []).filter((g) => g !== input.grantId);
+      await mapping.save();
+      await log.append({
+        ts: new Date().toISOString(),
+        grantId: input.grantId,
+        author: grant.asset.author ?? null,
+        assetName: grant.asset.name,
+        action: "install-to",
+        tierBefore: currentEntry?.discoveredTier ?? null,
+        confidenceBefore: currentEntry?.discoveredConfidence ?? null,
+        chosenBasename: finalSlug,
+        overrideInput: null,
+        category: input.category,
+      });
+      return { committed: true, entry, remainingUnresolvedCount: -1 };
     }
 
     return fail("unexpected-field");

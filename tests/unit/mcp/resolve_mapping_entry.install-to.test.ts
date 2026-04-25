@@ -180,4 +180,60 @@ describe("cfx_resolve_mapping_entry — install-to action", () => {
     });
     expect((out as any).error).toBe("slug-derivation-failed");
   });
+
+  // Test 1 — case A, auto-derived slug
+  it("creates entry with auto-derived slug for grantId in newInstalls", async () => {
+    await seedNewInstallQueue();
+    await ensureMapsCategory();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]",
+    });
+    expect(out.committed).toBe(true);
+    expect(out.entry).not.toBeNull();
+    expect(out.entry!.slug).toBe("brofx_mansion_10");
+    expect(out.entry!.target).toBe(path.join(resourcesDir, "[maps]", "brofx_mansion_10"));
+    expect(out.entry!.status).toBe("active");
+    expect(out.entry!.reviewedByUser).toBe(true);
+    expect(out.entry!.discoveredConfidence).toBe(1);
+
+    // newInstalls drained
+    const m = new Mapping(stateDir);
+    await m.load();
+    expect(m.getFile().newInstalls).not.toContain(100);
+
+    // resolution log row exists
+    const log = await fs.readFile(path.join(stateDir, "resolution-log.jsonl"), "utf8");
+    const rows = log.trim().split("\n").map((l) => JSON.parse(l));
+    const installRow = rows.find((r: any) => r.action === "install-to");
+    expect(installRow).toBeDefined();
+    expect(installRow.grantId).toBe(100);
+    expect(installRow.category).toBe("[maps]");
+    expect(installRow.chosenBasename).toBe("brofx_mansion_10");
+  });
+
+  // Test 2 — case A, operator slug override
+  it("uses operator-supplied slug when provided", async () => {
+    await seedNewInstallQueue();
+    await ensureMapsCategory();
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]", slug: "custom_name",
+    });
+    expect(out.committed).toBe(true);
+    expect(out.entry!.slug).toBe("custom_name");
+    expect(out.entry!.target).toBe(path.join(resourcesDir, "[maps]", "custom_name"));
+  });
+
+  // Test 3 — case A, nested category
+  it("supports nested bracket categories", async () => {
+    await seedNewInstallQueue();
+    await fs.mkdir(path.join(resourcesDir, "[maps]", "[apollo]"), { recursive: true });
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]/[apollo]",
+    });
+    expect(out.committed).toBe(true);
+    expect(out.entry!.target).toBe(path.join(resourcesDir, "[maps]", "[apollo]", "brofx_mansion_10"));
+  });
 });
