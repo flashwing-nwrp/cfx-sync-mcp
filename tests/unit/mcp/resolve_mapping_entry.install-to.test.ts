@@ -236,4 +236,36 @@ describe("cfx_resolve_mapping_entry — install-to action", () => {
     expect(out.committed).toBe(true);
     expect(out.entry!.target).toBe(path.join(resourcesDir, "[maps]", "[apollo]", "brofx_mansion_10"));
   });
+
+  // Test 4 — case B, entry exists with status:new-install
+  it("upgrades existing new-install entry to active and preserves ignoreUpstreamUpdates", async () => {
+    const m = new Mapping(stateDir);
+    m.approveFromProposed({});
+    m.setEntry(100, {
+      slug: "previously_set",
+      target: "",
+      assetName: "BroFX Mansion 10",
+      discoveredTier: 0,
+      discoveredConfidence: 0,
+      status: "new-install",
+      reviewedByUser: true,
+      ignoreUpstreamUpdates: true,
+      ignoreUpstreamUpdatesReason: "preexisting",
+      ignoreUpstreamUpdatesSetAt: "2026-04-01T00:00:00Z",
+    });
+    await m.save();
+    await ensureMapsCategory();
+
+    const { cfx_resolve_mapping_entry } = await import("../../../src/mcp/tools/resolve_mapping_entry.js");
+    const out = await cfx_resolve_mapping_entry({
+      grantId: 100, action: "install-to", category: "[maps]",
+    });
+    expect(out.committed).toBe(true);
+    expect(out.entry!.status).toBe("active");
+    expect(out.entry!.target).toBe(path.join(resourcesDir, "[maps]", "brofx_mansion_10"));
+    // ignoreUpstreamUpdates fields preserved
+    expect(out.entry!.ignoreUpstreamUpdates).toBe(true);
+    expect(out.entry!.ignoreUpstreamUpdatesReason).toBe("preexisting");
+    expect(out.entry!.ignoreUpstreamUpdatesSetAt).toBe("2026-04-01T00:00:00Z");
+  });
 });
