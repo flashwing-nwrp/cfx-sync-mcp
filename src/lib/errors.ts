@@ -130,8 +130,8 @@ export class PlaywrightNotInstalledError extends CfxError {
   constructor() {
     super(
       "PLAYWRIGHT_NOT_INSTALLED",
-      "Chromium is not installed; Playwright login cannot launch.",
-      "Run `npx playwright install chromium`, or set CFX_AUTH_MODE=file to use manual cookie export."
+      "Google Chrome is not installed; Playwright login cannot launch.",
+      "Install Google Chrome (stable), or set CFX_AUTH_MODE=file to use manual cookie export."
     );
   }
 }

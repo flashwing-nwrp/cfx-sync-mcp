@@ -25,20 +25,14 @@ export interface PlaywrightLoginResult {
   expiresAtHint: number | null;
 }
 
-export async function detectPlaywrightInstalled(): Promise<boolean> {
-  try {
-    const { chromium } = await import("playwright");
-    const exePath = chromium.executablePath();
-    if (!exePath) return false;
-    try { await fs.stat(exePath); return true; } catch { return false; }
-  } catch { return false; }
-}
+// Launch the system's Google Chrome (stable channel) rather than Playwright's
+// bundled Chromium. The bundled build only updates when Playwright is bumped and
+// lags Chrome security releases; system Chrome auto-updates. This login loads
+// live third-party pages (portal.cfx.re + its auth redirects), so it must run
+// on a patched browser. Deliberately NO fallback to bundled Chromium.
+const BROWSER_CHANNEL = "chrome";
 
 export async function playwrightLogin(opts: PlaywrightLoginOpts): Promise<PlaywrightLoginResult> {
-  if (!(await detectPlaywrightInstalled())) {
-    throw new PlaywrightNotInstalledError();
-  }
-
   const { chromium } = await import("playwright");
   const timeoutMs = opts.timeoutMs ?? 5 * 60_000;
 
@@ -53,9 +47,18 @@ export async function playwrightLogin(opts: PlaywrightLoginOpts): Promise<Playwr
     fsSync.mkdirSync(opts.profileDir!, { recursive: true, mode: 0o700 });
   }
 
-  const context = useProfile
-    ? await chromium.launchPersistentContext(opts.profileDir!, { headless: false })
-    : await (await chromium.launch({ headless: false })).newContext();
+  const launchOpts = { headless: false, channel: BROWSER_CHANNEL };
+  let context;
+  try {
+    context = useProfile
+      ? await chromium.launchPersistentContext(opts.profileDir!, launchOpts)
+      : await (await chromium.launch(launchOpts)).newContext();
+  } catch (e) {
+    if (e instanceof Error && /distribution '.*' is not (found|supported)/.test(e.message)) {
+      throw new PlaywrightNotInstalledError();
+    }
+    throw e;
+  }
 
   try {
     // Persistent contexts pre-create an about:blank page; reuse it.

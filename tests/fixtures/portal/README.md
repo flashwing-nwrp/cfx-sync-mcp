@@ -13,7 +13,7 @@ Refresh when any portal API response shape changes. Commit the new JSON with a C
 ## Running
 
 ```bash
-npx playwright install chromium   # once, if not already installed
+# requires Google Chrome (stable) installed - the script drives it via Playwright
 npm run refresh-fixtures
 ```
 

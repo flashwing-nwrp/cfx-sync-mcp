@@ -42,8 +42,8 @@ This tool depends on `portal-api.cfx.re`, which is **undocumented and not offici
 npm install
 npm run build
 
-# Optional: enable Playwright browser login (~150MB Chromium download)
-npx playwright install chromium
+# Optional: Playwright browser login uses your installed Google Chrome
+# (stable channel, auto-updating) - no Chromium download needed.
 ```
 
 ## Configure

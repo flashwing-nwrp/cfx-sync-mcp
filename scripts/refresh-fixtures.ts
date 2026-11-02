@@ -65,7 +65,7 @@ interface CapturedRecord {
 
 async function main() {
   await fs.mkdir(OUT_DIR, { recursive: true });
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch({ headless: false, channel: "chrome" });
   const context = await browser.newContext();
   const page = await context.newPage();
   const records: CapturedRecord[] = [];
