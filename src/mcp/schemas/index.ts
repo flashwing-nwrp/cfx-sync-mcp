@@ -49,7 +49,7 @@ export const DiscoverInput = z.object({
 export const DiscoverOutput = z.object({
   version: z.literal(1),
   generatedAt: z.string(),
-  entries: z.record(z.object({
+  entries: z.record(z.string(), z.object({
     slug: z.string(), target: z.string(),
     assetName: z.string(), discoveredTier: z.number(), discoveredConfidence: z.number(),
     notes: z.string().optional(),
@@ -145,7 +145,7 @@ export const DeployAssetInput = z.object({
    * conflict row is missing from this map AND `dryRun` is false, deploy throws
    * `ConflictsUnresolvedError`.
    */
-  conflictResolutions: z.record(ResolutionChoiceSchema).optional(),
+  conflictResolutions: z.record(z.string(), ResolutionChoiceSchema).optional(),
 });
 export const DeployAssetOutput = z.object({
   slug: z.string(),
