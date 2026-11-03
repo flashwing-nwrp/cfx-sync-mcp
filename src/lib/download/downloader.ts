@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import fsP from "node:fs/promises";
 import crypto from "node:crypto";
+import { Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import { DownloadClient } from "../portal/downloadClient.js";
 import { NetworkError } from "../errors.js";
 
@@ -28,18 +30,18 @@ export async function downloadPack(opts: DownloadPackOpts): Promise<DownloadResu
   }
 
   const writer = fs.createWriteStream(tmpFile);
+  const tap = new Transform({
+    transform(chunk: Buffer, _enc, cb) {
+      bytes += chunk.length;
+      hash.update(chunk);
+      if (onProgress) onProgress(bytes);
+      cb(null, chunk);
+    },
+  });
   try {
-    await new Promise<void>((resolve, reject) => {
-      stream.body.on("data", (chunk: Buffer) => {
-        bytes += chunk.length;
-        hash.update(chunk);
-        if (onProgress) onProgress(bytes);
-      });
-      stream.body.on("end", () => resolve());
-      stream.body.on("error", reject);
-      stream.body.pipe(writer);
-      writer.on("error", reject);
-    });
+    // pipeline resolves only once the writer has flushed and closed, so the
+    // rename below never races in-flight writes (the source's "end" is too early).
+    await pipeline(stream.body, tap, writer);
   } catch (e) {
     await fsP.unlink(tmpFile).catch(() => {});
     throw e instanceof Error ? e : new Error(String(e));
